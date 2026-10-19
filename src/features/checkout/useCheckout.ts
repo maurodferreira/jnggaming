@@ -38,7 +38,7 @@ export function useCreateOrder() {
 
 export function useOrder(orderId: string) {
   const session = useSession()
-  return useQuery({
+  return useQuery<OrderResponse>({
     queryKey: ['order', session.data?.id, orderId],
     enabled: Boolean(session.data?.id),
     refetchInterval: query => query.state.data?.status === 'pending' ? 1_000 : false,
