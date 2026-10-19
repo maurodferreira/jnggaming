@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from 'msw'
 import { cartHandlers } from './cartHandlers'
+import { authHandlers } from './authHandlers'
 import { nfts } from './fixtures/nfts'
 import { getMockEditions } from './fixtures/editions'
 import { ethToWei } from '@/lib/eth'
@@ -110,4 +111,5 @@ export const handlers = [
         return HttpResponse.json(detail)
     }),
     ...cartHandlers,
+    ...authHandlers,
 ]
