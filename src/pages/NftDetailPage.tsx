@@ -3,6 +3,9 @@ import axios from 'axios'
 import { Link, getRouteApi } from '@tanstack/react-router'
 
 import { useNft } from '@/features/catalog/useNft'
+import { useNfts } from '@/features/catalog/useNfts'
+import { NftCard } from '@/components/catalog/NftCard'
+import { getNftArtwork } from '@/lib/nftArtwork'
 import type { NftDetail } from '@/features/catalog/types'
 import { multiplyEth } from '@/lib/eth'
 
@@ -20,7 +23,7 @@ const catalogSearch = {
   q: '',
   collection: 'all',
   available: false,
-  sort: 'name_asc' as const,
+  sort: 'featured' as const,
   page: 1,
 }
 
@@ -253,6 +256,8 @@ export function NftDetailPage() {
     refetch,
   } = useNft(nftId)
 
+  const related = useNfts(catalogSearch)
+
   // Carregamento
   if (isPending) {
     return (
@@ -302,7 +307,7 @@ export function NftDetailPage() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl space-y-8 px-4 py-10">
+    <main className="mx-auto max-w-[1248px] space-y-8 px-5 py-8 pb-20 md:px-6 md:pb-0">
       <Link
         to="/"
         search={catalogSearch}
@@ -311,12 +316,25 @@ export function NftDetailPage() {
         ← Voltar ao catálogo
       </Link>
 
-      <section className="grid gap-8 md:grid-cols-2">
-        {/* Imagem provisória */}
-        <div className="flex min-h-80 items-center justify-center rounded-xl border bg-muted/30">
-          <p className="text-sm text-muted-foreground">
-            Imagem do NFT
-          </p>
+      <section className="grid gap-10 lg:grid-cols-2">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-[76px_minmax(0,1fr)]">
+          <div className="hidden flex-col gap-3 sm:flex" aria-hidden="true">
+            {Array.from({ length: 4 }, (_, index) => (
+              <img
+                key={index}
+                src={getNftArtwork(nft.id)}
+                alt=""
+                className="aspect-square w-full rounded-md border border-[#624230] object-cover"
+              />
+            ))}
+          </div>
+          <div className="self-start rounded-lg bg-[#241612] p-3">
+            <img
+              src={getNftArtwork(nft.id)}
+              alt={`Arte digital ${nft.name}`}
+              className="aspect-square w-full rounded-lg object-cover"
+            />
+          </div>
         </div>
 
         {/* Informações */}
@@ -329,6 +347,9 @@ export function NftDetailPage() {
             <h1 className="mt-2 text-3xl font-bold">
               {nft.name}
             </h1>
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+              Conheça esta edição da coleção Kurio. As informações de preço, estoque e compra são demonstrativas.
+            </p>
           </div>
 
           <EditionSelector
@@ -337,6 +358,24 @@ export function NftDetailPage() {
           />
         </div>
       </section>
+
+      <section aria-label="Descrição do NFT" className="border-t border-[#624230] pt-7">
+        <h2 className="mb-4 font-bold text-[#e89b55]">Detalhes do NFT</h2>
+        <p className="max-w-4xl text-sm leading-7 text-muted-foreground">
+          {nft.name} faz parte da curadoria digital Kurio. Confira as edições disponíveis, escolha a quantidade e adicione ao seu carrinho de demonstração.
+        </p>
+      </section>
+
+      {related.data && (
+        <section aria-label="Mais desta coleção" className="border-t border-[#624230] pt-7">
+          <h2 className="mb-8 font-bold text-[#e89b55]">Mais desta coleção</h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {related.data.items.filter(item => item.id !== nft.id).slice(0, 5).map(item => (
+              <NftCard key={item.id} nft={item} compact />
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   )
 }
