@@ -27,3 +27,7 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Playwright runtime output (visual baselines in tests/ remain tracked)
+playwright-report/
+test-results/
