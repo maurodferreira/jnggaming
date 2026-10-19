@@ -7,6 +7,9 @@ export interface Nft {
 }
 
 export type CatalogSort =
+    | 'featured'
+    | 'newest'
+    | 'trending'
     | 'name_asc'
     | 'price_asc'
     | 'price_desc'
@@ -27,7 +30,7 @@ export interface NftListResponse {
     totalPages: number
 }
 
-export const PAGE_SIZE = 6
+export const PAGE_SIZE = 9
 
 export function parseCatalogSearch(
     search: Record<string, unknown>
@@ -36,9 +39,13 @@ export function parseCatalogSearch(
 
     const sort: CatalogSort =
         search.sort === 'price_asc' ||
-            search.sort === 'price_desc'
+            search.sort === 'price_desc' ||
+            search.sort === 'name_asc' ||
+            search.sort === 'newest' ||
+            search.sort === 'trending' ||
+            search.sort === 'featured'
             ? search.sort
-            : 'name_asc'
+            : 'featured'
 
     return {
         q: typeof search.q === 'string'
