@@ -1,6 +1,7 @@
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { Heart, House, LogOut, Search, ShoppingCart, UserRound } from 'lucide-react'
 import { useLogout, useSession } from '@/features/auth/useAuth'
+import { useRealtime } from '@/features/realtime/useRealtime'
 import { useCart } from '@/features/cart/useCart'
 import { Brand } from './Brand'
 
@@ -14,6 +15,7 @@ const defaultCatalogSearch = {
 
 export function SiteShell() {
   const pathname = useRouterState({ select: state => state.location.pathname })
+  const realtimeNotice = useRealtime()
   const { data: cart } = useCart()
   const { data: user } = useSession()
   const logout = useLogout()
@@ -61,6 +63,7 @@ export function SiteShell() {
         </div>
       </header>}
 
+      {realtimeNotice && <p className="mx-auto max-w-[1248px] px-5 pt-3 text-xs text-[#e89b55]" role="status" aria-live="polite">{realtimeNotice}</p>}
       <Outlet />
 
       {!isAuthPage && <footer className="mt-24 hidden bg-[#241612] px-6 py-12 md:block">
