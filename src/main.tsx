@@ -26,10 +26,27 @@ declare module '@tanstack/react-router' {
   }
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  </StrictMode>,
-)
+
+async function bootstrap() {
+  if (import.meta.env.VITE_ENABLE_MOCKS !== 'false') {
+    const { worker } = await import('./mocks/browser')
+
+    await worker.start()
+  }
+
+  const rootElement = document.getElementById('root')
+
+  if (!rootElement) {
+    throw new Error('Elemento root não encontrado')
+  }
+
+  createRoot(rootElement).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </StrictMode>,
+  )
+}
+
+void bootstrap()
