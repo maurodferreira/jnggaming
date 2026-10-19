@@ -11,6 +11,7 @@ import {
 import { mergeGuestCartIntoUser, resetAllMockCarts } from './cartStore'
 import { resetAccountResources } from './accountHandlers'
 import { resetCheckoutResources } from './checkoutHandlers'
+import { resetRealtimeState, resetNftFixtures } from './realtimeHandlers'
 import type { LoginInput, RegisterInput } from '@/features/auth/types'
 
 const validEmail = (value: unknown): value is string =>
@@ -70,6 +71,8 @@ export const authHandlers = [
     resetAllMockCarts()
     resetAccountResources()
     resetCheckoutResources()
+    resetRealtimeState()
+    resetNftFixtures()
     resetMockAccounts()
     return HttpResponse.json({ reset: true })
   }),
