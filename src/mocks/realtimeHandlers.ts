@@ -13,7 +13,8 @@ import type { NftUpdatedEvent, OrderUpdatedEvent, RealtimeEventName } from '@/fe
  *
  * This mock does not emulate polling, rooms, binary packets or upgrades.
  */
-const link = ws.link(/wss?:\/\/[^/]+\/socket\.io\/?(?:\?.*)?$/)
+// MSW may normalize Socket.IO's /socket.io/ transport prefix before matching.
+const link = ws.link(/^wss?:\/\/[^/]+(?:\/socket\.io)?\/?(?:\?.*)?$/)
 
 type LiveClient = {
   emit: (event: RealtimeEventName, data: NftUpdatedEvent | OrderUpdatedEvent) => void
