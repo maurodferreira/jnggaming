@@ -1,10 +1,22 @@
 import { useState, type FormEvent } from 'react'
-import { AccountField, AccountSelect } from '@/components/account/AccountField'
+import { AccountField } from '@/components/account/AccountField'
+import { AccountSelect } from '@/components/account/AccountSelect'
 import { AccountLayout } from '@/components/account/AccountLayout'
 import { useRemoveWallet, useSaveWallet, useWallets } from '@/features/account/useAccount'
 import { getAuthErrorMessage } from '@/features/auth/useAuth'
 import type { CollectorWallet, WalletInput, WalletNetwork, WalletType } from '@/features/account/types'
 import { Skeleton } from '@/components/ui/skeleton'
+
+const networkOptions: readonly { value: WalletNetwork; label: string }[] = [
+  { value: 'Ethereum', label: 'Ethereum' },
+  { value: 'Polygon', label: 'Polygon' },
+  { value: 'Solana', label: 'Solana' },
+]
+
+const walletTypeOptions: readonly { value: WalletType; label: string }[] = [
+  { value: 'Software', label: 'Software' },
+  { value: 'Hardware', label: 'Hardware' },
+]
 
 const emptyWallet = (isPrimary: boolean): WalletInput => ({
   label: isPrimary ? 'Minha carteira principal' : 'Minha carteira secundária',
@@ -85,20 +97,26 @@ function WalletEditor({ wallet, isPrimary }: { wallet?: CollectorWallet; isPrima
             value={draft.label} onChange={event => update('label', event.target.value)}/>
           <AccountField label="Apelido da carteira" id={`wallet-${isPrimary}-nickname`} required minLength={2} maxLength={40}
             value={draft.nickname} onChange={event => update('nickname', event.target.value)}/>
-          <AccountSelect label="Rede" id={`wallet-${isPrimary}-network`} required value={draft.network}
-            onChange={event => {
-              update('network', event.target.value as WalletNetwork)
-              update('address', '')
-            }}>
-            <option value="Ethereum">Ethereum</option>
-            <option value="Polygon">Polygon</option>
-            <option value="Solana">Solana</option>
-          </AccountSelect>
-          <AccountSelect label="Tipo de carteira" id={`wallet-${isPrimary}-type`} required value={draft.type}
-            onChange={event => update('type', event.target.value as WalletType)}>
-            <option value="Software">Software</option>
-            <option value="Hardware">Hardware</option>
-          </AccountSelect>
+          <AccountSelect
+            label="Rede"
+            id={`wallet-${isPrimary}-network`}
+            required
+            value={draft.network}
+            options={networkOptions}
+            onValueChange={network => {
+              if (network === draft.network) return
+              setOverrides(current => ({ ...current, network, address: '' }))
+              setNotice('')
+            }}
+          />
+          <AccountSelect
+            label="Tipo de carteira"
+            id={`wallet-${isPrimary}-type`}
+            required
+            value={draft.type}
+            options={walletTypeOptions}
+            onValueChange={value => update('type', value)}
+          />
           <div className="sm:col-span-2">
             <AccountField label="Endereço da carteira" id={`wallet-${isPrimary}-address`} required
               pattern={draft.network === 'Solana' ? '[1-9A-HJ-NP-Za-km-z]{32,44}' : '0x[a-fA-F0-9]{40}'}
