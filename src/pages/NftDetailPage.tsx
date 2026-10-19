@@ -9,6 +9,11 @@ import { multiplyEth } from '@/lib/eth'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
+import {
+  useAddToCart,
+  getCartErrorMessage,
+} from '@/features/cart/useCart'
+
 const routeApi = getRouteApi('/nft/$nftId')
 
 const catalogSearch = {
@@ -19,6 +24,7 @@ const catalogSearch = {
   page: 1,
 }
 
+// Seleção de edição e quantidade
 function EditionSelector({ nft }: { nft: NftDetail }) {
   const firstAvailable = nft.editions.find(
     (edition) => edition.available > 0
@@ -29,6 +35,8 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
   )
 
   const [quantity, setQuantity] = useState(1)
+
+  const addToCart = useAddToCart()
 
   const selectedEdition = nft.editions.find(
     (edition) => edition.id === editionId
@@ -43,6 +51,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
   }
 
   const available = selectedEdition.available
+
   const selectedQuantity =
     available > 0 ? Math.min(quantity, available) : 0
 
@@ -53,6 +62,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
 
   return (
     <div className="space-y-6">
+      {/* Escolha da edição */}
       <fieldset className="space-y-3">
         <legend className="font-medium">
           Escolha uma edição
@@ -76,6 +86,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
                 onChange={() => {
                   setEditionId(edition.id)
                   setQuantity(1)
+                  addToCart.reset()
                 }}
                 className="mt-1 accent-primary"
               />
@@ -100,6 +111,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
         </div>
       </fieldset>
 
+      {/* Controle de quantidade */}
       <div className="space-y-3">
         <p className="font-medium">Quantidade</p>
 
@@ -147,6 +159,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
         </p>
       </div>
 
+      {/* Resumo dos valores */}
       <div className="rounded-xl border p-5">
         <p className="text-sm text-muted-foreground">
           Preço unitário
@@ -173,10 +186,63 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
           Taxas e descontos serão calculados no checkout.
         </p>
       </div>
+
+      {/* Adicionar ao carrinho */}
+      <div className="space-y-3">
+        <Button
+          type="button"
+          className="w-full"
+          disabled={
+            selectedQuantity === 0 ||
+            addToCart.isPending
+          }
+          onClick={() => {
+            addToCart.mutate({
+              nftId: nft.id,
+              editionId: selectedEdition.id,
+              quantity: selectedQuantity,
+            })
+          }}
+        >
+          {addToCart.isPending
+            ? 'Adicionando...'
+            : 'Adicionar ao carrinho'}
+        </Button>
+
+        {/* Mensagem de erro */}
+        {addToCart.isError && (
+          <p
+            role="alert"
+            className="text-sm text-destructive"
+          >
+            {getCartErrorMessage(addToCart.error)}
+          </p>
+        )}
+
+        {/* Confirmação de sucesso */}
+        {addToCart.isSuccess && (
+          <div
+            role="status"
+            className="rounded-lg border p-4 text-sm"
+          >
+            <p className="font-medium">
+              NFT adicionado ao carrinho!
+            </p>
+
+            <Link
+              to="/cart"
+              className="mt-2 inline-block font-medium underline underline-offset-4"
+            >
+              Ver meu carrinho →
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
+// Página de detalhes
 export function NftDetailPage() {
   const { nftId } = routeApi.useParams()
 
@@ -187,6 +253,7 @@ export function NftDetailPage() {
     refetch,
   } = useNft(nftId)
 
+  // Carregamento
   if (isPending) {
     return (
       <main className="mx-auto max-w-5xl space-y-6 p-6">
@@ -197,6 +264,7 @@ export function NftDetailPage() {
     )
   }
 
+  // Erro ou NFT inexistente
   if (error) {
     const notFound =
       axios.isAxiosError(error) &&
@@ -244,12 +312,14 @@ export function NftDetailPage() {
       </Link>
 
       <section className="grid gap-8 md:grid-cols-2">
+        {/* Imagem provisória */}
         <div className="flex min-h-80 items-center justify-center rounded-xl border bg-muted/30">
           <p className="text-sm text-muted-foreground">
             Imagem do NFT
           </p>
         </div>
 
+        {/* Informações */}
         <div className="space-y-6">
           <div>
             <p className="text-muted-foreground">
@@ -261,7 +331,10 @@ export function NftDetailPage() {
             </h1>
           </div>
 
-          <EditionSelector key={nft.id} nft={nft} />
+          <EditionSelector
+            key={nft.id}
+            nft={nft}
+          />
         </div>
       </section>
     </main>
