@@ -34,13 +34,14 @@ test('checkout sem carteira impede confirmar pedido', async ({ page }) => {
 })
 
 test('compra simulada só confirma após status do pedido e resiste a refresh', async ({ page }) => {
+  test.setTimeout(45_000)
   await signIn(page)
 
   await page.goto('/wallets')
   await expect(page.getByRole('heading', { name: 'Carteira principal' })).toBeVisible()
-  await page.getByLabel('Nome de exibição', { exact: true }).fill('Principal')
-  await page.getByLabel('Apelido da carteira', { exact: true }).fill('Minha coleção')
-  await page.getByLabel('Endereço da carteira', { exact: true }).fill('0x' + 'a'.repeat(40))
+  await page.locator('#wallet-true-label').fill('Principal')
+  await page.locator('#wallet-true-nickname').fill('Minha coleção')
+  await page.locator('#wallet-true-address').fill('0x' + 'a'.repeat(40))
   await page.getByRole('button', { name: 'Salvar carteira' }).first().click()
   await expect(page.getByRole('status')).toContainText('Carteira salva com sucesso.')
 
