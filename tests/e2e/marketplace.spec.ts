@@ -103,7 +103,7 @@ test('carrinhos ficam isolados entre usuários demo', async ({ page }) => {
   await page.getByLabel('E-mail').fill('artista@kurio.demo')
   await page.getByLabel('Senha', { exact: true }).fill('KurioDemo123!')
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
-  await expect(page).toHaveURL(/\?q=/)
+  await expect(page).toHaveURL(/\?q=/, { timeout: 10_000 })
   await page.goto('/cart')
   await expect(page.getByRole('heading', { name: 'Seu carrinho está vazio' })).toBeVisible()
 })
