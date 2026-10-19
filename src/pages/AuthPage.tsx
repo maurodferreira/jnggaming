@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { Eye, EyeOff, X } from 'lucide-react'
 import { getAuthErrorMessage, useLogin, useRegister, useSession } from '@/features/auth/useAuth'
@@ -74,16 +74,6 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [formError, setFormError] = useState('')
 
-  useEffect(() => {
-    if (session.data) {
-      if (next === '/cart') void navigate({ to: '/cart', replace: true })
-      else if (next === '/profile') void navigate({ to: '/profile', replace: true })
-      else if (next === '/wallets') void navigate({ to: '/wallets', replace: true })
-      else if (next.startsWith('/nft/')) void navigate({ to: '/nft/$nftId', params: { nftId: next.slice(5) }, replace: true })
-      else void navigate({ to: '/', search: catalogSearch, replace: true })
-    }
-  }, [session.data, next, navigate])
-
   const isRegister = mode === 'register'
   const error = formError || (mutation.isError ? getAuthErrorMessage(mutation.error) : '')
 
@@ -152,6 +142,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
             <Field label="Confirmar senha" id="auth-confirm-password" name="confirmPassword" type="password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password"/>
           )}
           {!isRegister && <p className="text-right text-xs text-[#e89b55]">Recuperação de senha indisponível na demonstração.</p>}
+          {session.data && <p role="status" className="rounded-md border border-[#624230] p-3 text-xs text-[#cfb28c]">Você já está conectado como {session.data.name}. <Link to="/profile" className="text-primary underline">Acessar perfil</Link></p>}
           {error && <p role="alert" aria-live="assertive" className="rounded-md border border-destructive/50 p-3 text-xs text-destructive">{error}</p>}
 
           <button
