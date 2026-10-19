@@ -25,7 +25,31 @@ Aplicação local: http://localhost:5173
 | `npm run test:e2e` | Testes E2E Chromium desktop/mobile |
 | `npm run test:e2e:report` | Relatório HTML Playwright |
 
-O arquivo `src/routeTree.gen.ts` é gerado pelo TanStack Router; ao criar rotas, execute `npm run dev` para atualizá-lo.
+O arquivo `src/routeTree.gen.ts` é gerado pelo TanStack Router. O desenvolvimento normal deve usar `npm run dev`, especialmente quando novas rotas forem adicionadas.
+
+### Windows: `EPERM` ao atualizar `routeTree.gen.ts`
+
+Se o terminal mostrar `EPERM: operation not permitted, rename ...routeTree.gen.ts`, o Vite pode imprimir `ready` mesmo sem conseguir atualizar a árvore de rotas. Não ignore esse erro.
+
+Primeiro pare os processos Vite/Node que estejam executando o projeto e confira se o arquivo gerado não está marcado como **somente leitura** ou bloqueado por outro programa:
+
+```powershell
+Get-Item .\src\routeTree.gen.ts | Select-Object FullName, IsReadOnly, Attributes
+Get-Process node -ErrorAction SilentlyContinue | Select-Object Id, Path
+```
+
+Se o arquivo estiver realmente como somente leitura, e você tiver permissão para editá-lo, remova **somente esse atributo** com `attrib -R .\src\routeTree.gen.ts` e tente `npm run dev` novamente. Não desative proteções do Windows nem exclua a árvore de rotas.
+
+Para **trabalhar temporariamente com as rotas já versionadas** enquanto investiga um bloqueio do Windows, existe um modo de desenvolvimento sem regeneração:
+
+```powershell
+$env:KURIO_SKIP_ROUTE_GENERATION = 'true'
+npm run dev
+```
+
+Essa opção apenas ignora a regeneração **durante o comando dev**; o build e o CI continuam gerando e verificando as rotas normalmente. **Não adicione nem renomeie rotas nesse modo**, pois `src/routeTree.gen.ts` não será atualizado. Em um novo PowerShell, a variável não persiste; para removê-la na sessão atual execute `Remove-Item Env:KURIO_SKIP_ROUTE_GENERATION`.
+
+Se o erro persistir no modo normal, compartilhe o resultado dos dois comandos de diagnóstico acima e a mensagem completa. Evite `git reset --hard` ou alterações globais de segurança como solução para esse caso.
 
 ## Contas fictícias
 
