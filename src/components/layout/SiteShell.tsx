@@ -7,7 +7,7 @@ const defaultCatalogSearch = {
   q: '',
   collection: 'all',
   available: false,
-  sort: 'name_asc' as const,
+  sort: 'featured' as const,
   page: 1,
 }
 
