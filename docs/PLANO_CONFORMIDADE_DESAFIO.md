@@ -4,6 +4,20 @@
 **Fonte:** enunciado integral *Desafio Frontend — Marketplace de NFTs* (arquivo fornecido pelo responsável); Figma `HuEe6XFEtLBuMlCI8pYddf`; código da branch `feat/figma-kurio-ui`.  
 **Status:** EM DESENVOLVIMENTO. **NÃO PRONTO PARA ENTREGA**.
 
+## Atualização de implementação — 19/10/2026
+
+> A matriz de nove telas abaixo registra a auditoria **inicial**. Status atualizado nesta revisão:
+>
+> - **Catalogo, NFT e carrinho:** telas e REST operacionais, com favoritos, login/merge e botão de checkout; revisão de casos extremos e regressão visual ainda necessária.
+> - **Login, cadastro, perfil e carteiras:** implementados em React + MSW, com rotas protegidas, sessão demo, avatar, senha e carteiras por usuário.
+> - **Pagamento e confirmação:** telas e endpoints REST mock de quote, cupom, taxa em ETH, chave idempotente, revalidação, pedido pendente e recibo condicionado à confirmação. Não há transações reais.
+> - **Playwright:** Chromium desktop/mobile ativo no CI, cobrindo também checkout e refresh; exigir execução verde no commit final.
+> - **Ainda bloqueadores:** Socket.IO efetivo e eventos/reconciliação, falhas avançadas (timeout/recusa/alteração de preço), baselines visuais, acessibilidade completa, Lighthouse e deploy final.
+
+**Próxima prioridade:** terminar estabilização E2E, ampliar mocks de falhas e implementar o fluxo Socket.IO. A `main` segue intocada e o PR permanece em rascunho.
+
+---
+
 ## Como interpretar o status
 - **Implementado:** há funcionalidade comprovável no código, dentro do escopo indicado.
 - **Parcial:** só parte do requisito, sem cumprir toda a especificação.
