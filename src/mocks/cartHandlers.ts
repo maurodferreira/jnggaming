@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from 'msw'
 import { nfts } from './fixtures/nfts'
+import { getUserFromRequest, hasAuthHeader } from './authStore'
 import { getMockEditions } from './fixtures/editions'
 import {
   readCart,
@@ -45,6 +46,16 @@ function getEdition(nftId: string, editionId: string) {
   )
 }
 
+function cartOwner(request: Request): string | null {
+  if (!hasAuthHeader(request)) return 'guest'
+  return getUserFromRequest(request)?.id ?? null
+}
+
+const unauthorized = () => HttpResponse.json(
+  { message: 'A sessão expirou. Entre novamente para continuar.' },
+  { status: 401 },
+)
+
 export const cartHandlers = [
   http.post('/api/mock/reset', () => {
     resetGuestCart()
@@ -52,14 +63,18 @@ export const cartHandlers = [
   }),
 
   // Consultar carrinho
-  http.get('/api/cart', async () => {
+  http.get('/api/cart', async ({ request }) => {
+    const ownerId = cartOwner(request)
+    if (!ownerId) return unauthorized()
     await delay(200)
 
-    return HttpResponse.json(buildCart())
+    return HttpResponse.json(buildCart(ownerId))
   }),
 
   // Adicionar itens
   http.post('/api/cart/items', async ({ request }) => {
+    const ownerId = cartOwner(request)
+    if (!ownerId) return unauthorized()
     await delay(200)
 
     const body: unknown = await request
@@ -85,7 +100,7 @@ export const cartHandlers = [
       )
     }
 
-    const items = readCart()
+    const items = readCart(ownerId)
 
     const existing = items.find(
       (item) =>
@@ -108,13 +123,13 @@ export const cartHandlers = [
 
     if (existing) {
       existing.quantity = newQuantity
-      saveCart(items)
+      saveCart(items, ownerId)
     } else {
-      saveCart([...items, body])
+      saveCart([...items, body], ownerId)
     }
 
     return HttpResponse.json(
-      buildCart(),
+      buildCart(ownerId),
       { status: 201 }
     )
   }),
@@ -123,6 +138,8 @@ export const cartHandlers = [
   http.patch(
     '/api/cart/items/:id',
     async ({ params, request }) => {
+      const ownerId = cartOwner(request)
+      if (!ownerId) return unauthorized()
       await delay(200)
 
       const body: unknown = await request
@@ -143,7 +160,7 @@ export const cartHandlers = [
         )
       }
 
-      const items = readCart()
+      const items = readCart(ownerId)
       const id = String(params.id)
 
       const existing = items.find(
@@ -176,16 +193,18 @@ export const cartHandlers = [
       existing.quantity = quantity
       saveCart(items)
 
-      return HttpResponse.json(buildCart())
+      return HttpResponse.json(buildCart(ownerId))
     }
   ),
 
   // Remover item
-  http.delete('/api/cart/items/:id', async ({ params }) => {
+  http.delete('/api/cart/items/:id', async ({ params, request }) => {
+    const ownerId = cartOwner(request)
+    if (!ownerId) return unauthorized()
     await delay(200)
 
     const id = String(params.id)
-    const items = readCart()
+    const items = readCart(ownerId)
 
     const remaining = items.filter(
       (item) =>
@@ -199,8 +218,8 @@ export const cartHandlers = [
       )
     }
 
-    saveCart(remaining)
+    saveCart(remaining, ownerId)
 
-    return HttpResponse.json(buildCart())
+    return HttpResponse.json(buildCart(ownerId))
   }),
 ]
