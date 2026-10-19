@@ -1,62 +1,102 @@
-# NFT Marketplace — Frontend Challenge
+# KURIO — NFT Marketplace Frontend Challenge
 
-Marketplace de NFTs em React e TypeScript, desenvolvido para um desafio técnico. As operações são simuladas no navegador; não existe blockchain nem pagamento real.
+Marketplace demonstrativo em **React + TypeScript**, baseado no [Figma Frontend Challenge](https://www.figma.com/design/HuEe6XFEtLBuMlCI8pYddf/Frontend-Challenge--c%C3%B3pia-). O código usa **dados e operações simuladas no navegador**: nenhuma blockchain, conexão de carteira ou compra verdadeira é realizada.
 
-**Status: em desenvolvimento.** O catálogo, os detalhes e o carrinho de visitante estão disponíveis. Autenticação, checkout, perfil, carteiras, favoritos, pedidos, tempo real, testes E2E e layout definitivo ainda faltam.
+> **Estado atual (19/10/2026):** catálogo, detalhes, carrinho, autenticação, perfil e carteiras em evolução. O projeto **ainda não atende ao desafio completo**: checkout/recibo, Socket.IO, cenários avançados, regressão visual e Lighthouse seguem pendentes. Consulte [PLANO_CONFORMIDADE_DESAFIO.md](docs/PLANO_CONFORMIDADE_DESAFIO.md) e o PR em rascunho.
 
-## Como rodar
+## Executar localmente
 
-Requer Node.js 22.12+ e npm.
+Requer **Node.js 22.12+**, npm e um navegador moderno em contexto seguro (localhost ou HTTPS), necessário para o Web Crypto dos mocks.
 
-~~~bash
+```bash
 npm ci
 npm run dev
-~~~
+```
 
-O endereço local costuma ser http://localhost:5173.
+Aplicação local: http://localhost:5173
 
-~~~bash
-npm run typecheck
-npm run lint
-npm run build
-npm run preview
-~~~
+| Comando | Descrição |
+| --- | --- |
+| `npm run typecheck` | Verificação estática TypeScript |
+| `npm run lint` | Lint |
+| `npm run build` | Build otimizado |
+| `npm run preview` | Preview do build |
+| `npx playwright install chromium` | Instala navegador para testes locais |
+| `npm run test:e2e` | Testes E2E Chromium desktop/mobile |
+| `npm run test:e2e:report` | Relatório HTML Playwright |
 
-Ao criar uma nova rota, inicie o Vite para atualizar src/routeTree.gen.ts antes da verificação de tipos.
+O arquivo `src/routeTree.gen.ts` é gerado pelo TanStack Router; ao criar rotas, execute `npm run dev` para atualizá-lo.
 
-## API simulada
+## Contas fictícias
 
-MSW intercepta as requisições REST feitas pelo Axios. Os mocks ficam ativados por padrão, inclusive no build de demonstração. A variável VITE_ENABLE_MOCKS=false os desativa, mas nesse caso a aplicação precisa de uma API externa.
+**Nunca reutilize uma senha pessoal** nesta demonstração. Os usuários abaixo são gerados pelo MSW na primeira operação de autenticação.
 
-- GET /api/nfts: busca, filtros, ordenação e paginação
-- GET /api/nfts/:id: detalhes e edições
-- GET /api/cart: consulta do carrinho de visitante
-- POST /api/cart/items: adiciona edição e quantidade
-- PATCH /api/cart/items/:id: atualiza quantidade
-- DELETE /api/cart/items/:id: remove item
-- POST /api/mock/reset: limpa os itens do carrinho de visitante
+| Conta | E-mail | Senha de demonstração |
+| --- | --- | --- |
+| Colecionador | `colecionador@kurio.demo` | `KurioDemo123!` |
+| Artista | `artista@kurio.demo` | `KurioDemo123!` |
 
-O carrinho é persistido no localStorage. Para restaurar o cenário inicial, execute no console da página:
+As contas cadastradas no formulário também são fictícias. O MSW deriva hashes de senha via PBKDF2 e os guarda localmente, **não** como credenciais de produção. O token de sessão expira em uma hora; o estado é persistido apenas para a demonstração.
 
-~~~js
-await fetch('/api/mock/reset', { method: 'POST' })
+## Páginas atuais
+
+| Rota | Função |
+| --- | --- |
+| `/` | Hero, catálogo, filtros, busca, ordenação, paginação |
+| `/nft/:nftId` | Detalhe, edição, quantidade, carrinho, favoritos |
+| `/cart` | Carrinho de visitante/conta e ajustes de quantidade |
+| `/login` | Login com retorno ao destino solicitado |
+| `/register` | Criação de conta e tratamento de conflito |
+| `/profile` | Perfil protegido, avatar e atualização de senha |
+| `/wallets` | Carteiras protegidas principal e secundária |
+
+Os controles sociais Google/Facebook não realizam login real e aparecem desativados. Checkout, favoritos avançados e transações ainda não têm fluxo completo.
+
+## Simulação REST
+
+**Todas as chamadas** passam pelo Axios (`src/services/api.ts`) e são interceptadas pelo MSW (`src/mocks/`), sem respostas fictícias diretamente nos componentes.
+
+- `GET /api/nfts` e `GET /api/nfts/:id`
+- `GET/POST/PATCH/DELETE /api/cart...`
+- `POST /api/auth/login`, `POST /api/auth/register`, `GET /api/auth/session`, `POST /api/auth/logout`
+- `GET/PATCH /api/profile`, `PATCH /api/profile/password`
+- `GET/PUT/DELETE /api/wallets...`
+- `GET/POST/DELETE /api/favorites...`
+
+O carrinho de visitante passa para a conta no login, respeitando a disponibilidade da edição. Carrinhos, perfis, favoritos e carteiras possuem chaves de armazenamento separadas por usuário. Ao sair, o cache de dados pessoais é limpo.
+
+Para **zerar todos os dados simulados** durante desenvolvimento/testes:
+
+```js
+await fetch('/api/mock/reset-all', { method: 'POST' })
 location.reload()
-~~~
+```
 
-O reset afeta somente o carrinho: catálogo e edições já são fixtures fixas. Não há credenciais fictícias ainda porque login não foi implementado.
+Para testar expiração da sessão autenticada:
 
-## Como conferir o que já funciona
+```js
+await fetch('/api/mock/expire-session', { method: 'POST' })
+location.reload()
+```
 
-1. Filtre e ordene o catálogo, alterne páginas e atualize a URL; voltar/avançar deve restaurar os filtros.
-2. Abra um NFT e selecione edição e quantidade. A API limita a compra ao estoque da edição.
-3. Adicione ao carrinho, altere a quantidade e remova um item. Atualize a página para testar a persistência.
-4. Teste /nft/999 para ver o estado de item inexistente.
-5. Tente adicionar quantidades acima do estoque para conferir o erro 409.
+Esses endpoints são exclusividade da simulação local/MSW. `VITE_ENABLE_MOCKS=false` desativa os handlers; sem um backend real, as consultas deixarão de funcionar.
 
-## Tecnologias
+## Testes, acessibilidade e entrega
 
-React, TypeScript, Vite, TanStack Router, TanStack Query, Axios, Tailwind CSS, shadcn/ui com Base UI e MSW. Socket.IO Client está instalado, porém ainda não há eventos implementados.
+`playwright.config.ts` configura Chromium em 1440×900 (desktop) e Pixel 7 (mobile), e o CI executa `npm ci`, typecheck, lint, build e testes E2E. Os relatórios HTML/traces ficam nos artefatos do GitHub Actions quando executados.
 
-A arquitetura e os contratos existentes estão descritos em [ARCHITECTURE.md](./ARCHITECTURE.md). O visual ainda é provisório; o objetivo é reproduzir o Figma na etapa de interface.
+A interface usa labels, aria-live e botões sem navegação fictícia. Mesmo assim, faltam auditorias completas de teclado, zoom, contraste e regressão visual com baselines.
 
-Não há relatórios Playwright ou Lighthouse publicados nesta versão. Eles fazem parte da entrega exigida, junto com autenticação, cotação, pedidos idempotentes, reconexão e deploy.
+**Fora do escopo até implementação futura:** eventos `nft.updated`/`order.updated` via Socket.IO, cotação/cupom, checkout, pedidos idempotentes, confirmação e Lighthouse (metas 90/95/95/90). O deploy final é obrigatório e ainda precisa ser validado em uma URL pública.
+
+## Organização
+
+- `src/pages/`: composição das telas React
+- `src/components/`: componentes reutilizáveis, layouts e formulários
+- `src/features/`: hooks Query, contratos tipados e regras
+- `src/mocks/`: handlers REST, sessão, cenários e fixtures
+- `src/lib/eth.ts`: conversão ETH/wei com `bigint`
+- `tests/e2e/`: testes Playwright desktop/mobile
+- `ARCHITECTURE.md`: decisões, cache e limitações
+
+Não faça merge do PR enquanto os itens eliminatórios do desafio estiverem abertos.
