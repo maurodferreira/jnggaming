@@ -160,6 +160,7 @@ export const checkoutHandlers = [
         quoteId: previous.quote.id,
         walletId: previous.walletId,
         provider: previous.provider,
+        notes: previous.notes,
       }) !== orderFingerprint(payload)) {
         return HttpResponse.json({ message: 'A chave desta tentativa já foi utilizada com dados diferentes.' }, { status: 409 })
       }
@@ -189,6 +190,7 @@ export const checkoutHandlers = [
       walletId: wallet.id,
       walletNickname: wallet.nickname,
       provider: payload.provider!,
+      notes: payload.notes,
       quote,
     }
     saveOrders(user.id, [...orders, order])
