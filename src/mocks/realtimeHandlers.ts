@@ -22,6 +22,38 @@ type LiveClient = {
 }
 const connections = new Set<LiveClient>()
 const initialNfts = nfts.map(nft => ({ ...nft }))
+const NFT_STATE_KEY = 'kurio:mock:nft-fixtures:v1'
+
+function hydrateNftFixtures() {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(NFT_STATE_KEY) ?? '{}')
+    if (typeof saved !== 'object' || saved === null || Array.isArray(saved)) return
+    for (const nft of nfts) {
+      const change: unknown = (saved as Record<string, unknown>)[nft.id]
+      if (!change || typeof change !== 'object') continue
+      const record = change as Record<string, unknown>
+      if (typeof record.priceEth !== 'string' || !/^\\d+(?:\\.\\d{1,18})?$/.test(record.priceEth)) continue
+      if (typeof record.available !== 'number' || !Number.isSafeInteger(record.available) || record.available < 0) continue
+      nft.priceEth = record.priceEth
+      nft.available = record.available
+    }
+  } catch {
+    // Bad local demo data should not prevent the catalog from loading.
+  }
+}
+
+function persistNftFixtures() {
+  const changes: Record<string, { priceEth: string; available: number }> = {}
+  for (const nft of nfts) {
+    const initial = initialNfts.find(entry => entry.id === nft.id)
+    if (initial && (initial.priceEth !== nft.priceEth || initial.available !== nft.available)) {
+      changes[nft.id] = { priceEth: nft.priceEth, available: nft.available }
+    }
+  }
+  localStorage.setItem(NFT_STATE_KEY, JSON.stringify(changes))
+}
+
+hydrateNftFixtures()
 const versions = new Map<string, number>()
 
 function nextVersion(resource: string) {
@@ -35,6 +67,7 @@ export function resetRealtimeState() {
 }
 
 export function resetNftFixtures() {
+  localStorage.removeItem(NFT_STATE_KEY)
   for (const initial of initialNfts) {
     const nft = nfts.find(item => item.id === initial.id)
     if (nft) Object.assign(nft, initial)
@@ -140,6 +173,7 @@ export const realtimeScenarioHandlers = [
 
     original.priceEth = body.priceEth
     original.available = body.available
+    persistNftFixtures()
     const update: NftUpdatedEvent = {
       resourceId: id,
       version: nextVersion(`nft:${id}`),
