@@ -2,6 +2,7 @@ import { http, HttpResponse, delay } from 'msw'
 import { cartHandlers } from './cartHandlers'
 import { authHandlers } from './authHandlers'
 import { accountHandlers } from './accountHandlers'
+import { checkoutHandlers } from './checkoutHandlers'
 import { nfts } from './fixtures/nfts'
 import { getMockEditions } from './fixtures/editions'
 import { ethToWei } from '@/lib/eth'
@@ -114,4 +115,5 @@ export const handlers = [
     ...cartHandlers,
     ...authHandlers,
     ...accountHandlers,
+    ...checkoutHandlers,
 ]
