@@ -119,6 +119,17 @@ export const realtimeSocketHandler = link.addEventListener('connection', ({ clie
     })}`)
   })
 
+  // Engine.IO servers send ping packets; without them a long-lived
+  // Socket.IO session disconnects even when the page stays open.
+  const heartbeat = window.setInterval(() => {
+    if (!connected) return
+    try {
+      client.send('2')
+    } catch {
+      window.clearInterval(heartbeat)
+    }
+  }, 25_000)
+
   client.addEventListener('message', event => {
     if (typeof event.data !== 'string') return
     const packet = event.data
@@ -153,6 +164,7 @@ export const realtimeSocketHandler = link.addEventListener('connection', ({ clie
   })
 
   client.addEventListener('close', () => {
+    window.clearInterval(heartbeat)
     connected = false
     connections.delete(peer)
   })
