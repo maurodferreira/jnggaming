@@ -33,5 +33,6 @@ export interface OrderResponse {
   walletNickname: string
   provider: OrderInput['provider']
   quote: QuoteResponse
+  notes?: string
   errorMessage?: string
 }
