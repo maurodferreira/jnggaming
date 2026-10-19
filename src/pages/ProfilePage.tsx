@@ -75,12 +75,15 @@ export function ProfilePage() {
     <AccountLayout active="/profile">
       <div className="max-w-[850px] space-y-9">
         <h2 className="text-lg font-bold">Perfil do colecionador</h2>
-        {profile.isPending || !draft ? (
+        {profile.isError ? (
+          <div role="alert" className="space-y-4 text-sm text-destructive">
+            <p>Não foi possível consultar o perfil.</p>
+            <button type="button" className="rounded-md bg-primary px-4 py-2 text-primary-foreground" onClick={() => void profile.refetch()}>Tentar novamente</button>
+          </div>
+        ) : profile.isPending || !draft ? (
           <div className="grid gap-5 sm:grid-cols-2" aria-label="Carregando dados do perfil">
             {Array.from({ length: 6 }, (_, i) => <Skeleton className="h-[74px]" key={i}/>)}
           </div>
-        ) : profile.isError ? (
-          <div role="alert" className="text-sm text-destructive">Não foi possível consultar o perfil.</div>
         ) : (
           <>
             <form onSubmit={submitProfile} className="space-y-6">
