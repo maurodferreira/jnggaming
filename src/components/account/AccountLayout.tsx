@@ -1,4 +1,4 @@
-import { Navigate, Link } from '@tanstack/react-router'
+import { Navigate, Link, useNavigate } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { LogOut, MapPin, UserRound } from 'lucide-react'
 import { useLogout, useSession } from '@/features/auth/useAuth'
@@ -36,6 +36,17 @@ const menuItems: { title: string; to: ProtectedPath; icon: typeof UserRound }[] 
 
 export function AccountLayout({ active, children }: { active: ProtectedPath; children: ReactNode }) {
   const logout = useLogout()
+  const navigate = useNavigate()
+
+  async function signOut() {
+    try {
+      await logout.mutateAsync()
+    } catch {
+      // The local token is cleared even if the demo logout request fails.
+    }
+    await navigate({ to: '/login', search: { next: '/' }, replace: true })
+  }
+
   return (
     <main className="mx-auto grid max-w-[1248px] gap-5 px-5 py-8 pb-24 md:grid-cols-[245px_minmax(0,1fr)] md:gap-5 md:px-6 md:pb-0 lg:gap-8">
       <aside className="self-start rounded-md bg-[#241612] md:min-h-[360px]">
@@ -55,7 +66,7 @@ export function AccountLayout({ active, children }: { active: ProtectedPath; chi
             )
           })}
           <span className="hidden px-4 py-3 text-xs text-[#cfb28c]/60 md:block">Atividade e ofertas não fazem parte desta entrega.</span>
-          <button onClick={() => logout.mutate()} disabled={logout.isPending} className="flex items-center gap-2 border-l-[3px] border-transparent px-3 py-3 text-left text-xs text-[#e89b55] hover:underline disabled:opacity-50 md:text-sm">
+          <button type="button" onClick={() => void signOut()} disabled={logout.isPending} className="flex items-center gap-2 border-l-[3px] border-transparent px-3 py-3 text-left text-xs text-[#e89b55] hover:underline disabled:opacity-50 md:text-sm">
             <LogOut size={17} aria-hidden="true"/>Sair
           </button>
         </nav>
