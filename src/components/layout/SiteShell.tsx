@@ -1,5 +1,6 @@
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
-import { Heart, House, Search, ShoppingCart, UserRound } from 'lucide-react'
+import { Heart, House, LogOut, Search, ShoppingCart, UserRound } from 'lucide-react'
+import { useLogout, useSession } from '@/features/auth/useAuth'
 import { useCart } from '@/features/cart/useCart'
 import { Brand } from './Brand'
 
@@ -14,11 +15,14 @@ const defaultCatalogSearch = {
 export function SiteShell() {
   const pathname = useRouterState({ select: state => state.location.pathname })
   const { data: cart } = useCart()
+  const { data: user } = useSession()
+  const logout = useLogout()
+  const isAuthPage = pathname === '/login' || pathname === '/register'
   const quantity = cart?.totalQuantity ?? 0
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="mx-auto hidden w-full max-w-[1248px] px-6 pt-6 md:block">
+      {!isAuthPage && <header className="mx-auto hidden w-full max-w-[1248px] px-6 pt-6 md:block">
         <div className="flex min-h-[45px] items-start justify-between gap-5 border-b border-[#674332]">
           <Brand />
           <nav aria-label="Navegação principal" className="flex items-center gap-9 text-sm">
@@ -41,16 +45,25 @@ export function SiteShell() {
                 </span>
               )}
             </Link>
-            <span title="Login será implementado na próxima etapa" className="flex items-center gap-1.5 rounded-md bg-primary/70 px-3 py-2 text-sm font-semibold text-primary-foreground">
-              <UserRound size={17}/> Entrar
-            </span>
+            {user ? (
+              <div className="flex items-center gap-3 text-xs">
+                <span className="max-w-32 truncate text-[#cfb28c]" title={user.email}>{user.name}</span>
+                <button type="button" disabled={logout.isPending} onClick={() => logout.mutate()} className="flex items-center gap-1.5 rounded-md border border-[#624230] px-3 py-2 hover:text-primary disabled:opacity-50" aria-label="Sair da conta">
+                  <LogOut size={17}/> Sair
+                </button>
+              </div>
+            ) : (
+              <Link to="/login" search={{ next: pathname === '/cart' ? '/cart' : '/' }} className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:bg-[#e89b55]">
+                <UserRound size={17}/> Entrar
+              </Link>
+            )}
           </div>
         </div>
-      </header>
+      </header>}
 
       <Outlet />
 
-      <footer className="mt-24 hidden bg-[#241612] px-6 py-12 md:block">
+      {!isAuthPage && <footer className="mt-24 hidden bg-[#241612] px-6 py-12 md:block">
         <div className="mx-auto grid max-w-[1200px] gap-14 border-b border-[#674332] pb-10 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
           <div className="space-y-4">
             <p className="font-bold tracking-[0.18em]">KURIO</p>
@@ -73,9 +86,9 @@ export function SiteShell() {
           </div>
         </div>
         <p className="mx-auto max-w-[1200px] pt-6 text-xs text-muted-foreground">© 2026 KURIO. Projeto demonstrativo de frontend.</p>
-      </footer>
+      </footer>}
 
-      <nav aria-label="Navegação mobile" className="fixed inset-x-0 bottom-0 z-50 grid h-[78px] grid-cols-4 items-center rounded-t-[28px] border-t border-[#42291d] bg-[#241612]/95 pb-3 shadow-2xl backdrop-blur md:hidden">
+      {!isAuthPage && <nav aria-label="Navegação mobile" className="fixed inset-x-0 bottom-0 z-50 grid h-[78px] grid-cols-4 items-center rounded-t-[28px] border-t border-[#42291d] bg-[#241612]/95 pb-3 shadow-2xl backdrop-blur md:hidden">
         <Link to="/" search={defaultCatalogSearch} className={pathname === '/' ? 'flex justify-center text-primary' : 'flex justify-center text-[#cfb28c]'} aria-label="Início">
           <House size={23} fill={pathname === '/' ? 'currentColor' : 'none'} />
         </Link>
@@ -86,10 +99,16 @@ export function SiteShell() {
           <ShoppingCart size={23}/>
           {quantity > 0 && <span className="absolute left-[55%] top-[-5px] h-4 min-w-4 rounded-full bg-primary px-1 text-center text-[10px] text-primary-foreground">{quantity}</span>}
         </Link>
-        <span aria-label="Perfil em desenvolvimento" title="Perfil em desenvolvimento" className="flex justify-center text-[#cfb28c]/55">
-          <UserRound size={23}/>
-        </span>
-      </nav>
+        {user ? (
+          <button type="button" aria-label="Sair da conta" title="Sair da conta" disabled={logout.isPending} onClick={() => logout.mutate()} className="flex justify-center text-[#cfb28c] disabled:opacity-50">
+            <LogOut size={23}/>
+          </button>
+        ) : (
+          <Link to="/login" search={{ next: pathname === '/cart' ? '/cart' : '/' }} aria-label="Entrar na conta" className="flex justify-center text-[#cfb28c]">
+            <UserRound size={23}/>
+          </Link>
+        )}
+      </nav>}
     </div>
   )
 }
