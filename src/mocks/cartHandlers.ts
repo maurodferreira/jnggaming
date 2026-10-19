@@ -191,7 +191,7 @@ export const cartHandlers = [
       }
 
       existing.quantity = quantity
-      saveCart(items)
+      saveCart(items, ownerId)
 
       return HttpResponse.json(buildCart(ownerId))
     }
