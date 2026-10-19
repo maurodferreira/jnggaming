@@ -20,6 +20,7 @@ type LiveClient = {
   emit: (event: RealtimeEventName, data: NftUpdatedEvent | OrderUpdatedEvent) => void
   userId: string | null
   token: string | null
+  disconnect: () => void
 }
 const connections = new Set<LiveClient>()
 const initialNfts = nfts.map(nft => ({ ...nft }))
@@ -102,6 +103,7 @@ export const realtimeSocketHandler = link.addEventListener('connection', ({ clie
   const peer: LiveClient = {
     userId: null,
     token: null,
+    disconnect: () => client.close(1012, 'Reinício simulado'),
     emit: (name, data) => {
       if (!connected) return
       client.send(`42${JSON.stringify([name, data])}`)
@@ -171,6 +173,26 @@ export const realtimeSocketHandler = link.addEventListener('connection', ({ clie
 })
 
 export const realtimeScenarioHandlers = [
+  // Scenarios exercise the real Socket.IO client without exposing test hooks in React.
+  http.post('/api/mock/socket/disconnect', () => {
+    const affected = connections.size
+    for (const peer of [...connections]) peer.disconnect()
+    return HttpResponse.json({ affected })
+  }),
+  http.post('/api/mock/nfts/:id/replay', async ({ params, request }) => {
+    const id = String(params.id)
+    const nft = nfts.find(item => item.id === id)
+    if (!nft) return HttpResponse.json({ message: 'NFT não encontrado.' }, { status: 404 })
+    const body = await request.json().catch(() => null) as { version?: unknown } | null
+    const latest = versions.get(`nft:${id}`) ?? 0
+    const version = body?.version
+    if (typeof version !== 'number' || !Number.isSafeInteger(version) || version <= 0 || version > latest) {
+      return HttpResponse.json({ message: 'Versão inválida para retransmissão.' }, { status: 400 })
+    }
+    const event: NftUpdatedEvent = { resourceId: id, version, priceEth: nft.priceEth, available: nft.available }
+    emitNftUpdated(event)
+    return HttpResponse.json({ replayed: true, version })
+  }),
   // Introspection for deterministic Playwright readiness, never a production API.
   http.get('/api/mock/socket-status', () => HttpResponse.json({
     connections: connections.size,
@@ -183,6 +205,7 @@ export const realtimeScenarioHandlers = [
     const body = await request.json().catch(() => null) as {
       priceEth?: unknown
       available?: unknown
+      broadcast?: unknown
     } | null
     if (!body || typeof body.priceEth !== 'string' ||
       !/^\d+(?:\.\d{1,18})?$/.test(body.priceEth) ||
@@ -200,7 +223,7 @@ export const realtimeScenarioHandlers = [
       priceEth: original.priceEth,
       available: original.available,
     }
-    emitNftUpdated(update)
+    if (body.broadcast !== false) emitNftUpdated(update)
     return HttpResponse.json(update)
   }),
 ]
