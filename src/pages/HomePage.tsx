@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, getRouteApi, useNavigate } from '@tanstack/react-router'
+import { useState, type FormEvent } from 'react'
+import { getRouteApi, useNavigate } from '@tanstack/react-router'
 import { ArrowRight, Search, SlidersHorizontal } from 'lucide-react'
 import { useNfts } from '@/features/catalog/useNfts'
 import type { CatalogFilters, CatalogSort } from '@/features/catalog/types'
@@ -42,7 +42,7 @@ export function HomePage() {
     void navigate({ search: previous => ({ ...previous, ...patch }) })
   }
 
-  function search(event: React.FormEvent<HTMLFormElement>) {
+  function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
     updateFilters({ q: String(form.get('q') ?? '').trim(), page: 1 })
