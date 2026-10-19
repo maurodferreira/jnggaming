@@ -50,7 +50,7 @@ test('carrinho preserva itens após refresh e permite atualizar/remover', async 
   await expect(page.getByRole('region', { name: 'Itens do carrinho' }).getByRole('heading', { name: 'Emerald Ape #042' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Aumentar quantidade de Emerald Ape #042' }).click()
-  await expect(page.getByRole('status', { name: '' }).filter({ hasText: 'Quantidade atualizada' })).toBeVisible()
+  await expect(page.getByText('Quantidade atualizada.', { exact: true })).toBeVisible()
   await page.reload()
   await expect(page.getByRole('region', { name: 'Itens do carrinho' }).getByRole('heading', { name: 'Emerald Ape #042' })).toBeVisible()
 
@@ -86,6 +86,7 @@ test('cadastro rejeita conflito e mostra erro da API simulada', async ({ page })
 test('carrinhos ficam isolados entre usuários demo', async ({ page }) => {
   await page.goto('/nft/1')
   await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click()
+  await expect(page.getByText('NFT adicionado ao carrinho!')).toBeVisible()
 
   await page.goto('/login')
   await page.getByLabel('E-mail').fill('colecionador@kurio.demo')
@@ -102,6 +103,7 @@ test('carrinhos ficam isolados entre usuários demo', async ({ page }) => {
   await page.getByLabel('E-mail').fill('artista@kurio.demo')
   await page.getByLabel('Senha', { exact: true }).fill('KurioDemo123!')
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+  await expect(page).toHaveURL(/\/profile$/)
   await page.goto('/cart')
   await expect(page.getByRole('heading', { name: 'Seu carrinho está vazio' })).toBeVisible()
 })
