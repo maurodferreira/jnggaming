@@ -4,7 +4,7 @@ import { LogOut, MapPin, UserRound } from 'lucide-react'
 import { useLogout, useSession } from '@/features/auth/useAuth'
 import { Skeleton } from '@/components/ui/skeleton'
 
-type ProtectedPath = '/profile' | '/wallets'
+type ProtectedPath = '/profile' | '/wallets' | '/checkout' | '/cart'
 
 export function AccountGate({ path, children }: { path: ProtectedPath; children: ReactNode }) {
   const session = useSession()
