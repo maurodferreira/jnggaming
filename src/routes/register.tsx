@@ -4,7 +4,7 @@ import { AuthPage } from '@/pages/AuthPage'
 export const Route = createFileRoute('/register')({
   validateSearch: (search: Record<string, unknown>) => ({
     next: typeof search.next === 'string' && (
-      search.next === '/cart' || search.next === '/profile' || search.next === '/wallets' || /^\/nft\/[A-Za-z0-9-]+$/.test(search.next)
+      search.next === '/cart' || search.next === '/checkout' || search.next === '/profile' || search.next === '/wallets' || /^\/nft\/[A-Za-z0-9-]+$/.test(search.next)
     ) ? search.next : '/',
   }),
   component: () => <AuthPage mode="register" />,
