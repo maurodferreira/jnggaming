@@ -1,5 +1,9 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { Trash2 } from 'lucide-react'
+import { useNfts } from '@/features/catalog/useNfts'
+import { NftCard } from '@/components/catalog/NftCard'
+import { getNftArtwork } from '@/lib/nftArtwork'
 import {
     useCart,
     useUpdateCartItem,
@@ -15,12 +19,13 @@ const catalogSearch = {
     q: '',
     collection: 'all',
     available: false,
-    sort: 'name_asc' as const,
+    sort: 'featured' as const,
     page: 1,
 }
 
 export function CartPage() {
     const { data, isPending, isError, refetch } = useCart()
+    const related = useNfts(catalogSearch)
     const updateItem = useUpdateCartItem()
     const removeItem = useRemoveCartItem()
     const [notice, setNotice] = useState('')
@@ -32,12 +37,12 @@ export function CartPage() {
         updateItem.error || removeItem.error
 
     return (
-        <main className="min-h-screen bg-background px-4 py-10">
-            <div className="mx-auto max-w-5xl space-y-8">
+        <main className="min-h-screen bg-background px-5 py-10 pb-20 md:px-6 md:pb-0">
+            <div className="mx-auto max-w-[1200px] space-y-8">
                 <header className="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold">
-                            Meu carrinho
+                        <h1 className="text-2xl font-bold text-[#e89b55]">
+                            Carrinho de NFTs
                         </h1>
                         <p className="mt-2 text-muted-foreground">
                             Confira os NFTs selecionados.
@@ -105,7 +110,7 @@ export function CartPage() {
                                 </Link>
                             </div>
                         ) : (
-                            <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+                            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_332px] lg:gap-14">
                                 <section
                                     aria-label="Itens do carrinho"
                                     className="space-y-4"
@@ -113,25 +118,21 @@ export function CartPage() {
                                     {data.items.map((item) => (
                                         <article
                                             key={item.id}
-                                            className="space-y-4 rounded-xl border p-5"
+                                            className="space-y-4 rounded-lg border border-[#624230]/50 bg-[#241612] p-4"
                                         >
                                             <div className="flex flex-wrap items-start justify-between gap-4">
-                                                <div>
-                                                    <h2 className="text-lg font-semibold">
-                                                        {item.name}
-                                                    </h2>
-
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Edição: {item.editionName}
-                                                    </p>
-
-                                                    <p className="mt-2 font-medium">
-                                                        {item.unitPriceEth} ETH / unidade
-                                                    </p>
-
-                                                    <p className="mt-1 text-xs text-muted-foreground">
-                                                        {item.available} disponíveis
-                                                    </p>
+                                                <div className="flex min-w-0 items-center gap-4">
+                                                    <img
+                                                        src={getNftArtwork(item.nftId)}
+                                                        alt={`Arte digital ${item.name}`}
+                                                        className="size-[70px] shrink-0 rounded-md object-cover"
+                                                    />
+                                                    <div className="min-w-0">
+                                                        <h2 className="text-sm font-semibold">{item.name}</h2>
+                                                        <p className="mt-1 text-xs text-muted-foreground">Edição: {item.editionName}</p>
+                                                        <p className="mt-2 text-sm font-bold text-[#e89b55]">{item.unitPriceEth} ETH</p>
+                                                        <p className="mt-1 text-xs text-muted-foreground">{item.available} disponíveis</p>
+                                                    </div>
                                                 </div>
 
                                                 <Button
@@ -145,8 +146,9 @@ export function CartPage() {
                                                             },
                                                         })
                                                     }}
+                                                    aria-label={`Remover ${item.name} do carrinho`}
                                                 >
-                                                    Remover
+                                                    <Trash2 size={16} /> <span className="sr-only">Remover</span>
                                                 </Button>
                                             </div>
 
@@ -211,7 +213,7 @@ export function CartPage() {
                                                     </Button>
                                                 </div>
 
-                                                <p className="font-semibold">
+                                                <p className="font-semibold text-[#e89b55]">
                                                     {multiplyEth(
                                                         item.unitPriceEth,
                                                         item.quantity
@@ -222,9 +224,9 @@ export function CartPage() {
                                     ))}
                                 </section>
 
-                                <aside className="h-fit space-y-5 rounded-xl border p-6">
-                                    <h2 className="text-xl font-semibold">
-                                        Resumo do carrinho
+                                <aside className="h-fit space-y-5 rounded-lg border border-[#624230] bg-[#241612]/35 p-6">
+                                    <h2 className="text-lg font-semibold">
+                                        Resumo da carteira
                                     </h2>
 
                                     <div className="flex justify-between gap-4 text-sm">
@@ -234,7 +236,7 @@ export function CartPage() {
 
                                     <div className="flex justify-between gap-4 border-t pt-4">
                                         <span className="font-medium">Subtotal</span>
-                                        <strong>{data.subtotalEth} ETH</strong>
+                                        <strong className="text-[#e89b55]">{data.subtotalEth} ETH</strong>
                                     </div>
 
                                     <p className="text-xs text-muted-foreground">
@@ -252,6 +254,14 @@ export function CartPage() {
                             </div>
                         )}
                     </>
+                )}
+                {related.data && (
+                    <section aria-label="Colecionadores também viram" className="border-t border-[#624230] pt-8">
+                        <h2 className="mb-7 font-semibold text-[#e89b55]">Colecionadores também viram</h2>
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                            {related.data.items.slice(0, 5).map(item => <NftCard key={item.id} nft={item} compact />)}
+                        </div>
+                    </section>
                 )}
             </div>
         </main>
