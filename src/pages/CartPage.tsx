@@ -96,20 +96,13 @@ export function CartPage() {
                                     Explore o catálogo e escolha seus NFTs.
                                 </p>
 
-                                <Button
-                                    className="mt-6"
-                                    render={
-                                        <Link
-                                            to="/"
-                                            search={catalogSearch}
-                                            className="mt-6 inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-80"
-                                        >
-                                            Explorar NFTs
-                                        </Link>
-                                    }
+                                <Link
+                                    to="/"
+                                    search={catalogSearch}
+                                    className="mt-6 inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2"
                                 >
                                     Explorar NFTs
-                                </Button>
+                                </Link>
                             </div>
                         ) : (
                             <div className="grid gap-8 lg:grid-cols-[1fr_320px]">

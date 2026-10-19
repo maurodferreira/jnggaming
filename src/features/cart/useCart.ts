@@ -4,6 +4,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import axios from 'axios'
+import { ethToWei, weiToEth } from '@/lib/eth'
 
 import { api } from '@/services/api'
 import type {
@@ -66,11 +67,41 @@ export function useUpdateCartItem() {
 
       return data
     },
+    onMutate: async ({ id, quantity }) => {
+      await queryClient.cancelQueries({ queryKey: cartQueryKey })
+      const previous = queryClient.getQueryData<CartResponse>(cartQueryKey)
+
+      if (previous) {
+        const items = previous.items.map((item) =>
+          item.id === id ? { ...item, quantity } : item
+        )
+
+        queryClient.setQueryData<CartResponse>(cartQueryKey, {
+          ...previous,
+          items,
+          totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
+          subtotalEth: weiToEth(
+            items.reduce(
+              (sum, item) =>
+                sum + ethToWei(item.unitPriceEth) * BigInt(item.quantity),
+              0n
+            )
+          ),
+        })
+      }
+
+      return { previous }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(cartQueryKey, context.previous)
+      }
+    },
     onSuccess: (data) => {
       queryClient.setQueryData(cartQueryKey, data)
-      void queryClient.invalidateQueries({
-        queryKey: cartQueryKey,
-      })
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: cartQueryKey })
     },
   })
 }

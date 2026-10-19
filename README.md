@@ -1,75 +1,62 @@
-# React + TypeScript + Vite
+# NFT Marketplace — Frontend Challenge
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Marketplace de NFTs em React e TypeScript, desenvolvido para um desafio técnico. As operações são simuladas no navegador; não existe blockchain nem pagamento real.
 
-Currently, two official plugins are available:
+**Status: em desenvolvimento.** O catálogo, os detalhes e o carrinho de visitante estão disponíveis. Autenticação, checkout, perfil, carteiras, favoritos, pedidos, tempo real, testes E2E e layout definitivo ainda faltam.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Como rodar
 
-## React Compiler
+Requer Node.js 22.12+ e npm.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+~~~bash
+npm ci
+npm run dev
+~~~
 
-## Expanding the ESLint configuration
+O endereço local costuma ser http://localhost:5173.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+~~~bash
+npm run typecheck
+npm run lint
+npm run build
+npm run preview
+~~~
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Ao criar uma nova rota, inicie o Vite para atualizar src/routeTree.gen.ts antes da verificação de tipos.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## API simulada
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+MSW intercepta as requisições REST feitas pelo Axios. Os mocks ficam ativados por padrão, inclusive no build de demonstração. A variável VITE_ENABLE_MOCKS=false os desativa, mas nesse caso a aplicação precisa de uma API externa.
 
-```
+- GET /api/nfts: busca, filtros, ordenação e paginação
+- GET /api/nfts/:id: detalhes e edições
+- GET /api/cart: consulta do carrinho de visitante
+- POST /api/cart/items: adiciona edição e quantidade
+- PATCH /api/cart/items/:id: atualiza quantidade
+- DELETE /api/cart/items/:id: remove item
+- POST /api/mock/reset: limpa os itens do carrinho de visitante
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+O carrinho é persistido no localStorage. Para restaurar o cenário inicial, execute no console da página:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+~~~js
+await fetch('/api/mock/reset', { method: 'POST' })
+location.reload()
+~~~
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+O reset afeta somente o carrinho: catálogo e edições já são fixtures fixas. Não há credenciais fictícias ainda porque login não foi implementado.
 
-```
+## Como conferir o que já funciona
+
+1. Filtre e ordene o catálogo, alterne páginas e atualize a URL; voltar/avançar deve restaurar os filtros.
+2. Abra um NFT e selecione edição e quantidade. A API limita a compra ao estoque da edição.
+3. Adicione ao carrinho, altere a quantidade e remova um item. Atualize a página para testar a persistência.
+4. Teste /nft/999 para ver o estado de item inexistente.
+5. Tente adicionar quantidades acima do estoque para conferir o erro 409.
+
+## Tecnologias
+
+React, TypeScript, Vite, TanStack Router, TanStack Query, Axios, Tailwind CSS, shadcn/ui com Base UI e MSW. Socket.IO Client está instalado, porém ainda não há eventos implementados.
+
+A arquitetura e os contratos existentes estão descritos em [ARCHITECTURE.md](./ARCHITECTURE.md). O visual ainda é provisório; o objetivo é reproduzir o Figma na etapa de interface.
+
+Não há relatórios Playwright ou Lighthouse publicados nesta versão. Eles fazem parte da entrega exigida, junto com autenticação, cotação, pedidos idempotentes, reconexão e deploy.

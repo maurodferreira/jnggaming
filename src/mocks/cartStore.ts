@@ -14,26 +14,29 @@ export function readCart(): AddCartItemInput[] {
     const stored: unknown = JSON.parse(
       localStorage.getItem(STORAGE_KEY) ?? '[]'
     )
-
     if (!Array.isArray(stored)) return []
 
-    return stored.filter(
-      (value): value is AddCartItemInput => {
-        if (typeof value !== 'object' || value === null) {
-          return false
-        }
+    const unique = new Map<string, AddCartItemInput>()
+    for (const value of stored) {
+      if (typeof value !== 'object' || value === null) continue
+      const item = value as Record<string, unknown>
+      if (
+        typeof item.nftId !== 'string' || !item.nftId ||
+        typeof item.editionId !== 'string' || !item.editionId ||
+        typeof item.quantity !== 'number' ||
+        !Number.isSafeInteger(item.quantity) || item.quantity <= 0
+      ) continue
 
-        const item = value as Record<string, unknown>
-
-        return (
-          typeof item.nftId === 'string' &&
-          typeof item.editionId === 'string' &&
-          typeof item.quantity === 'number' &&
-          Number.isSafeInteger(item.quantity) &&
-          item.quantity > 0
-        )
+      const key = JSON.stringify([item.nftId, item.editionId])
+      if (!unique.has(key)) {
+        unique.set(key, {
+          nftId: item.nftId,
+          editionId: item.editionId,
+          quantity: item.quantity,
+        })
       }
-    )
+    }
+    return [...unique.values()]
   } catch {
     return []
   }
@@ -44,6 +47,10 @@ export function saveCart(items: AddCartItemInput[]) {
     STORAGE_KEY,
     JSON.stringify(items)
   )
+}
+
+export function resetGuestCart() {
+  localStorage.removeItem(STORAGE_KEY)
 }
 
 export function buildCart(): CartResponse {

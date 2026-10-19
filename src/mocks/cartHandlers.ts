@@ -5,6 +5,7 @@ import {
   readCart,
   saveCart,
   buildCart,
+  resetGuestCart,
 } from './cartStore'
 import type { AddCartItemInput } from '@/features/cart/types'
 
@@ -45,6 +46,11 @@ function getEdition(nftId: string, editionId: string) {
 }
 
 export const cartHandlers = [
+  http.post('/api/mock/reset', () => {
+    resetGuestCart()
+    return HttpResponse.json({ reset: true })
+  }),
+
   // Consultar carrinho
   http.get('/api/cart', async () => {
     await delay(200)
@@ -90,7 +96,7 @@ export const cartHandlers = [
     const newQuantity =
       (existing?.quantity ?? 0) + body.quantity
 
-    if (newQuantity > edition.available) {
+    if (!Number.isSafeInteger(newQuantity) || newQuantity > edition.available) {
       return HttpResponse.json(
         {
           message: 'Quantidade indisponível',
