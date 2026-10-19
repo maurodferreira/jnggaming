@@ -133,3 +133,42 @@ export function resetMockAccounts(): void {
   localStorage.removeItem(SESSIONS_KEY)
   localStorage.removeItem(TOKEN_KEY)
 }
+
+export async function updateAccount(
+  userId: string,
+  name: string,
+  email: string,
+): Promise<AccountProfile | 'conflict' | null> {
+  const users = readArray<StoredUser>(USERS_KEY)
+  const index = users.findIndex(item => item.id === userId)
+  if (index < 0) return null
+  const normalizedEmail = email.trim().toLowerCase()
+  if (users.some(item => item.id !== userId && item.email === normalizedEmail)) {
+    return 'conflict'
+  }
+  users[index] = { ...users[index], name: name.trim(), email: normalizedEmail }
+  storeUsers(users)
+  return publicUser(users[index])
+}
+
+export async function changeAccountPassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+): Promise<boolean> {
+  const users = readArray<StoredUser>(USERS_KEY)
+  const index = users.findIndex(item => item.id === userId)
+  if (index < 0) return false
+  const current = users[index]
+  if (await hashPassword(currentPassword, current.passwordSalt) !== current.passwordHash) {
+    return false
+  }
+  const passwordSalt = crypto.randomUUID()
+  users[index] = {
+    ...current,
+    passwordSalt,
+    passwordHash: await hashPassword(newPassword, passwordSalt),
+  }
+  storeUsers(users)
+  return true
+}
