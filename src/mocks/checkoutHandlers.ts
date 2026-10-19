@@ -18,6 +18,8 @@ const unauthorized = () => HttpResponse.json(
 const quoteKey = (userId: string) => `kurio:mock:quote:${userId}:v1`
 const ordersKey = (userId: string) => `kurio:mock:orders:${userId}:v1`
 const walletsKey = (userId: string) => `kurio:mock:wallets:${userId}:v1`
+const nextOrderKey = (userId: string) => `kurio:mock:next-order:${userId}:v1`
+type DemoOutcome = 'declined' | 'network-drop'
 
 function loadJSON<T>(key: string, fallback: T): T {
   try {
@@ -80,7 +82,7 @@ function orderFingerprint(input: OrderInput): string {
 
 function finalizeOrder(order: OrderResponse): OrderResponse {
   if (order.status !== 'pending' || Date.now() < order.createdAt + ORDER_PENDING_MS) return order
-  const declaredFailure = order.provider === 'WalletConnect' && order.quote.coupon === 'DECLINE'
+  const declaredFailure = order.simulatedOutcome === 'declined'
   const updated: OrderResponse = {
     ...order,
     status: declaredFailure ? 'declined' : 'confirmed',
@@ -105,13 +107,25 @@ function finalizeOrder(order: OrderResponse): OrderResponse {
 export function resetCheckoutResources() {
   for (let i = localStorage.length - 1; i >= 0; i--) {
     const key = localStorage.key(i)
-    if (key && (key.startsWith('kurio:mock:quote:') || key.startsWith('kurio:mock:orders:'))) {
+    if (key && (key.startsWith('kurio:mock:quote:') || key.startsWith('kurio:mock:orders:') || key.startsWith('kurio:mock:next-order:'))) {
       localStorage.removeItem(key)
     }
   }
 }
 
 export const checkoutHandlers = [
+  // Simulated scenarios for deterministic E2E coverage (never a real payment API).
+  http.post('/api/mock/next-order', async ({ request }) => {
+    const user = getUserFromRequest(request)
+    if (!user) return unauthorized()
+    const body = await request.json().catch(() => null) as { outcome?: unknown } | null
+    if (!body || !['declined', 'network-drop'].includes(String(body.outcome))) {
+      return HttpResponse.json({ message: 'Cenário inválido.' }, { status: 400 })
+    }
+    localStorage.setItem(nextOrderKey(user.id), JSON.stringify(body.outcome))
+    return HttpResponse.json({ configured: true })
+  }),
+
   http.get('/api/quote', async ({ request }) => {
     await delay(180)
     const user = getUserFromRequest(request)
@@ -134,6 +148,12 @@ export const checkoutHandlers = [
     if (!quote) return HttpResponse.json({
       message: 'Carrinho vazio ou item indisponível. Revise as quantidades.',
     }, { status: 409 })
+    // A background refetch must not invalidate an unchanged, unexpired quote.
+    const previous = loadJSON<QuoteResponse | null>(quoteKey(user.id), null)
+    if (previous && previous.expiresAt > Date.now() &&
+        previous.fingerprint === quote.fingerprint && previous.totalEth === quote.totalEth) {
+      return HttpResponse.json(previous)
+    }
     localStorage.setItem(quoteKey(user.id), JSON.stringify(quote))
     return HttpResponse.json(quote)
   }),
@@ -170,6 +190,12 @@ export const checkoutHandlers = [
     if (!quote || quote.id !== payload.quoteId || quote.expiresAt <= Date.now()) {
       return HttpResponse.json({ message: 'A cotação expirou. Revise os valores antes de confirmar.' }, { status: 409 })
     }
+    // Two different keys must never purchase the same snapshot twice.
+    if (orders.some(item => item.quote.id === quote.id && item.status !== 'declined')) {
+      return HttpResponse.json({
+        message: 'Este pagamento já está em andamento. Consulte o pedido antes de tentar novamente.',
+      }, { status: 409 })
+    }
     const current = estimateQuote(user.id, quote.coupon, quote.network)
     if (!current || current.fingerprint !== quote.fingerprint || current.totalEth !== quote.totalEth) {
       return HttpResponse.json({ message: 'Preço ou disponibilidade alterados. Atualize a cotação.' }, { status: 409 })
@@ -180,11 +206,14 @@ export const checkoutHandlers = [
       return HttpResponse.json({ message: 'Selecione uma carteira cadastrada nesta rede.' }, { status: 409 })
     }
     const now = Date.now()
+    const simulatedOutcome = loadJSON<DemoOutcome | null>(nextOrderKey(user.id), null)
+    localStorage.removeItem(nextOrderKey(user.id))
     const order: OrderResponse = {
       id: payload.idempotencyKey,
       transactionId: `0x${crypto.randomUUID().replace(/-/g, '')}`,
       userId: user.id,
       status: 'pending',
+      simulatedOutcome: simulatedOutcome ?? undefined,
       createdAt: now,
       updatedAt: now,
       walletId: wallet.id,
@@ -194,6 +223,9 @@ export const checkoutHandlers = [
       quote,
     }
     saveOrders(user.id, [...orders, order])
+    // The server has already recorded the order; the simulated network may fail
+    // before the client receives its response. Recovery must query this order ID.
+    if (simulatedOutcome === 'network-drop') return HttpResponse.error()
     return HttpResponse.json(order, { status: 201 })
   }),
 
