@@ -95,7 +95,7 @@ test('recusa simulada mantém os itens para tentar novamente', async ({ page }) 
   await expect(page).toHaveURL(/\/orders\/[^/]+$/)
   await expect(page.getByRole('heading', { name: 'Pedido recusado na simulação' })).toBeVisible()
   await page.goto('/cart')
-  await expect(page.getByRole('heading', { name: 'Emerald Ape #042' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Itens do carrinho' }).getByRole('heading', { name: 'Emerald Ape #042' })).toBeVisible()
 })
 
 test('resposta perdida recupera pedido existente sem nova cobrança', async ({ page }) => {
