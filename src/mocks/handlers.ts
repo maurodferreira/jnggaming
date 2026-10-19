@@ -82,4 +82,26 @@ export const handlers = [
       totalPages: Math.ceil(total / limit),
     })
   }),
+
+  // Busca os detalhes de um NFT pelo ID
+  http.get('/api/nfts/:id', async ({ params }) => {
+    await delay(400)
+
+    const nft = nfts.find(
+      (item) => item.id === params.id
+    )
+
+    if (!nft) {
+      return HttpResponse.json(
+        {
+          message: 'NFT não encontrado',
+        },
+        {
+          status: 404,
+        }
+      )
+    }
+
+    return HttpResponse.json(nft)
+  }),
 ]
