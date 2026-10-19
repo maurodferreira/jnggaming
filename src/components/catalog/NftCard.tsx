@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import type { Nft } from '@/features/catalog/types'
 import { getNftArtwork } from '@/lib/nftArtwork'
+import { FavoriteButton } from './FavoriteButton'
 
 interface NftCardProps {
   nft: Nft
@@ -11,7 +12,8 @@ export function NftCard({ nft, compact = false }: NftCardProps) {
   const isRare = nft.id === '3' || nft.id === '7'
 
   return (
-    <Link
+    <article className="relative min-w-0">
+      <Link
       to="/nft/$nftId"
       params={{ nftId: nft.id }}
       className="group block min-w-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -35,6 +37,8 @@ export function NftCard({ nft, compact = false }: NftCardProps) {
         <p className="text-[14px] font-bold text-[#e89b55] md:text-[16px]">{nft.priceEth} ETH</p>
         {nft.available === 0 && <p className="text-xs text-muted-foreground">Esgotado</p>}
       </div>
-    </Link>
+      </Link>
+      <FavoriteButton nftId={nft.id} className="absolute right-3 top-3 z-20" />
+    </article>
   )
 }
