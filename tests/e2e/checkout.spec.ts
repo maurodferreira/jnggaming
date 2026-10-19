@@ -15,7 +15,7 @@ async function signIn(page: Page) {
   await page.getByLabel('E-mail', { exact: true }).fill('colecionador@kurio.demo')
   await page.getByLabel('Senha', { exact: true }).fill('KurioDemo123!')
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
-  await expect(page).toHaveURL(/\/?q=/)
+  await expect(page).toHaveURL(/\?q=/)
 }
 
 test.beforeEach(async ({ page }) => resetScenario(page))
