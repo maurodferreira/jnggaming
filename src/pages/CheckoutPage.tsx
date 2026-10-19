@@ -89,8 +89,8 @@ export function CheckoutPage() {
               <fieldset className="space-y-3">
                 <legend className="sr-only">Selecione a carteira para esta compra</legend>
                 {wallets.data.map(item => (
-                  <label key={item.id} className={`flex cursor-pointer items-start gap-3 rounded-xl border bg-[#241612] p-4 transition-colors ${wallet.id === item.id ? 'border-primary' : 'border-[#624230]/60 hover:border-primary/70'}`}>
-                    <input type="radio" name="wallet" checked={wallet.id === item.id} onChange={() => {
+                  <label key={item.id} className={`flex cursor-pointer items-start gap-3 rounded-xl border bg-[#241612] p-4 transition-colors ${wallet?.id === item.id ? 'border-primary' : 'border-[#624230]/60 hover:border-primary/70'}`}>
+                    <input type="radio" name="wallet" checked={wallet?.id === item.id} onChange={() => {
                       setSelectedWalletId(item.id)
                       setAttemptKey(crypto.randomUUID())
                     }} className="mt-1 accent-primary"/>
