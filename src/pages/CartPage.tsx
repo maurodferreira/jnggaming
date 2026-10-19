@@ -244,12 +244,12 @@ export function CartPage() {
                                         calculados no checkout.
                                     </p>
 
-                                    <Button
-                                        className="w-full"
-                                        disabled
+                                    <Link
+                                        to="/checkout"
+                                        className="flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[#e89b55] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                                     >
-                                        Checkout em desenvolvimento
-                                    </Button>
+                                        Ir para pagamento simulado
+                                    </Link>
                                 </aside>
                             </div>
                         )}
