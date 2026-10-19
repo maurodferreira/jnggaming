@@ -17,6 +17,8 @@ test.beforeEach(async ({ page }) => {
 
 test('catálogo suporta filtros, paginação e restauração da URL', async ({ page }) => {
   await expect(page.getByRole('link', { name: /Emerald Ape #042/i })).toBeVisible()
+  const openFilters = page.getByRole('button', { name: 'Abrir filtros' })
+  if (await openFilters.isVisible()) await openFilters.click()
   await page.getByRole('button', { name: 'Colecionáveis', exact: true }).click()
 
   await expect(page.getByRole('link', { name: /Sage Nomad #009/i })).toBeVisible()
@@ -26,6 +28,8 @@ test('catálogo suporta filtros, paginação e restauração da URL', async ({ p
 
   await page.reload()
   await expect(page.getByRole('link', { name: /Sage Nomad #009/i })).toBeVisible()
+  const filtersAfterReload = page.getByRole('button', { name: 'Abrir filtros' })
+  if (await filtersAfterReload.isVisible()) await filtersAfterReload.click()
   await page.getByRole('button', { name: 'Limpar filtros' }).click()
   await expect(page.getByRole('link', { name: /Emerald Ape #042/i })).toBeVisible()
 })
