@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { AccountField, AccountSelect } from '@/components/account/AccountField'
 import { AccountLayout } from '@/components/account/AccountLayout'
 import { useRemoveWallet, useSaveWallet, useWallets } from '@/features/account/useAccount'
@@ -18,22 +18,23 @@ const emptyWallet = (isPrimary: boolean): WalletInput => ({
 function WalletEditor({ wallet, isPrimary }: { wallet?: CollectorWallet; isPrimary: boolean }) {
   const save = useSaveWallet()
   const remove = useRemoveWallet()
-  const [draft, setDraft] = useState<WalletInput>(emptyWallet(isPrimary))
+  const [overrides, setOverrides] = useState<Partial<WalletInput>>({})
   const [notice, setNotice] = useState('')
 
-  useEffect(() => {
-    if (wallet) {
-      setDraft({
-        label: wallet.label, nickname: wallet.nickname, network: wallet.network,
-        address: wallet.address, type: wallet.type, isPrimary,
-      })
-    } else {
-      setDraft(emptyWallet(isPrimary))
-    }
-  }, [wallet, isPrimary])
+  const draft: WalletInput = {
+    ...(wallet ? {
+      label: wallet.label,
+      nickname: wallet.nickname,
+      network: wallet.network,
+      address: wallet.address,
+      type: wallet.type,
+      isPrimary,
+    } : emptyWallet(isPrimary)),
+    ...overrides,
+  }
 
   function update<K extends keyof WalletInput>(key: K, value: WalletInput[K]) {
-    setDraft(current => ({ ...current, [key]: value }))
+    setOverrides(current => ({ ...current, [key]: value }))
     setNotice('')
   }
 
@@ -42,6 +43,7 @@ function WalletEditor({ wallet, isPrimary }: { wallet?: CollectorWallet; isPrima
     setNotice('')
     try {
       await save.mutateAsync(draft)
+      setOverrides({})
       setNotice('Carteira salva com sucesso.')
     } catch {
       // HTTP validation message is rendered below.
@@ -51,6 +53,7 @@ function WalletEditor({ wallet, isPrimary }: { wallet?: CollectorWallet; isPrima
   async function removeSecondary() {
     try {
       await remove.mutateAsync()
+      setOverrides({})
       setNotice('Carteira secundária removida.')
     } catch {
       // HTTP error is rendered below.
