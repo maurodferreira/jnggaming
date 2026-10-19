@@ -33,7 +33,7 @@ function hydrateNftFixtures() {
       const change: unknown = (saved as Record<string, unknown>)[nft.id]
       if (!change || typeof change !== 'object') continue
       const record = change as Record<string, unknown>
-      if (typeof record.priceEth !== 'string' || !/^\\d+(?:\\.\\d{1,18})?$/.test(record.priceEth)) continue
+      if (typeof record.priceEth !== 'string' || !/^\d+(?:\.\d{1,18})?$/.test(record.priceEth)) continue
       if (typeof record.available !== 'number' || !Number.isSafeInteger(record.available) || record.available < 0) continue
       nft.priceEth = record.priceEth
       nft.available = record.available
