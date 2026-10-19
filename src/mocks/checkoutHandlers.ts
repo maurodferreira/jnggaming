@@ -1,5 +1,6 @@
 import { delay, http, HttpResponse } from 'msw'
 import { getUserFromRequest } from './authStore'
+import { emitOrderUpdated } from './realtimeHandlers'
 import { buildCart, readCart, saveCart } from './cartStore'
 import { ethToWei, weiToEth } from '@/lib/eth'
 import type { CartItem } from '@/features/cart/types'
@@ -82,6 +83,7 @@ function orderFingerprint(input: OrderInput): string {
 
 function finalizeOrder(order: OrderResponse): OrderResponse {
   if (order.status !== 'pending' || Date.now() < order.createdAt + ORDER_PENDING_MS) return order
+  if (!getOrders(order.userId).some(item => item.id === order.id)) return order
   const declaredFailure = order.simulatedOutcome === 'declined'
   const updated: OrderResponse = {
     ...order,
@@ -101,6 +103,7 @@ function finalizeOrder(order: OrderResponse): OrderResponse {
   }
   const all = getOrders(order.userId)
   saveOrders(order.userId, all.map(item => item.id === order.id ? updated : item))
+  emitOrderUpdated({ resourceId: updated.id, userId: updated.userId, status: updated.status })
   return updated
 }
 
@@ -223,6 +226,9 @@ export const checkoutHandlers = [
       quote,
     }
     saveOrders(user.id, [...orders, order])
+    // Emit a proper Socket.IO event as the mock order progresses. REST remains
+    // authoritative after refresh, missed events or temporary disconnections.
+    window.setTimeout(() => { finalizeOrder(order) }, ORDER_PENDING_MS)
     // The server has already recorded the order; the simulated network may fail
     // before the client receives its response. Recovery must query this order ID.
     if (simulatedOutcome === 'network-drop') return HttpResponse.error()
