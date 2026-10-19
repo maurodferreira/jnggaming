@@ -5,6 +5,7 @@ import { Link, getRouteApi } from '@tanstack/react-router'
 import { useNft } from '@/features/catalog/useNft'
 import { useNfts } from '@/features/catalog/useNfts'
 import { NftCard } from '@/components/catalog/NftCard'
+import { FavoriteButton } from '@/components/catalog/FavoriteButton'
 import { getNftArtwork } from '@/lib/nftArtwork'
 import type { NftDetail } from '@/features/catalog/types'
 import { multiplyEth } from '@/lib/eth'
@@ -344,9 +345,10 @@ export function NftDetailPage() {
               {nft.collection}
             </p>
 
-            <h1 className="mt-2 text-3xl font-bold">
-              {nft.name}
-            </h1>
+            <div className="mt-2 flex items-center justify-between gap-4">
+              <h1 className="text-3xl font-bold">{nft.name}</h1>
+              <FavoriteButton nftId={nft.id} />
+            </div>
             <p className="mt-4 text-sm leading-7 text-muted-foreground">
               Conheça esta edição da coleção Kurio. As informações de preço, estoque e compra são demonstrativas.
             </p>
