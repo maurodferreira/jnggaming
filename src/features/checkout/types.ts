@@ -27,6 +27,7 @@ export interface OrderResponse {
   transactionId: string
   userId: string
   status: 'pending' | 'confirmed' | 'declined'
+  simulatedOutcome?: 'declined' | 'network-drop'
   createdAt: number
   updatedAt: number
   walletId: string
