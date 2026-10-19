@@ -59,7 +59,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const next = useRouterState({
     select: state => {
       const search = state.location.search
-      return 'next' in search && search.next === '/cart' ? '/cart' : '/'
+      return 'next' in search && (search.next === '/cart' || search.next === '/profile' || search.next === '/wallets') ? search.next : '/'
     },
   })
   const navigate = useNavigate()
@@ -77,6 +77,8 @@ export function AuthPage({ mode }: { mode: Mode }) {
   useEffect(() => {
     if (session.data) {
       if (next === '/cart') void navigate({ to: '/cart', replace: true })
+      else if (next === '/profile') void navigate({ to: '/profile', replace: true })
+      else if (next === '/wallets') void navigate({ to: '/wallets', replace: true })
       else void navigate({ to: '/', search: catalogSearch, replace: true })
     }
   }, [session.data, next, navigate])
@@ -99,6 +101,8 @@ export function AuthPage({ mode }: { mode: Mode }) {
       if (isRegister) await register.mutateAsync({ name, email, password, confirmPassword })
       else await login.mutateAsync({ email, password })
       if (next === '/cart') await navigate({ to: '/cart', replace: true })
+      else if (next === '/profile') await navigate({ to: '/profile', replace: true })
+      else if (next === '/wallets') await navigate({ to: '/wallets', replace: true })
       else await navigate({ to: '/', search: catalogSearch, replace: true })
     } catch {
       // Error is rendered from the mutation's HTTP response, never treated as success.
