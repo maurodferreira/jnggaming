@@ -47,7 +47,7 @@ export function SiteShell() {
             </Link>
             {user ? (
               <div className="flex items-center gap-3 text-xs">
-                <span className="max-w-32 truncate text-[#cfb28c]" title={user.email}>{user.name}</span>
+                <Link to="/profile" className="max-w-32 truncate text-[#cfb28c] hover:text-primary" title={user.email}>{user.name}</Link>
                 <button type="button" disabled={logout.isPending} onClick={() => logout.mutate()} className="flex items-center gap-1.5 rounded-md border border-[#624230] px-3 py-2 hover:text-primary disabled:opacity-50" aria-label="Sair da conta">
                   <LogOut size={17}/> Sair
                 </button>
@@ -100,9 +100,9 @@ export function SiteShell() {
           {quantity > 0 && <span className="absolute left-[55%] top-[-5px] h-4 min-w-4 rounded-full bg-primary px-1 text-center text-[10px] text-primary-foreground">{quantity}</span>}
         </Link>
         {user ? (
-          <button type="button" aria-label="Sair da conta" title="Sair da conta" disabled={logout.isPending} onClick={() => logout.mutate()} className="flex justify-center text-[#cfb28c] disabled:opacity-50">
-            <LogOut size={23}/>
-          </button>
+          <Link to="/profile" aria-label="Meu perfil" title="Meu perfil" className="flex justify-center text-[#cfb28c] hover:text-primary">
+            <UserRound size={23}/>
+          </Link>
         ) : (
           <Link to="/login" search={{ next: pathname === '/cart' ? '/cart' : '/' }} aria-label="Entrar na conta" className="flex justify-center text-[#cfb28c]">
             <UserRound size={23}/>
