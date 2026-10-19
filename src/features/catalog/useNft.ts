@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { api } from '@/services/api'
-import type { Nft } from './types'
+import type { NftDetail } from './types'
 
 export function useNft(id: string) {
   return useQuery({
     queryKey: ['nfts', 'detail', id],
 
     queryFn: async ({ signal }) => {
-      const { data } = await api.get<Nft>(
+      const { data } = await api.get<NftDetail>(
         `/nfts/${encodeURIComponent(id)}`,
         { signal }
       )

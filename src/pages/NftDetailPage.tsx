@@ -1,14 +1,191 @@
+import { useState } from 'react'
 import axios from 'axios'
 import { Link, getRouteApi } from '@tanstack/react-router'
+
 import { useNft } from '@/features/catalog/useNft'
+import type { NftDetail } from '@/features/catalog/types'
+import { multiplyEth } from '@/lib/eth'
+
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
 const routeApi = getRouteApi('/nft/$nftId')
 
+const catalogSearch = {
+  q: '',
+  collection: 'all',
+  available: false,
+  sort: 'name_asc' as const,
+  page: 1,
+}
+
+function EditionSelector({ nft }: { nft: NftDetail }) {
+  const firstAvailable = nft.editions.find(
+    (edition) => edition.available > 0
+  )
+
+  const [editionId, setEditionId] = useState(
+    firstAvailable?.id ?? nft.editions[0]?.id ?? ''
+  )
+
+  const [quantity, setQuantity] = useState(1)
+
+  const selectedEdition = nft.editions.find(
+    (edition) => edition.id === editionId
+  )
+
+  if (!selectedEdition) {
+    return (
+      <p role="alert" className="text-muted-foreground">
+        Nenhuma edição cadastrada.
+      </p>
+    )
+  }
+
+  const available = selectedEdition.available
+  const selectedQuantity =
+    available > 0 ? Math.min(quantity, available) : 0
+
+  const total = multiplyEth(
+    selectedEdition.priceEth,
+    selectedQuantity
+  )
+
+  return (
+    <div className="space-y-6">
+      <fieldset className="space-y-3">
+        <legend className="font-medium">
+          Escolha uma edição
+        </legend>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {nft.editions.map((edition) => (
+            <label
+              key={edition.id}
+              className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors ${
+                editionId === edition.id
+                  ? 'border-primary bg-muted/50'
+                  : 'hover:bg-muted/30'
+              }`}
+            >
+              <input
+                type="radio"
+                name={`edition-${nft.id}`}
+                value={edition.id}
+                checked={editionId === edition.id}
+                onChange={() => {
+                  setEditionId(edition.id)
+                  setQuantity(1)
+                }}
+                className="mt-1 accent-primary"
+              />
+
+              <span className="space-y-1">
+                <span className="block font-medium">
+                  {edition.name}
+                </span>
+
+                <span className="block text-sm">
+                  {edition.priceEth} ETH
+                </span>
+
+                <span className="block text-xs text-muted-foreground">
+                  {edition.available > 0
+                    ? `${edition.available} disponíveis`
+                    : 'Esgotada'}
+                </span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <div className="space-y-3">
+        <p className="font-medium">Quantidade</p>
+
+        <div className="flex items-center gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            aria-label="Diminuir quantidade"
+            disabled={selectedQuantity <= 1}
+            onClick={() =>
+              setQuantity((current) =>
+                Math.max(1, current - 1)
+              )
+            }
+          >
+            −
+          </Button>
+
+          <output
+            aria-live="polite"
+            className="min-w-8 text-center font-medium"
+          >
+            {selectedQuantity}
+          </output>
+
+          <Button
+            type="button"
+            variant="outline"
+            aria-label="Aumentar quantidade"
+            disabled={selectedQuantity >= available}
+            onClick={() =>
+              setQuantity((current) =>
+                Math.min(available, current + 1)
+              )
+            }
+          >
+            +
+          </Button>
+        </div>
+
+        <p className="text-sm text-muted-foreground">
+          {available > 0
+            ? `Limite de ${available} unidades nesta edição.`
+            : 'Esta edição não está disponível.'}
+        </p>
+      </div>
+
+      <div className="rounded-xl border p-5">
+        <p className="text-sm text-muted-foreground">
+          Preço unitário
+        </p>
+
+        <p className="mt-1 font-medium">
+          {selectedEdition.priceEth} ETH
+        </p>
+
+        <div className="my-4 border-t" />
+
+        <p className="text-sm text-muted-foreground">
+          Subtotal estimado
+        </p>
+
+        <p
+          className="mt-1 text-2xl font-semibold"
+          aria-live="polite"
+        >
+          {total} ETH
+        </p>
+
+        <p className="mt-2 text-xs text-muted-foreground">
+          Taxas e descontos serão calculados no checkout.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function NftDetailPage() {
   const { nftId } = routeApi.useParams()
-  const { data: nft, isPending, error, refetch } = useNft(nftId)
+
+  const {
+    data: nft,
+    isPending,
+    error,
+    refetch,
+  } = useNft(nftId)
 
   if (isPending) {
     return (
@@ -45,44 +222,26 @@ export function NftDetailPage() {
           </Button>
         )}
 
-        <div>
-
-          <Link
-            to="/"
-            search={{
-              q: '',
-              collection: 'all',
-              available: false,
-              sort: 'name_asc',
-              page: 1,
-            }}
-            className="underline"
-          >
-            Voltar ao catálogo
-          </Link>
-
-        </div>
+        <Link
+          to="/"
+          search={catalogSearch}
+          className="block underline"
+        >
+          Voltar ao catálogo
+        </Link>
       </main>
     )
   }
 
   return (
     <main className="mx-auto max-w-5xl space-y-8 px-4 py-10">
-
       <Link
         to="/"
-        search={{
-          q: '',
-          collection: 'all',
-          available: false,
-          sort: 'name_asc',
-          page: 1,
-        }}
+        search={catalogSearch}
         className="text-sm text-muted-foreground hover:underline"
       >
         ← Voltar ao catálogo
       </Link>
-
 
       <section className="grid gap-8 md:grid-cols-2">
         <div className="flex min-h-80 items-center justify-center rounded-xl border bg-muted/30">
@@ -102,21 +261,7 @@ export function NftDetailPage() {
             </h1>
           </div>
 
-          <div className="rounded-xl border p-5">
-            <p className="text-sm text-muted-foreground">
-              Preço
-            </p>
-
-            <p className="mt-2 text-3xl font-semibold">
-              {nft.priceEth} ETH
-            </p>
-          </div>
-
-          <p className="text-sm">
-            {nft.available > 0
-              ? `${nft.available} unidades disponíveis`
-              : 'NFT esgotado'}
-          </p>
+          <EditionSelector key={nft.id} nft={nft} />
         </div>
       </section>
     </main>

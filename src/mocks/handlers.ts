@@ -1,20 +1,15 @@
 import { http, HttpResponse, delay } from 'msw'
 import { nfts } from './fixtures/nfts'
+import { getMockEditions } from './fixtures/editions'
+import { ethToWei } from '@/lib/eth'
 import {
   PAGE_SIZE,
   parseCatalogSearch,
+  type NftDetail,
 } from '@/features/catalog/types'
 
-function ethToWei(value: string): bigint {
-  const [whole, fraction = ''] = value.split('.')
-
-  return (
-    BigInt(whole) * 10n ** 18n +
-    BigInt(fraction.padEnd(18, '0'))
-  )
-}
-
 export const handlers = [
+
   http.get('/api/nfts', async ({ request }) => {
     await delay(400)
 
@@ -83,7 +78,7 @@ export const handlers = [
     })
   }),
 
-  // Busca os detalhes de um NFT pelo ID
+  // Detalhes de um NFT
   http.get('/api/nfts/:id', async ({ params }) => {
     await delay(400)
 
@@ -93,15 +88,16 @@ export const handlers = [
 
     if (!nft) {
       return HttpResponse.json(
-        {
-          message: 'NFT não encontrado',
-        },
-        {
-          status: 404,
-        }
+        { message: 'NFT não encontrado' },
+        { status: 404 }
       )
     }
 
-    return HttpResponse.json(nft)
+    const detail: NftDetail = {
+      ...nft,
+      editions: getMockEditions(nft),
+    }
+
+    return HttpResponse.json(detail)
   }),
 ]
