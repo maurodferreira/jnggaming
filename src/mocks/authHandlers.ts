@@ -8,7 +8,8 @@ import {
   resetMockAccounts,
   revokeSession,
 } from './authStore'
-import { mergeGuestCartIntoUser } from './cartStore'
+import { mergeGuestCartIntoUser, resetAllMockCarts } from './cartStore'
+import { resetAccountResources } from './accountHandlers'
 import type { LoginInput, RegisterInput } from '@/features/auth/types'
 
 const validEmail = (value: unknown): value is string =>
@@ -63,9 +64,15 @@ export const authHandlers = [
     return HttpResponse.json({ success: true })
   }),
 
-  // Test-only reset endpoint, accessible exclusively inside the MSW demo.
-  http.post('/api/mock/reset-accounts', () => {
+  // Deterministic reset of the entire local MSW demo between test cases.
+  http.post('/api/mock/reset-all', () => {
+    resetAllMockCarts()
+    resetAccountResources()
     resetMockAccounts()
     return HttpResponse.json({ reset: true })
+  }),
+  http.post('/api/mock/expire-session', ({ request }) => {
+    revokeSession(request)
+    return HttpResponse.json({ expired: true })
   }),
 ]
