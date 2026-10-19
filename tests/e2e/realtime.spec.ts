@@ -4,6 +4,9 @@ async function waitForSocket(page: Page) {
   await expect.poll(async () => {
     return await page.evaluate(async () => {
       const response = await fetch('/api/mock/socket-status')
+      if (!response.ok || !response.headers.get('content-type')?.includes('json')) {
+        return 0
+      }
       const status: { connections: number } = await response.json()
       return status.connections
     })
