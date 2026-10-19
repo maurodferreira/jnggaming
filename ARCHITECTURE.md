@@ -81,3 +81,19 @@ Artefatos do Playwright (HTML e traces) são anexados ao CI. Os cenários cobrem
 - URL pública de deploy final e inspeção de refresh nas rotas profundas.
 
 O código da branch `feat/figma-kurio-ui` só será considerado pronto quando estas pendências forem tratadas, os relatórios existirem e a versão publicada corresponder à versão do GitHub.
+
+
+## Tempo real (implementação inicial; validar com Playwright)
+
+O cliente utiliza **`socket.io-client` de verdade**, carregado por import dinâmico após o `worker.start()`, para que o MSW consiga interceptar o WebSocket. A implementação demonstrativa `src/mocks/realtimeHandlers.ts` usa `ws.link()` do **MSW v3** e uma adaptação limitada de pacotes textuais Engine.IO v4/Socket.IO v4 (`0`, `40` e `42`), em transporte **WebSocket-only**. Não existem salas, polling, binários ou backend separado.
+
+Essa escolha evita instalar `@mswjs/socket.io-binding@0.2.0` com peer dependency de MSW v2, que não corresponde ao MSW v3 já usado no repositório. Esta limitação precisa ser mencionada na entrega, junto aos resultados E2E comprovando o protocolo.
+
+- `nft.updated`: evento com `resourceId`, `version`, `priceEth`, `available`; a UI invalida catálogo, detalhes, carrinho e cotação e confirma os valores via REST.
+- `order.updated`: contém `resourceId`, `userId`, `version`, `status`; listeners só reconciliam eventos do usuário autenticado.
+- O hook mantém versão máxima por recurso para descartar duplicatas ou eventos atrasados, reconcilia consultas REST após reconexão e remove o socket no logout/troca de sessão.
+- `POST /api/mock/nfts/:id/update` altera a fixture do NFT para testes de tempo real; `GET /api/mock/socket-status` serve somente ao Playwright para aguardar a conexão real.
+- O reset da demo restaura a fixture de preços/estoque e os contadores de versões.
+- Os pedidos em estado pendente são resolvidos com um temporizador mock e consulta REST; após refresh o REST continua responsável pela recuperação.
+
+**Status de qualidade:** o fluxo está em verificação. Testes E2E que aguardam a conexão Socket.IO e um evento `nft.updated` precisam passar no CI antes de declarar esta implementação concluída. Seguimos sem transactions reais.
