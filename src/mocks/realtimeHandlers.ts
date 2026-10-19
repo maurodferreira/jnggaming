@@ -20,6 +20,7 @@ type LiveClient = {
   userId: string | null
 }
 const connections = new Set<LiveClient>()
+const initialNfts = nfts.map(nft => ({ ...nft }))
 const versions = new Map<string, number>()
 
 function nextVersion(resource: string) {
@@ -30,6 +31,13 @@ function nextVersion(resource: string) {
 
 export function resetRealtimeState() {
   versions.clear()
+}
+
+export function resetNftFixtures() {
+  for (const initial of initialNfts) {
+    const nft = nfts.find(item => item.id === initial.id)
+    if (nft) Object.assign(nft, initial)
+  }
 }
 
 function emitNftUpdated(event: NftUpdatedEvent) {
