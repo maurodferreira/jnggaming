@@ -118,6 +118,10 @@ export const realtimeSocketHandler = link.addEventListener('connection', ({ clie
 })
 
 export const realtimeScenarioHandlers = [
+  // Introspection for deterministic Playwright readiness, never a production API.
+  http.get('/api/mock/socket-status', () => HttpResponse.json({
+    connections: [...connections].filter(peer => peer !== null).length,
+  })),
   http.post('/api/mock/nfts/:id/update', async ({ params, request }) => {
     const id = String(params.id)
     const original = nfts.find(item => item.id === id)
