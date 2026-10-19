@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Camera, UserRound } from 'lucide-react'
 import { AccountField } from '@/components/account/AccountField'
 import { AccountLayout } from '@/components/account/AccountLayout'
@@ -13,19 +13,23 @@ export function ProfilePage() {
   const profile = useProfile()
   const save = useSaveProfile()
   const passwordChange = useChangePassword()
-  const [draft, setDraft] = useState<EditableProfile | null>(null)
+  const [overrides, setOverrides] = useState<Partial<EditableProfile>>({})
   const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [formMessage, setFormMessage] = useState('')
   const [passwordMessage, setPasswordMessage] = useState('')
 
-  useEffect(() => {
-    if (!profile.data) return
-    const { displayName, username, email, ensName, walletNickname, avatarDataUrl } = profile.data
-    setDraft({ displayName, username, email, ensName, walletNickname, avatarDataUrl })
-  }, [profile.data])
+  const draft: EditableProfile | null = profile.data ? {
+    displayName: profile.data.displayName,
+    username: profile.data.username,
+    email: profile.data.email,
+    ensName: profile.data.ensName,
+    walletNickname: profile.data.walletNickname,
+    avatarDataUrl: profile.data.avatarDataUrl,
+    ...overrides,
+  } : null
 
   function patch<K extends keyof EditableProfile>(key: K, value: EditableProfile[K]) {
-    setDraft(current => current ? { ...current, [key]: value } : null)
+    setOverrides(current => ({ ...current, [key]: value }))
     setFormMessage('')
   }
 
@@ -49,6 +53,7 @@ export function ProfilePage() {
     setFormMessage('')
     try {
       await save.mutateAsync(draft)
+      setOverrides({})
       setFormMessage('Perfil salvo com sucesso.')
     } catch {
       // HTTP error is displayed below.
