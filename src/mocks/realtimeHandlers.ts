@@ -19,6 +19,7 @@ const link = ws.link(/^wss?:\/\/[^/]+(?:\/socket\.io)?\/?(?:\?.*)?$/)
 type LiveClient = {
   emit: (event: RealtimeEventName, data: NftUpdatedEvent | OrderUpdatedEvent) => void
   userId: string | null
+  token: string | null
 }
 const connections = new Set<LiveClient>()
 const initialNfts = nfts.map(nft => ({ ...nft }))
@@ -86,7 +87,11 @@ export function emitOrderUpdated(event: Omit<OrderUpdatedEvent, 'version'>) {
     version: nextVersion(`order:${event.userId}:${event.resourceId}`),
   }
   for (const connection of connections) {
-    if (connection.userId === event.userId) {
+    if (!connection.token || connection.userId !== event.userId) continue
+    const request = new Request('http://localhost/api/auth/session', {
+      headers: { Authorization: `Bearer ${connection.token}` },
+    })
+    if (getUserFromRequest(request)?.id === event.userId) {
       connection.emit('order.updated', payload)
     }
   }
@@ -96,6 +101,7 @@ export const realtimeSocketHandler = link.addEventListener('connection', ({ clie
   let connected = false
   const peer: LiveClient = {
     userId: null,
+    token: null,
     emit: (name, data) => {
       if (!connected) return
       client.send(`42${JSON.stringify([name, data])}`)
@@ -135,6 +141,7 @@ export const realtimeSocketHandler = link.addEventListener('connection', ({ clie
           headers: { Authorization: `Bearer ${payload.token}` },
         })
         peer.userId = getUserFromRequest(request)?.id ?? null
+        peer.token = peer.userId ? payload.token : null
         return
       }
       if (eventName === 'demo.ping') {
