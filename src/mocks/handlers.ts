@@ -51,21 +51,29 @@ export const handlers = [
             )
         })
 
-        result = [...result].sort((a, b) => {
-            if (filters.sort === 'name_asc') {
-                return a.name.localeCompare(b.name)
-            }
+        // Featured follows the Figma's hand-curated order of the fixture list.
+        if (filters.sort !== 'featured') {
+            const trendingOrder = ['1', '3', '7', '2', '6', '4', '9', '5', '8']
+            result = [...result].sort((a, b) => {
+                if (filters.sort === 'name_asc') {
+                    return a.name.localeCompare(b.name)
+                }
+                if (filters.sort === 'newest') {
+                    return Number(b.id) - Number(a.id)
+                }
+                if (filters.sort === 'trending') {
+                    const rank = (id: string) => {
+                        const index = trendingOrder.indexOf(id)
+                        return index === -1 ? 100 + Number(id) : index
+                    }
+                    return rank(a.id) - rank(b.id)
+                }
 
-            const difference =
-                ethToWei(a.priceEth) - ethToWei(b.priceEth)
-
-            const comparison =
-                difference === 0n ? 0 : difference > 0n ? 1 : -1
-
-            return filters.sort === 'price_desc'
-                ? -comparison
-                : comparison
-        })
+                const difference = ethToWei(a.priceEth) - ethToWei(b.priceEth)
+                const comparison = difference === 0n ? 0 : difference > 0n ? 1 : -1
+                return filters.sort === 'price_desc' ? -comparison : comparison
+            })
+        }
 
         const total = result.length
         const start = (filters.page - 1) * limit
