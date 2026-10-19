@@ -3,7 +3,11 @@ import { expect, test, type Page } from '@playwright/test'
 async function socketCount(page: Page) {
   return page.evaluate(async () => {
     const response = await fetch('/api/mock/socket-status')
-    if (!response.ok) return 0
+    // Before MSW finishes starting, Vite can reply with index.html.
+    // Wait for the JSON handler instead of parsing that HTML as a socket result.
+    if (!response.ok || !response.headers.get('content-type')?.includes('json')) {
+      return 0
+    }
     const status: { connections: number } = await response.json()
     return status.connections
   })
