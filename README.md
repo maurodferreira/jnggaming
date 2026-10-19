@@ -49,8 +49,10 @@ As contas cadastradas no formulário também são fictícias. O MSW deriva hashe
 | `/register` | Criação de conta e tratamento de conflito |
 | `/profile` | Perfil protegido, avatar e atualização de senha |
 | `/wallets` | Carteiras protegidas principal e secundária |
+| `/checkout` | Cotação, cupom, carteira e pedido simulado |
+| `/orders/:orderId` | Recibo baseado no estado real da API simulada (pendente/confirmado/recusado) |
 
-Os controles sociais Google/Facebook não realizam login real e aparecem desativados. Checkout, favoritos avançados e transações ainda não têm fluxo completo.
+Os controles sociais Google/Facebook não realizam login real e aparecem desativados. A compra é **exclusivamente simulada**; não há transação blockchain. Cenários avançados de recusa, timeout e reconexão ainda exigem cobertura.
 
 ## Simulação REST
 
@@ -62,6 +64,8 @@ Os controles sociais Google/Facebook não realizam login real e aparecem desativ
 - `GET/PATCH /api/profile`, `PATCH /api/profile/password`
 - `GET/PUT/DELETE /api/wallets...`
 - `GET/POST/DELETE /api/favorites...`
+- `GET /api/quote` (cupom `KURIO10`, desconto e taxa estimada)
+- `POST /api/orders` (chave de idempotência), `GET /api/orders/:id` (estado/recibo)
 
 O carrinho de visitante passa para a conta no login, respeitando a disponibilidade da edição. Carrinhos, perfis, favoritos e carteiras possuem chaves de armazenamento separadas por usuário. Ao sair, o cache de dados pessoais é limpo.
 
@@ -87,7 +91,7 @@ Esses endpoints são exclusividade da simulação local/MSW. `VITE_ENABLE_MOCKS=
 
 A interface usa labels, aria-live e botões sem navegação fictícia. Mesmo assim, faltam auditorias completas de teclado, zoom, contraste e regressão visual com baselines.
 
-**Fora do escopo até implementação futura:** eventos `nft.updated`/`order.updated` via Socket.IO, cotação/cupom, checkout, pedidos idempotentes, confirmação e Lighthouse (metas 90/95/95/90). O deploy final é obrigatório e ainda precisa ser validado em uma URL pública.
+**Ainda pendente:** eventos `nft.updated`/`order.updated` via Socket.IO, simulações abrangentes de recusa e timeout, testes adicionais de idempotência, regressão visual e Lighthouse (metas 90/95/95/90). O deploy final é obrigatório e ainda precisa ser validado em uma URL pública.
 
 ## Organização
 
