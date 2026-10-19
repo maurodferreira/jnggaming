@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from 'react'
+import axios from 'axios'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, ShieldCheck } from 'lucide-react'
 import { useCart } from '@/features/cart/useCart'
 import { useProfile, useWallets } from '@/features/account/useAccount'
 import { getAuthErrorMessage } from '@/features/auth/useAuth'
 import { useCreateOrder, useQuote } from '@/features/checkout/useCheckout'
-import type { OrderInput, QuoteResponse } from '@/features/checkout/types'
+import type { OrderInput, OrderResponse, QuoteResponse } from '@/features/checkout/types'
+import { api } from '@/services/api'
 import { getNftArtwork } from '@/lib/nftArtwork'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -24,6 +26,7 @@ export function CheckoutPage() {
   const [coupon, setCoupon] = useState('')
   const [notes, setNotes] = useState('')
   const [attemptKey, setAttemptKey] = useState(() => crypto.randomUUID())
+  const [recoveryMessage, setRecoveryMessage] = useState('')
 
   const wallet = wallets.data?.find(item => item.id === selectedWalletId) ?? wallets.data?.[0]
   const network: QuoteResponse['network'] = wallet?.network ?? 'Ethereum'
@@ -33,6 +36,12 @@ export function CheckoutPage() {
   async function confirm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!wallet || !quote.data || !profile.data || !cart.data?.items.length) return
+    setRecoveryMessage('')
+    if (quote.data.expiresAt <= Date.now()) {
+      setRecoveryMessage('A cotação expirou. Confira os valores atualizados antes de continuar.')
+      await quote.refetch()
+      return
+    }
     try {
       const order = await submitOrder.mutateAsync({
         idempotencyKey: attemptKey,
@@ -45,8 +54,22 @@ export function CheckoutPage() {
         to: '/orders/$orderId',
         params: { orderId: order.id },
       })
-    } catch {
-      // Never display a fake order confirmation. Retain idempotency key for recovery.
+    } catch (error) {
+      // A broken response does not prove the payment failed. Fetch this exact
+      // idempotency key before allowing the collector to submit another order.
+      if (axios.isAxiosError(error) && !error.response) {
+        setRecoveryMessage('A conexão falhou. Verificando se o pedido já foi registrado...')
+        try {
+          const { data } = await api.get<OrderResponse>(
+            `/orders/${encodeURIComponent(attemptKey)}`,
+          )
+          await navigate({ to: '/orders/$orderId', params: { orderId: data.id } })
+          return
+        } catch {
+          setRecoveryMessage('Não foi possível confirmar o estado do pedido. Tente novamente com a mesma chave de operação.')
+        }
+      }
+      // API validation failures stay on checkout; no fake receipt is shown.
     }
   }
 
@@ -60,7 +83,7 @@ export function CheckoutPage() {
       <h1 className="mb-8 text-2xl font-bold md:text-xl">Pagamento com carteira</h1>
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,390px)] lg:gap-12">
         <div className="min-w-0 space-y-8">
-          <section className="space-y-4" aria-label="Dados do colecionador">
+          <section className="hidden space-y-4 lg:block" aria-label="Dados do colecionador">
             <h2 className="text-base font-bold">Perfil do colecionador</h2>
             {profile.isPending ? <Skeleton className="h-24 w-full"/> : profile.isError ? (
               <p role="alert" className="text-sm text-destructive">Não foi possível carregar seus dados.</p>
@@ -104,7 +127,7 @@ export function CheckoutPage() {
               </fieldset>
             )}
           </section>
-          <div className="space-y-3">
+          <div className="hidden space-y-3 lg:block">
             <label htmlFor="collector-notes" className="block text-sm font-semibold">Observação do colecionador (opcional)</label>
             <textarea id="collector-notes" maxLength={300} rows={4} value={notes} onChange={event => {
               setNotes(event.target.value)
@@ -113,8 +136,8 @@ export function CheckoutPage() {
           </div>
         </div>
 
-        <form onSubmit={confirm} className="min-w-0 space-y-6 lg:sticky lg:top-5 lg:self-start">
-          <section className="space-y-4">
+        <form onSubmit={confirm} className="flex min-w-0 flex-col gap-6 lg:sticky lg:top-5 lg:self-start">
+          <section className="hidden space-y-4 lg:order-1 lg:block">
             <h2 className="border-b border-[#624230] pb-3 text-sm font-bold">Seus NFTs</h2>
             {cart.isPending ? <Skeleton className="h-40 w-full"/> : (
               <div className="space-y-2">
@@ -132,7 +155,7 @@ export function CheckoutPage() {
               </div>
             )}
           </section>
-          <section className="space-y-3" aria-label="Cupom e resumo">
+          <section className="order-2 space-y-3" aria-label="Cupom e resumo">
             <label htmlFor="promo-code" className="block text-xs font-medium text-[#cfb28c]">Código promocional</label>
             <div className="flex gap-2">
               <input id="promo-code" value={couponInput} onChange={e => setCouponInput(e.target.value)}
@@ -155,8 +178,8 @@ export function CheckoutPage() {
             </dl>
             <p className="flex items-start gap-2 text-xs text-[#cfb28c]"><ShieldCheck size={17} className="shrink-0"/> A cotação será validada pela API simulada antes do pedido. Nenhuma transação real ocorre.</p>
           </section>
-          <fieldset className="space-y-3">
-            <legend className="text-sm font-bold">Provedor simulado</legend>
+          <fieldset className="order-1 space-y-3 lg:order-3">
+            <legend className="text-sm font-bold">Carteira e rede · Provedor simulado</legend>
             {providers.map(p => (
               <label key={p} className="flex cursor-pointer items-center gap-3 rounded-md border border-[#624230] bg-[#241612] p-3 text-sm hover:border-primary">
                 <input type="radio" name="provider" checked={provider === p} onChange={() => {
@@ -167,13 +190,14 @@ export function CheckoutPage() {
               </label>
             ))}
           </fieldset>
+          {recoveryMessage && <p role="status" className="order-3 rounded-md border border-[#624230] p-3 text-xs text-[#e89b55]">{recoveryMessage}</p>}
           {submitOrder.isError && (
-            <div role="alert" className="space-y-2 text-xs text-destructive">
+            <div role="alert" className="order-3 space-y-2 text-xs text-destructive">
               <p>{getAuthErrorMessage(submitOrder.error)}</p>
               <button type="button" onClick={() => void quote.refetch()} className="text-primary underline">Atualizar cotação</button>
             </div>
           )}
-          <button type="submit" disabled={disabled} className="h-[54px] w-full rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#e89b55] focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50">
+          <button type="submit" disabled={disabled} className="order-4 sticky bottom-[86px] z-20 h-[54px] w-full rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#e89b55] focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50 lg:static">
             {submitOrder.isPending ? 'Enviando pedido...' : 'Confirmar compra simulada'}
           </button>
         </form>
