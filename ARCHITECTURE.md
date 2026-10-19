@@ -23,6 +23,8 @@ Nenhum componente React devolve dados de negócio fake diretamente. Os mocks est
 - `/cart`: quantidade/remoção e persistência de visitante/usuário.
 - `/login` e `/register`: validação, retorno à página de origem.
 - `/profile` e `/wallets`: rotas protegidas pelo `AccountGate`, renderização desktop/mobile e redirecionamento para login.
+- `/checkout`: conferência de itens, cupom, carteira, taxa, cotação e envio idempotente.
+- `/orders/$orderId`: consulta do status do pedido simulado e recibo apenas após confirmação do mock.
 
 A navegação é declarativa e o arquivo `src/routeTree.gen.ts` é gerado pelo TanStack Router. Novas rotas precisam ser regeneradas e versionadas. Controles de funcionalidades fora do escopo não devem aparentar ações completas.
 
@@ -43,7 +45,7 @@ As sessões de usuários diferentes não compartilham dados. O cache Query é li
 - Atualização de quantidade é **otimista**: há snapshot e rollback em falha.
 - Nomes/preços e disponibilidade são obtidos a partir das fixtures da rede simulada.
 
-**Pendente:** revalidação de preço pelo quote antes da compra, descontos, taxas de rede, eventos de alteração de preço, merge com tratamento explícito de divergências e snapshot financeiro do pedido.
+A API mock implementa `GET /api/quote` com validação de disponibilidade, preço, desconto por cupom e taxa estimada em `bigint`. Antes de criar um pedido, valida novamente o snapshot; o recibo utiliza o snapshot salvo. **Pendente:** tratar mudanças em tempo real, reconciliação automática e todos os cenários de falha exigidos.
 
 ## Contratos REST existentes
 
@@ -55,6 +57,8 @@ As sessões de usuários diferentes não compartilham dados. O cache Query é li
 | Perfil | `GET/PATCH /api/profile`, `PATCH /api/profile/password` |
 | Carteiras | `GET /api/wallets`, `PUT /api/wallets/:slot`, `DELETE /api/wallets/secondary` |
 | Favoritos | `GET /api/favorites`, `POST/DELETE /api/favorites/:id` |
+| Cotação | `GET /api/quote` (carrinho, taxa, cupom e expiração) |
+| Pedido | `POST /api/orders` idempotente, `GET /api/orders/:id` para status/recibo |
 | Testes | `POST /api/mock/reset-all`, `POST /api/mock/expire-session`, e o reset legado `POST /api/mock/reset` |
 
 As respostas cobrem validações 400, não autorizado 401, recursos inexistentes 404 e conflitos 409 onde aplicável. `/api/mock/reset-all` apaga contas/carrinhos/estado da demonstração para restaurar um cenário inicial determinístico.
@@ -63,13 +67,13 @@ As respostas cobrem validações 400, não autorizado 401, recursos inexistentes
 
 O GitHub Actions executa `npm ci`, `npm run typecheck`, `npm run lint`, `npm run build`, instalação do Chromium e `npm run test:e2e` em 1440 px e Pixel 7.
 
-Artefatos do Playwright (HTML e traces) são anexados ao CI. Os primeiros cenários cobrem busca/filtro/refresh, detalhe inexistente, carrinho, sessão, conflito de cadastro e isolamento entre dois usuários. **Esses cenários não substituem a cobertura completa de 12 conjuntos exigidos**; também faltam baselines visuais versionadas. Não declarar a suíte aprovada sem consultar o resultado de CI da revisão atual.
+Artefatos do Playwright (HTML e traces) são anexados ao CI. Os cenários cobrem busca/filtro/refresh, detalhe inexistente, carrinho, sessão, conflito de cadastro, isolamento de usuários, bloqueio de checkout sem carteira e confirmação com refresh. **Esses cenários não substituem a cobertura completa de 12 conjuntos exigidos**; também faltam baselines visuais versionadas. Não declarar a suíte aprovada sem consultar o resultado de CI da revisão atual.
 
 ## Ainda não implementado: checklist eliminatório
 
-- Cotação, cupons, taxa de rede e recálculo financeiro validado pelo backend mock.
-- Pedidos idempotentes, pending/confirmed/declined, timeout e recuperação após refresh.
-- Tela de pagamento e recibo de confirmação condicionado ao status real do pedido simulado.
+- Cobrir cenários avançados de cotação (cupom inválido/expirado, preço alterado e indisponibilidade).
+- Ampliar testes de pedidos idempotentes, recusa, timeout, repetição de requisição e recuperação.
+- Validar em navegador a fidelidade completa dos layouts desktop/mobile de pagamento e recibo.
 - Socket.IO com `nft.updated` e `order.updated`, versões monotônicas, deduplicação, reconexão e reconciliação via REST.
 - MSW com cenários parametrizáveis de latência variável, conexões offline e HTTP 500.
 - Todos os testes E2E do enunciado, regressão visual baseline e acessibilidade por teclado/foco/zoom.
