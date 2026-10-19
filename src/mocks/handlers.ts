@@ -3,6 +3,7 @@ import { cartHandlers } from './cartHandlers'
 import { authHandlers } from './authHandlers'
 import { accountHandlers } from './accountHandlers'
 import { checkoutHandlers } from './checkoutHandlers'
+import { realtimeSocketHandler, realtimeScenarioHandlers } from './realtimeHandlers'
 import { nfts } from './fixtures/nfts'
 import { getMockEditions } from './fixtures/editions'
 import { ethToWei } from '@/lib/eth'
@@ -13,6 +14,8 @@ import {
 } from '@/features/catalog/types'
 
 export const handlers = [
+    realtimeSocketHandler,
+    ...realtimeScenarioHandlers,
 
     http.get('/api/nfts', async ({ request }) => {
         await delay(400)
