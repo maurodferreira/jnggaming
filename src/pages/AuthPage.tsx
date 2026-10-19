@@ -59,7 +59,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const next = useRouterState({
     select: state => {
       const search = state.location.search
-      return 'next' in search && typeof search.next === 'string' && (search.next === '/cart' || search.next === '/profile' || search.next === '/wallets' || /^\/nft\/[A-Za-z0-9-]+$/.test(search.next)) ? search.next : '/'
+      return 'next' in search && typeof search.next === 'string' && (search.next === '/cart' || search.next === '/checkout' || search.next === '/profile' || search.next === '/wallets' || /^\/nft\/[A-Za-z0-9-]+$/.test(search.next)) ? search.next : '/'
     },
   })
   const navigate = useNavigate()
@@ -92,6 +92,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
       if (isRegister) await register.mutateAsync({ name, email, password, confirmPassword })
       else await login.mutateAsync({ email, password })
       if (next === '/cart') await navigate({ to: '/cart', replace: true })
+      else if (next === '/checkout') await navigate({ to: '/checkout', replace: true })
       else if (next === '/profile') await navigate({ to: '/profile', replace: true })
       else if (next === '/wallets') await navigate({ to: '/wallets', replace: true })
       else if (next.startsWith('/nft/')) await navigate({ to: '/nft/$nftId', params: { nftId: next.slice(5) }, replace: true })
