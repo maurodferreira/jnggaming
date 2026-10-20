@@ -35,6 +35,40 @@ test('all original NFT artworks have usable high-quality WebP copies', async ({ 
   }
 })
 
+test('catalog thumbnails are compact WebP copies of the original Figma artwork', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('link', { name: /Ver detalhes de Emerald Ape #042/i })).toBeVisible()
+
+  const names = ['emerald-ape', 'sage-nomad', 'neon-vessel', 'golden-beat']
+  const images = await page.evaluate(async items => {
+    return Promise.all(items.map(async name => {
+      const source = `/assets/nfts/thumbs/${name}.webp`
+      const response = await fetch(source)
+      if (!response.ok) return { name, status: response.status, length: 0, width: 0 }
+      const blob = await response.blob()
+      const image = new Image()
+      image.src = URL.createObjectURL(blob)
+      try {
+        await image.decode()
+        return { name, status: response.status, length: blob.size, width: image.naturalWidth }
+      } finally {
+        URL.revokeObjectURL(image.src)
+      }
+    }))
+  }, names)
+
+  for (const image of images) {
+    expect(image.status, image.name).toBe(200)
+    expect(image.width, image.name).toBe(400)
+    expect(image.length, image.name).toBeGreaterThan(0)
+    expect(image.length, image.name).toBeLessThan(25_000)
+  }
+
+  const card = page.getByRole('link', { name: /Ver detalhes de Emerald Ape #042/i })
+  await expect(card.locator('img')).toHaveAttribute('src', '/assets/nfts/thumbs/emerald-ape.webp')
+  await expect(card.locator('img')).toHaveAttribute('srcset', /emerald-ape\.webp 960w/)
+})
+
 test('hero artwork and NFT details render the correct optimized image', async ({ page }) => {
   await page.goto('/')
   const hero = page.getByRole('img', { name: /Emerald Ape, macaco/i })
