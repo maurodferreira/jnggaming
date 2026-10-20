@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import axios from 'axios'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { ArrowLeft, ShieldCheck } from 'lucide-react'
 import { useCart } from '@/features/cart/useCart'
 import { useProfile, useWallets } from '@/features/account/useAccount'
@@ -21,14 +21,15 @@ function formatWalletAddress(address: string): string {
 }
 
 export function CheckoutPage() {
+  const { coupon: initialCoupon } = useSearch({ from: '/checkout' })
   const cart = useCart()
   const profile = useProfile()
   const wallets = useWallets()
   const navigate = useNavigate()
   const [selectedWalletId, setSelectedWalletId] = useState('')
   const [provider, setProvider] = useState<OrderInput['provider']>('Coinbase Wallet')
-  const [couponInput, setCouponInput] = useState('')
-  const [coupon, setCoupon] = useState('')
+  const [couponInput, setCouponInput] = useState(initialCoupon)
+  const [coupon, setCoupon] = useState(initialCoupon)
   const [notes, setNotes] = useState('')
   const [attemptKey, setAttemptKey] = useState(() => crypto.randomUUID())
   const [recoveryMessage, setRecoveryMessage] = useState('')
