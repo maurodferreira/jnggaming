@@ -7,6 +7,7 @@ import { NftCard } from '@/components/catalog/NftCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const routeApi = getRouteApi('/')
 const categories = ['Arte digital', 'Fotografia', 'Música', 'Arte 3D', 'Colecionáveis', 'Generativa', 'Jogos', 'Assinaturas', 'Utilidade']
@@ -171,13 +172,12 @@ export function HomePage() {
 
           <div className="min-w-0">
             <div className="flex items-center justify-between gap-3 border-b border-[#624230] pb-4">
-              <div role="tablist" aria-label="Ordenar catálogo" className="flex min-w-0 items-center gap-3 overflow-x-auto whitespace-nowrap md:gap-6">
+              <div role="group" aria-label="Ordenar catálogo" className="flex min-w-0 items-center gap-3 overflow-x-auto whitespace-nowrap md:gap-6">
                 {tabs.map(tab => (
                   <button
                     key={tab.sort}
                     type="button"
-                    role="tab"
-                    aria-selected={filters.sort === tab.sort}
+                    aria-pressed={filters.sort === tab.sort}
                     onClick={() => updateFilters({ sort: tab.sort, page: 1 })}
                     className={`shrink-0 border-b-2 pb-2 text-xs transition-colors md:text-sm ${filters.sort === tab.sort ? 'border-primary font-bold text-[#e89b55]' : 'border-transparent hover:text-primary'}`}
                   >
@@ -185,17 +185,27 @@ export function HomePage() {
                   </button>
                 ))}
               </div>
-              <label className="hidden shrink-0 items-center gap-2 text-xs xl:flex">
-                Ordenar por:
-                <select className="max-w-[185px] bg-transparent text-xs text-[#cfb28c] outline-none" value={filters.sort} onChange={event => updateFilters({ sort: event.target.value as CatalogSort, page: 1 })}>
-                  <option value="featured">Destaques</option>
-                  <option value="newest">Listados recentemente</option>
-                  <option value="trending">Em alta</option>
-                  <option value="name_asc">Nome (A-Z)</option>
-                  <option value="price_asc">Menor preço</option>
-                  <option value="price_desc">Maior preço</option>
-                </select>
-              </label>
+              <div className="hidden shrink-0 items-center gap-2 text-xs xl:flex">
+                <span id="catalog-sort-label">Ordenar por:</span>
+                <Select
+                  value={filters.sort}
+                  onValueChange={value => {
+                    if (value) updateFilters({ sort: value as CatalogSort, page: 1 })
+                  }}
+                >
+                  <SelectTrigger aria-labelledby="catalog-sort-label" className="h-9 w-[190px] rounded-md border-[#624230] bg-[#241612] text-xs text-[#f5f1eb] hover:border-primary focus-visible:ring-2 focus-visible:ring-primary/50">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="end" sideOffset={6} className="z-[100] rounded-lg border-[#624230] bg-[#241612] text-[#f5f1eb] shadow-xl">
+                    <SelectItem value="featured">Destaques</SelectItem>
+                    <SelectItem value="newest">Listados recentemente</SelectItem>
+                    <SelectItem value="trending">Em alta</SelectItem>
+                    <SelectItem value="name_asc">Nome (A-Z)</SelectItem>
+                    <SelectItem value="price_asc">Menor preço</SelectItem>
+                    <SelectItem value="price_desc">Maior preço</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {isPending ? (
