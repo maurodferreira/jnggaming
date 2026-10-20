@@ -43,7 +43,7 @@ export const PAGE_SIZE = 9
 export function normalizeEthFilter(value: unknown): string {
     if (typeof value !== 'string') return ''
     const decimal = value.trim().replace(',', '.')
-    if (!/^\\d{1,6}(?:\\.\\d{1,18})?$/.test(decimal)) return ''
+    if (!/^\d{1,6}(?:\.\d{1,18})?$/.test(decimal)) return ''
     return decimal
 }
 
