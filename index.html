@@ -10,11 +10,12 @@
     <!-- On the mobile home view, Sage Nomad can become the LCP image.
          Discover it before the React/MSW bundles, without delaying NFT detail pages. -->
     <script>
-      if (location.pathname === '/' && matchMedia('(max-width: 767px)').matches) {
+      if (location.pathname === '/') {
         const imagePreload = document.createElement('link')
         imagePreload.rel = 'preload'
         imagePreload.as = 'image'
         imagePreload.href = '/assets/nfts/sage-nomad.webp'
+        imagePreload.media = '(max-width: 767px)'
         imagePreload.fetchPriority = 'high'
         document.head.append(imagePreload)
       }
