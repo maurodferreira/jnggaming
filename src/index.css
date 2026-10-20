@@ -204,3 +204,30 @@ textarea:focus-visible {
   outline-color: var(--kurio-accent);
   outline-offset: 3px;
 }
+
+
+/* Shimmer is visible during data loading while respecting reduced motion. */
+@keyframes kurio-shimmer {
+  from { background-position: 175% 0; }
+  to { background-position: -175% 0; }
+}
+
+.kurio-skeleton-shimmer {
+  background-image: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(210, 138, 76, 0.16) 45%,
+    rgba(210, 138, 76, 0.20) 50%,
+    rgba(210, 138, 76, 0.16) 55%,
+    transparent 80%
+  );
+  background-size: 220% 100%;
+  animation: kurio-shimmer 1.9s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kurio-skeleton-shimmer {
+    animation: none;
+    background-image: none;
+  }
+}
