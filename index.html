@@ -5,11 +5,18 @@
     <!-- Viewport must be set before any inline breakpoint/preload logic. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <!-- First-view hero/catalog artwork (also NFT #1); preload before JS to improve mobile LCP. -->
-    <link rel="preload" as="image" href="/assets/nfts/emerald-ape.webp" type="image/webp" fetchpriority="high" />
-    <!-- Browser-discovered mobile catalog artwork. The media query prevents
-         unnecessary loading on desktop, and avoids inline startup logic. -->
-    <link rel="preload" as="image" href="/assets/nfts/thumbs/sage-nomad.webp" type="image/webp" media="(max-width: 767px)" fetchpriority="high" />
+    <!-- The same Figma art appears in the home hero and NFT detail.
+         Preload the browser-selected resolution instead of always downloading 960px.
+         Do not eagerly preload secondary artwork on unrelated SPA routes. -->
+    <link
+      rel="preload"
+      as="image"
+      href="/assets/nfts/emerald-ape.webp"
+      imagesrcset="/assets/nfts/thumbs/emerald-ape.webp 400w, /assets/nfts/emerald-ape.webp 960w"
+      imagesizes="(max-width: 639px) 100vw, (max-width: 1023px) 70vw, 640px"
+      type="image/webp"
+      fetchpriority="high"
+    />
     <meta name="description" content="Marketplace demonstrativo de NFTs com compras simuladas." />
     <title>NFT Marketplace | Frontend Challenge</title>
   </head>
