@@ -6,7 +6,9 @@
 **Código:** https://github.com/maurodferreira/jnggaming/tree/feat/figma-kurio-ui  
 **PR:** https://github.com/maurodferreira/jnggaming/pull/1 (**rascunho**).
 
-> Esta matriz substitui os estados históricos do documento `PLANO_CONFORMIDADE_DESAFIO.md`, criado antes da implementação de autenticação, checkout e Socket.IO. **Existência da tela/rota não significa fidelidade visual pixel a pixel nem encerramento dos testes.** Não atribuímos nota estimada à entrega.
+> **Estado validado na etapa 4:** o código final passou em **117 testes Playwright** e atingiu as metas Lighthouse (Home mobile 100, NFT mobile 90; desktop 98/99; demais categorias 100). O [checklist de entrega](CHECKLIST_ENTREGA.md) contém evidências, reprodução e bloqueadores de publicação. As seções 4–7 abaixo preservam o histórico da auditoria e não devem ser confundidas com o estado mais recente.
+>
+> **Fidelidade:** a existência das nove rotas e as 27 baselines internas **não** comprovam equivalência pixel a pixel com os 15 frames originais. O aceite visual humano permanece necessário; nenhuma nota oficial é atribuída ao projeto.
 
 ## 1. O que a empresa efetivamente pediu
 
@@ -98,32 +100,32 @@ Implementar um **marketplace de NFTs demonstrativo**, desktop e mobile, capaz de
 **Foco restante:** CI final, fidelidade visual e baselines das 15 telas, acessibilidade, 3× Lighthouse por página/dispositivo (mobile ≥90), dependências vulneráveis, rotas profundas e URL de deploy público. Não confundir implementação com aceite.
 
 
-## 8. Consolidação de evidências — 20/10/2026
+## 8. Evidências consolidadas para a entrega — 20/10/2026
 
-Esta seção é o status **mais recente** e substitui afirmações históricas sobre falta de deploy, baselines e advisories nas seções acima.
+Esta seção substitui os status provisórios e números antigos do histórico acima.
 
-| Verificação | Evidência e estado |
-| --- | --- |
-| Nove telas / rotas | Implementadas, com estados simulados navegáveis |
-| Playwright | Fluxos funcionais aprovados em execuções anteriores; suíte estendida em revalidação após refinamentos |
-| Regressão visual | **27 snapshots versionadas**, 9 telas × 3 larguras; comparação manual de fidelidade ao Figma ainda necessária |
-| Desktop | Lighthouse Performance normalmente 98–99; Accessibility/Best Practices/SEO 100 em auditorias recentes |
-| Mobile | Performance **ainda abaixo da meta ≥90** em auditorias confirmadas; não anunciar aceite até alcançar a mediana |
-| Dependências | Migração oficial de `shadcn eject` passou em TypeScript, lint, build, E2E e `npm audit` (0 vulnerabilidades) |
-| Produção | [kurio-jungle-challenge.vercel.app](https://kurio-jungle-challenge.vercel.app/) — smoke test público Chromium 11/11 |
-| Regras de escopo | Sem pagamentos reais, blockchain, OAuth social ou newsletter ficticiamente funcionais |
+| Critério | Resultado validado | Evidência |
+| --- | --- | --- |
+| 9 rotas e telas | Implementadas em desktop/mobile; dados e transações inteiramente simulados | [README](../README.md) e [arquitetura](../ARCHITECTURE.md) |
+| Integração e estado | REST mock com sessão, carrinho, favoritos, cotação, pedido idempotente e recuperação | [CI](https://github.com/maurodferreira/jnggaming/actions/runs/39483364599) |
+| Socket.IO | Cliente verdadeiro com MSW WebSocket-only, eventos versionados e reconciliação na reconexão | [CI — 117 testes](https://github.com/maurodferreira/jnggaming/actions/runs/39483364599) |
+| Testes | **117 passed / 9 skipped / 0 failed**; build, TypeScript e lint aprovados | [CI 39483364599](https://github.com/maurodferreira/jnggaming/actions/runs/39483364599) |
+| Figma/responsivo | **15 frames** auditados, 27 baselines versionadas em 390, 768 e 1440 px | [Capturas](https://github.com/maurodferreira/jnggaming/tree/feat/figma-kurio-ui/tests/e2e/visual-baselines.spec.ts-snapshots) |
+| Home mobile | Performance **100**, LCP **1,238s**, TBT **43ms**, CLS **0** | [Lighthouse 39483283845](https://github.com/maurodferreira/jnggaming/actions/runs/39483283845) |
+| NFT mobile | Performance **90**, LCP **3,043s**, TBT **67ms**, CLS **0** | Mesmo relatório |
+| Home / NFT desktop | Performance **98 / 99**, CLS **0** | Mesmo relatório |
+| A11y / boas práticas / SEO | **100 / 100 / 100** nas quatro combinações | Mesmo relatório |
+| Dependências | **0 vulnerabilidades** no `npm audit` registrado | Mesmo relatório |
+| URL pública | Smoke anterior Chromium **11/11**; não corresponde ainda ao código final | [Smoke histórico](https://github.com/maurodferreira/jnggaming/actions/runs/39428035215) |
 
-Referências: [CI do código](https://github.com/maurodferreira/jnggaming/actions/workflows/frontend-checks.yml), [Lighthouse](https://github.com/maurodferreira/jnggaming/actions/workflows/quality-audit.yml), [smoke de produção](https://github.com/maurodferreira/jnggaming/actions/runs/39428035215), [snapshots](https://github.com/maurodferreira/jnggaming/tree/feat/figma-kurio-ui/tests/e2e/visual-baselines.spec.ts-snapshots).
+O Lighthouse registra medianas de **três execuções por página e dispositivo** em preview do build real (sem desligar MSW, Socket.IO ou as interfaces). O código de runtime foi medido no commit `7ea96bf1`; o HEAD `114fa5d4` acrescentou somente o teste `realtime-initial-load.spec.ts`, sem mudança da aplicação. As pontuações variam conforme máquina/rede e **não são a nota oficial**.
 
-**Aceite:** manter o PR em rascunho e a `main` sem merge até finalizar a medição mobile e a revisão visual final. Não confundir uma execução de CI verde com pontuação perfeita na avaliação.
+### Pendências de aceite antes de enviar à empresa
 
+1. **Aprovação visual humana:** comparar os **15 frames explícitos do Figma** com as telas finais; validar os estados sem frame mobile exclusivo e registrar divergências justificadas.
+2. **Implantação correta:** em 20/10/2026 a alias pública `kurio-jungle-challenge.vercel.app` ainda servia o commit antigo `9a2289a9`, não a branch aprovada. Publicar/promover a revisão aceita sem contornar proteção de preview, depois reexecutar o smoke Chromium nesse domínio.
+3. **Revisão do PR:** conferir arquivos, artefatos e segurança antes de mudar Draft, fazer merge ou apresentar como entrega definitiva.
 
-### Fechamento da rodada técnica (20/10/2026)
+A arquitetura WebSocket-only e os dados de demo são **limitações deliberadas**, não funcionalidades reais de blockchain/pagamentos. Requisitos extra fora do desafio (integração financeira, carteiras reais, newsletter, OAuth) permanecem excluídos. Não estimar pontuação final em 100 pontos: o avaliador oficial é quem a atribui.
 
-- **[Frontend checks](https://github.com/maurodferreira/jnggaming/actions/runs/39432370225): aprovado.** `npm ci`, `typecheck`, `lint`, builds normal e fallback, e Playwright com **81 testes aprovados / 7 skips intencionais** (baselines restritas ao Chromium desktop com diferentes larguras).
-- **[Lighthouse](https://github.com/maurodferreira/jnggaming/actions/runs/39432357361):** Home mobile **84**, NFT mobile **85**, desktop **99/99**; Acessibilidade, Boas práticas e SEO **100**. LCP mobile 3,74 s e 3,66 s, CLS 0. **Performance mobile ≥90 ainda não foi alcançada.**
-- **Segurança:** última execução `npm audit` com **0 vulnerabilidades**.
-- **Regressão visual:** 27 screenshots versionadas (9 páginas × 390/768/1440 px), comparação final humana com os 15 frames ainda necessária.
-- **Deploy:** a URL pública já passou em 11 verificações automáticas; o commit publicado deve ser comparado ao último commit da branch depois da próxima implantação.
-
-**Conclusão:** os fluxos principais e o ambiente demonstrativo estão entregues e testados, mas não é correto declarar cumprimento integral dos critérios de performance ou equivalência pixel a pixel ao Figma.
+Resumo operacional: [checklist final](CHECKLIST_ENTREGA.md) · [PR #1](https://github.com/maurodferreira/jnggaming/pull/1).
