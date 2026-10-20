@@ -69,6 +69,26 @@ test('catalog thumbnails are compact WebP copies of the original Figma artwork',
   await expect(card.locator('img')).toHaveAttribute('srcset', /emerald-ape\.webp 960w/)
 })
 
+test('responsive Figma art keeps a full-resolution zoom while minimizing mobile transfers', async ({ page }) => {
+  await page.goto('/')
+  const hero = page.getByRole('img', { name: /Emerald Ape, macaco/i })
+  await expect(hero).toHaveAttribute('srcset', /thumbs\/emerald-ape\.webp 400w/)
+  await expect(hero).toHaveAttribute('sizes', /40vw/)
+
+  await page.goto('/nft/1')
+  const gallery = page.getByRole('region', { name: 'Galeria de Emerald Ape #042' })
+  const mainArtwork = gallery.locator('[aria-live="polite"] img')
+  await expect(mainArtwork).toHaveAttribute('srcset', /thumbs\/emerald-ape\.webp 400w/)
+  await expect(mainArtwork).toHaveAttribute('src', '/assets/nfts/emerald-ape.webp')
+
+  await gallery.getByRole('button', { name: 'Ampliar arte' }).click()
+  const zoom = page.getByRole('dialog', { name: 'Arte ampliada de Emerald Ape #042' }).locator('img')
+  await expect(zoom).toBeVisible()
+  await expect(zoom).not.toHaveAttribute('srcset', /.+/)
+  await expect(zoom).toHaveAttribute('src', '/assets/nfts/emerald-ape.webp')
+  await expect.poll(() => zoom.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBe(960)
+})
+
 test('hero artwork and NFT details render the correct optimized image', async ({ page }) => {
   await page.goto('/')
   const hero = page.getByRole('img', { name: /Emerald Ape, macaco/i })
