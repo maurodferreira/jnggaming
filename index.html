@@ -5,19 +5,6 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Marketplace demonstrativo de NFTs com compras simuladas." />
-    <!-- In a client-rendered SPA, the first artwork would otherwise be discovered
-         only after the mock API initializes. Limit the preload to routes using it. -->
-    <script>
-      if (location.pathname === '/' || location.pathname === '/nft/1') {
-        const artwork = document.createElement('link')
-        artwork.rel = 'preload'
-        artwork.as = 'image'
-        artwork.type = 'image/webp'
-        artwork.href = '/assets/nfts/emerald-ape.webp'
-        artwork.fetchPriority = 'high'
-        document.head.append(artwork)
-      }
-    </script>
     <title>NFT Marketplace | Frontend Challenge</title>
   </head>
   <body>
