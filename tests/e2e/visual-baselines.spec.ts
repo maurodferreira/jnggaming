@@ -43,10 +43,9 @@ async function captureWidths(page: Page, name: string) {
   }
 }
 
-test.skip(({ browserName }, testInfo) => browserName !== 'chromium' || testInfo.project.name !== 'desktop-chromium',
-  'Baseline at controlled 390/768/1440 CSS-pixel widths on Linux Chromium; mobile device flows use regular E2E.')
-
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium',
+    'Visual baselines use Chromium at 390/768/1440 CSS px; device-specific mobile tests run separately.')
   await resetDemo(page)
 })
 
