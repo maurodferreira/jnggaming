@@ -6,9 +6,10 @@ import { FavoriteButton } from './FavoriteButton'
 interface NftCardProps {
   nft: Nft
   compact?: boolean
+  priority?: boolean
 }
 
-export function NftCard({ nft, compact = false }: NftCardProps) {
+export function NftCard({ nft, compact = false, priority = false }: NftCardProps) {
   const isRare = nft.id === '3' || nft.id === '7'
 
   return (
@@ -29,7 +30,11 @@ export function NftCard({ nft, compact = false }: NftCardProps) {
           src={getNftArtwork(nft.id)}
           alt={`Arte digital ${nft.name}`}
           className={`aspect-square w-full rounded-lg object-cover ${compact ? 'max-h-[240px]' : ''}`}
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : undefined}
+          decoding="async"
+          width={400}
+          height={400}
         />
       </div>
       <div className="pt-3">
