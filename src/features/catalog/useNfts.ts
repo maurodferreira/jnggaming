@@ -6,9 +6,10 @@ import {
   type NftListResponse,
 } from './types'
 
-export function useNfts(filters: CatalogFilters) {
+export function useNfts(filters: CatalogFilters, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['nfts', 'list', filters],
+    enabled: options.enabled ?? true,
 
     queryFn: async ({ signal }) => {
       const { data } = await api.get<NftListResponse>(
