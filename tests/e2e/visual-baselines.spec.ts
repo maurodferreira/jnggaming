@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 // Baselines: Figma catalog filters and interactive NFT gallery / metadata at 390, 768 and 1440 CSS px.
-// Preserve mobile CTA visibility while refreshing Figma artwork proportions and card assets.
+// Review responsive primary artwork and full-quality zoom without changing the Figma layout.
 const widths = [390, 768, 1440] as const
 
 async function resetDemo(page: Page) {
