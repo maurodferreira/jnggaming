@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { routeTree } from './routeTree.gen'
 import './index.css'
-import { setMockStartup } from './services/mockStartup'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,14 +38,11 @@ declare module '@tanstack/react-router' {
 }
 
 
-function bootstrap() {
-  // Mostramos a interface enquanto o MSW instala o Service Worker.
-  // Axios e Socket.IO aguardam esta promessa antes de usar a rede.
+async function bootstrap() {
+  // Instalamos o mock antes de iniciar a interface e as consultas REST.
   if (import.meta.env.VITE_ENABLE_MOCKS !== 'false') {
-    const startup = import('./mocks/browser')
-      .then(({ worker }) => worker.start())
-      .then(() => undefined)
-    setMockStartup(startup)
+    const { worker } = await import('./mocks/browser')
+    await worker.start()
   }
 
   const rootElement = document.getElementById('root')
@@ -64,4 +60,4 @@ function bootstrap() {
   )
 }
 
-bootstrap()
+void bootstrap()
