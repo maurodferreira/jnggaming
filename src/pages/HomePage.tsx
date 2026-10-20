@@ -4,6 +4,7 @@ import { ArrowRight, Search, SlidersHorizontal } from 'lucide-react'
 import { useNfts } from '@/features/catalog/useNfts'
 import type { CatalogFilters, CatalogNetwork, CatalogSort } from '@/features/catalog/types'
 import { NftCard } from '@/components/catalog/NftCard'
+import { FavoritesControlsProvider } from '@/components/catalog/FavoritesControlsProvider'
 import { CatalogPriceRange } from '@/components/catalog/CatalogPriceRange'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -75,6 +76,7 @@ export function HomePage() {
   ]
 
   return (
+    <FavoritesControlsProvider>
     <main className="mx-auto w-full max-w-[1248px] px-5 pb-20 pt-10 text-foreground md:px-6 md:pb-0 md:pt-8">
       <div className="mb-4 flex items-center gap-2 lg:hidden">
         <form onSubmit={search} role="search" className="flex h-[45px] min-w-0 flex-1 items-center gap-2 rounded-[10px] bg-[#241612] px-3">
@@ -322,5 +324,6 @@ export function HomePage() {
         </div>
       </section>
     </main>
+    </FavoritesControlsProvider>
   )
 }
