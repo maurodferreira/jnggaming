@@ -19,29 +19,6 @@ export default defineConfig(() => ({
     react(),
     tailwindcss(),
   ],
-  // Isolate the costly initial UI and mock libraries into predictable chunks.
-  // This is a measured stage-3 experiment; revert if Lighthouse regresses.
-  // Do not split mock handlers from the MSW registration sequence.
-  build: {
-    rolldownOptions: {
-      output: {
-        codeSplitting: {
-          groups: [
-            {
-              name: 'react-core',
-              test: /node_modules[\\/](?:react|react-dom)[\\/]/,
-              priority: 30,
-            },
-            {
-              name: 'msw-core',
-              test: /node_modules[\\/](?:msw|@mswjs|@open-draft)[\\/]/,
-              priority: 20,
-            },
-          ],
-        },
-      },
-    },
-  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
