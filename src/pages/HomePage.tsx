@@ -36,10 +36,10 @@ const articles = [
 ]
 
 const images: Record<string, string> = {
-  '1': '/assets/nfts/emerald-ape.png',
-  '2': '/assets/nfts/sage-nomad.png',
-  '3': '/assets/nfts/neon-vessel.png',
-  '7': '/assets/nfts/golden-beat.png',
+  '1': '/assets/nfts/emerald-ape.webp',
+  '2': '/assets/nfts/sage-nomad.webp',
+  '3': '/assets/nfts/neon-vessel.webp',
+  '7': '/assets/nfts/golden-beat.webp',
 }
 
 export function HomePage() {
@@ -112,13 +112,13 @@ export function HomePage() {
           </div>
           <div className="relative w-[40%] max-w-[450px] shrink-0 md:w-[42%]">
             <img
-              src="/assets/nfts/emerald-ape.png"
+              src="/assets/nfts/emerald-ape.webp"
               alt="Emerald Ape, macaco com jaqueta verde e óculos"
               className="aspect-square w-full rounded-2xl object-cover shadow-xl"
               fetchPriority="high"
             />
             <img
-              src="/assets/nfts/sage-nomad.png"
+              src="/assets/nfts/sage-nomad.webp"
               alt=""
               aria-hidden="true"
               className="absolute -bottom-2 -left-2 block size-[45%] max-h-[70px] max-w-[70px] rounded-xl border-2 border-[#6f492a] object-cover shadow-xl md:hidden"
@@ -255,7 +255,7 @@ export function HomePage() {
 
       <section className="mt-24 hidden grid-cols-2 gap-7 md:grid" aria-label="Coleções em destaque">
         <div className="flex min-h-[230px] overflow-hidden rounded-lg bg-[#573523]">
-          <img className="h-full w-[48%] object-cover" src="/assets/nfts/emerald-ape.png" alt="Arte da coleção Emerald Ape" loading="lazy"/>
+          <img className="h-full w-[48%] object-cover" src="/assets/nfts/emerald-ape.webp" alt="Arte da coleção Emerald Ape" loading="lazy"/>
           <div className="flex flex-1 flex-col justify-center gap-3 p-5">
             <h2 className="text-lg font-bold">Lançamentos especiais de edição limitada</h2>
             <p className="text-xs leading-5 text-[#cfb28c]">Colecione edições escassas diretamente dos criadores.</p>
@@ -263,7 +263,7 @@ export function HomePage() {
           </div>
         </div>
         <div className="flex min-h-[230px] overflow-hidden rounded-lg bg-[#38241a]">
-          <img className="h-full w-[48%] object-cover" src="/assets/nfts/neon-vessel.png" alt="Arte da coleção Neon Vessel" loading="lazy"/>
+          <img className="h-full w-[48%] object-cover" src="/assets/nfts/neon-vessel.webp" alt="Arte da coleção Neon Vessel" loading="lazy"/>
           <div className="flex flex-1 flex-col justify-center gap-3 p-5">
             <h2 className="text-lg font-bold">Arte digital selecionada e muito mais</h2>
             <p className="text-xs leading-5 text-[#cfb28c]">Explore novos artistas e coleções verificadas.</p>

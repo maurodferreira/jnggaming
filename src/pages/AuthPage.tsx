@@ -106,9 +106,9 @@ export function AuthPage({ mode }: { mode: Mode }) {
     <main className="relative isolate flex min-h-[calc(100vh-70px)] items-center justify-center overflow-hidden px-5 py-12 md:min-h-[800px] md:py-20">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden overflow-hidden opacity-40 md:block">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,#4b2e20_0%,transparent_65%)]"/>
-        <img src="/assets/nfts/emerald-ape.png" alt="" className="absolute right-[5%] top-[-1%] w-[31%] max-w-[420px] rounded-xl object-cover"/>
-        <img src="/assets/nfts/sage-nomad.png" alt="" className="absolute bottom-[4%] left-[9%] w-[22%] max-w-[270px] rounded-xl object-cover"/>
-        <img src="/assets/nfts/golden-beat.png" alt="" className="absolute bottom-[-4%] right-[14%] w-[21%] max-w-[260px] rounded-xl object-cover"/>
+        <img src="/assets/nfts/emerald-ape.webp" alt="" className="absolute right-[5%] top-[-1%] w-[31%] max-w-[420px] rounded-xl object-cover"/>
+        <img src="/assets/nfts/sage-nomad.webp" alt="" className="absolute bottom-[4%] left-[9%] w-[22%] max-w-[270px] rounded-xl object-cover"/>
+        <img src="/assets/nfts/golden-beat.webp" alt="" className="absolute bottom-[-4%] right-[14%] w-[21%] max-w-[260px] rounded-xl object-cover"/>
       </div>
       <div className="absolute inset-0 hidden bg-[#140d0a]/55 md:block" aria-hidden="true"/>
 
