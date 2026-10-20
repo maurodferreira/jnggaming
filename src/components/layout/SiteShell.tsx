@@ -98,7 +98,7 @@ export function SiteShell() {
         <Link to="/" search={defaultCatalogSearch} className={pathname === '/' ? 'flex justify-center text-primary' : 'flex justify-center text-[#cfb28c]'} aria-label="Início">
           <House size={23} fill={pathname === '/' ? 'currentColor' : 'none'} />
         </Link>
-        <span aria-label="Favoritos em desenvolvimento" title="Favoritos em desenvolvimento" className="flex justify-center text-[#cfb28c]/55">
+        <span aria-hidden="true" title="Favoritos em desenvolvimento" className="flex justify-center text-[#cfb28c]/55">
           <Heart size={23} />
         </span>
         <Link to="/cart" aria-label={`Carrinho: ${quantity} itens`} className={pathname === '/cart' ? 'relative flex justify-center text-primary' : 'relative flex justify-center text-[#cfb28c]'}>
