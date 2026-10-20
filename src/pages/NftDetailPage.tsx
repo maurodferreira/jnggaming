@@ -5,6 +5,7 @@ import { Link, getRouteApi } from '@tanstack/react-router'
 import { useNft } from '@/features/catalog/useNft'
 import { useNfts } from '@/features/catalog/useNfts'
 import { NftCard } from '@/components/catalog/NftCard'
+import { FavoritesControlsProvider } from '@/components/catalog/FavoritesControlsProvider'
 import { NftArtworkGallery } from '@/components/catalog/NftArtworkGallery'
 import { NftDetailsTabs } from '@/components/catalog/NftDetailsTabs'
 import { NftMetadata } from '@/components/catalog/NftMetadata'
@@ -354,6 +355,7 @@ export function NftDetailPage() {
   }
 
   return (
+    <FavoritesControlsProvider>
     <main className="mx-auto max-w-[1248px] space-y-5 px-5 pb-24 pt-5 sm:space-y-8 sm:py-8 md:px-6 md:pb-0">
       <Link
         to="/"
@@ -449,5 +451,6 @@ export function NftDetailPage() {
         </div>
       </section>
     </main>
+    </FavoritesControlsProvider>
   )
 }
