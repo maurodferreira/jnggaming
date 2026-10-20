@@ -122,7 +122,7 @@ test('visual baseline: collector profile and wallets', async ({ page }) => {
   await page.getByLabel('E-mail', { exact: true }).fill('colecionador@kurio.demo')
   await page.getByLabel('Senha', { exact: true }).fill('KurioDemo123!')
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
-  await expect(page).toHaveURL(/\\?q=/)
+  await expect(page).toHaveURL(/\?q=/)
 
   await page.goto('/profile')
   await expect(page.locator('#profile-display-name')).toBeVisible()
@@ -139,7 +139,7 @@ test('visual baseline: API-confirmed demo receipt', async ({ page }) => {
   await page.getByLabel('E-mail', { exact: true }).fill('colecionador@kurio.demo')
   await page.getByLabel('Senha', { exact: true }).fill('KurioDemo123!')
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
-  await expect(page).toHaveURL(/\\?q=/)
+  await expect(page).toHaveURL(/\?q=/)
 
   await page.goto('/wallets')
   await page.locator('#wallet-true-label').fill('Principal')
@@ -154,7 +154,7 @@ test('visual baseline: API-confirmed demo receipt', async ({ page }) => {
   await page.goto('/checkout')
   await expect(page.getByRole('button', { name: 'Confirmar compra simulada' })).toBeEnabled()
   await page.getByRole('button', { name: 'Confirmar compra simulada' }).click()
-  await expect(page).toHaveURL(/\\/orders\\/[^/]+$/)
+  await expect(page).toHaveURL(/\/orders\/[^/]+$/)
   await expect(page.getByRole('heading', { name: 'Pedido confirmado na demonstração!' })).toBeVisible({ timeout: 20_000 })
   await captureWidths(page, 'order-confirmed')
 })
