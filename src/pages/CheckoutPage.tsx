@@ -219,7 +219,7 @@ export function CheckoutPage() {
               <button type="button" onClick={() => void quote.refetch()} className="text-primary underline">Atualizar cotação</button>
             </div>
           )}
-          <button type="submit" disabled={disabled} className="order-4 sticky bottom-[calc(86px+env(safe-area-inset-bottom))] z-20 h-[54px] w-full rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#e89b55] focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50 lg:static">
+          <button type="submit" disabled={disabled} className="order-4 mt-2 h-[54px] w-full rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#e89b55] focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50 lg:static">
             {submitOrder.isPending ? 'Enviando pedido...' : 'Confirmar compra simulada'}
           </button>
         </form>
