@@ -40,14 +40,20 @@ Get-Process node -ErrorAction SilentlyContinue | Select-Object Id, Path
 
 Se o arquivo estiver realmente como somente leitura, e você tiver permissão para editá-lo, remova **somente esse atributo** com `attrib -R .\src\routeTree.gen.ts` e tente `npm run dev` novamente. Não desative proteções do Windows nem exclua a árvore de rotas.
 
-Para **trabalhar temporariamente com as rotas já versionadas** enquanto investiga um bloqueio do Windows, existe um modo de desenvolvimento sem regeneração:
+Para **trabalhar temporariamente com as rotas já versionadas**, incluindo build local, use o modo sem regeneração. Ele evita substituir um arquivo bloqueado pelo Windows:
 
 ```powershell
 $env:KURIO_SKIP_ROUTE_GENERATION = 'true'
 npm run dev
+# Pare o servidor com Ctrl+C antes de criar um build:
+npm run typecheck
+npm run lint
+npm run build
 ```
 
-Essa opção apenas ignora a regeneração **durante o comando dev**; o build e o CI continuam gerando e verificando as rotas normalmente. **Não adicione nem renomeie rotas nesse modo**, pois `src/routeTree.gen.ts` não será atualizado. Em um novo PowerShell, a variável não persiste; para removê-la na sessão atual execute `Remove-Item Env:KURIO_SKIP_ROUTE_GENERATION`.
+**Atenção:** a variável desativa a geração tanto no Vite de desenvolvimento quanto no build **somente na sessão em que estiver definida**. A compilação continua checando TypeScript e usando `src/routeTree.gen.ts` já versionado. Não adicione, renomeie ou remova rotas nesse modo: a árvore não será atualizada. O CI executa uma compilação normal sem essa variável e também valida o modo alternativo. Para voltar à geração normal no terminal atual, execute `Remove-Item Env:KURIO_SKIP_ROUTE_GENERATION -ErrorAction SilentlyContinue`.
+
+Como resolução definitiva, considere testar o clone fora da pasta Área de Trabalho (por exemplo, `C:\dev\jnggaming`) e identificar eventuais processos bloqueando `routeTree.gen.ts`. Isso evita mexer em permissões globais do Windows e mantém o arquivo gerado íntegro.
 
 Se o erro persistir no modo normal, compartilhe o resultado dos dois comandos de diagnóstico acima e a mensagem completa. Evite `git reset --hard` ou alterações globais de segurança como solução para esse caso.
 
