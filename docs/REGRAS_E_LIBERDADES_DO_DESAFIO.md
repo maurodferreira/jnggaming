@@ -60,16 +60,17 @@ Portanto, o design **não é sugestão livre**: preserve tipografia, cores, espa
 6. **Skeleton shimmer:** ativado no loading, desativado automaticamente para quem prefere movimento reduzido.
 7. **Cenários de rede:** perfil MSW determinístico para normal, lento, latência variável, HTTP 503 e offline em listagem/detalhe, sem respostas falsas na UI.
 
-## Situação comprovada e aceite final
+## Situação comprovada e aceite final — 20/10/2026
 
-- [x] Nove rotas e fluxos obrigatórios implementados; API e pagamentos demonstrativos.
-- [x] Suíte Playwright E2E funcional e testes de sessão, cupons, erro de rede, pedido e tempo real.
-- [x] **27 baselines visuais versionadas**: nove telas em 390, 768 e 1440 px. Ainda é necessária a aprovação de fidelidade de cada uma ao Figma.
-- [x] Auditoria de dependências limpa após remover o CLI shadcn pelo método oficial (`npm audit`: 0 vulnerabilidades na execução validada).
-- [x] Deploy público na Vercel e smoke test de Home, MSW, API, assets, deep links e refresh (11/11).
-- [ ] Confirmar o último CI depois dos ajustes de performance e telas, incluindo as novas baselines.
-- [ ] Fechar **Lighthouse Performance mobile ≥90** nas medianas da Home e do NFT sem desativar funcionalidades ou alterar artificialmente a medição.
-- [ ] Concluir o aceite visual humano dos **15 frames originais do Figma**, incluindo desktop e mobile, e estados não desenhados.
-- [ ] Atualizar a evidência no PR e manter a `main` preservada até a entrega aprovada.
+- [x] As **nove telas obrigatórias** e seus fluxos demonstrativos estão implementados; checkout e carteiras **não** realizam operações reais.
+- [x] Playwright E2E aprovado no commit `114fa5d4`: **117 passaram / 9 skips intencionais**, com build, lint, TypeScript e fallback Windows. [Evidência](https://github.com/maurodferreira/jnggaming/actions/runs/39483364599).
+- [x] `nft.updated` e `order.updated` usam o cliente Socket.IO real contra o adaptador WebSocket do MSW, com testes de versão/reconexão.
+- [x] **27 baselines visuais versionadas:** 9 telas × 390/768/1440 px. Essas imagens validam regressões internas, **não** equivalência automática com todos os 15 frames Figma.
+- [x] **Lighthouse mediano da última versão de runtime:** Home mobile **100**, NFT mobile **90**, Home desktop **98**, NFT desktop **99**; A11y/BP/SEO **100**. [Relatório](https://github.com/maurodferreira/jnggaming/actions/runs/39483283845). As metas técnicas de Lighthouse foram atingidas nessa execução.
+- [x] `npm audit` da mesma execução apontou **0 vulnerabilidades**.
+- [x] O domínio público passou em **smoke test anterior** com catálogo, Service Worker, API, assets, deep links e refresh.
+- [ ] Revisão humana final de fidelidade dos **15 frames originais do Figma**, inclusive divergências justificadas.
+- [ ] Publicar no domínio público a **revisão aceita** e repetir o smoke nela. Em 20/10/2026 o alias público ainda exibia o commit antigo `9a2289a9`.
+- [ ] Revisão/aprovação formal do PR antes de alterar Draft, fazer merge na `main` ou considerar a entrega submetida.
 
-**Importante:** o CI do Lighthouse gera e arquiva relatórios, mas uma execução marcada como `success` não significa automaticamente que a meta mobile foi alcançada. A nota atribuída ao desafio pertence à avaliação da Jungle Gaming.
+O [checklist de entrega](CHECKLIST_ENTREGA.md) reúne instruções, evidências e pendências atuais. A avaliação e a **pontuação oficial de 100 pontos possíveis** pertencem à Jungle Gaming; os resultados Lighthouse não equivalem a essa nota.
