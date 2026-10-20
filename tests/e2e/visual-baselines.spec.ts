@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-// Revisão visual: cards do catálogo desencontrados e seletor compacto do NFT no mobile.
+// Baselines: sidebar do catálogo com preço/rede e galeria de NFTs em três larguras.
 const widths = [390, 768, 1440] as const
 
 async function resetDemo(page: Page) {
