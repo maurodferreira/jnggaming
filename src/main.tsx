@@ -16,6 +16,13 @@ const queryClient = new QueryClient({
   },
 })
 
+// Clearing the account cache also prevents an expired session's private
+// REST data from being rendered after the user is sent back to login.
+window.addEventListener('kurio:session-expired', () => {
+  queryClient.clear()
+  queryClient.setQueryData(['auth', 'session'], null)
+})
+
 const router = createRouter({
   routeTree,
 })
