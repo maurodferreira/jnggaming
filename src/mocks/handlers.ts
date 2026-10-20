@@ -49,6 +49,8 @@ export const handlers = [
                 : PAGE_SIZE
 
         const query = filters.q.trim().toLowerCase()
+        const minPriceWei = filters.minPriceEth ? ethToWei(filters.minPriceEth) : null
+        const maxPriceWei = filters.maxPriceEth ? ethToWei(filters.maxPriceEth) : null
 
         let result = nfts.filter((nft) => {
             const matchesSearch =
@@ -61,11 +63,19 @@ export const handlers = [
 
             const matchesAvailability =
                 !filters.available || nft.available > 0
+            const matchesNetwork =
+                !filters.network || filters.network === 'all' || nft.network === filters.network
+            const priceWei = ethToWei(nft.priceEth)
+            const matchesPrice =
+                (minPriceWei === null || priceWei >= minPriceWei) &&
+                (maxPriceWei === null || priceWei <= maxPriceWei)
 
             return (
                 matchesSearch &&
                 matchesCollection &&
-                matchesAvailability
+                matchesAvailability &&
+                matchesNetwork &&
+                matchesPrice
             )
         })
 
