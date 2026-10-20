@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { waitForMockStartup } from './mockStartup'
 
 export const api = axios.create({
   baseURL: '/api',
@@ -8,9 +7,7 @@ export const api = axios.create({
 
 const ACCESS_TOKEN_KEY = 'kurio:demo:access-token:v1'
 
-api.interceptors.request.use(async config => {
-  // O navegador não pode consultar /api antes de o MSW assumir a rede.
-  await waitForMockStartup()
+api.interceptors.request.use(config => {
   const token = localStorage.getItem(ACCESS_TOKEN_KEY)
   if (token) config.headers.set('Authorization', `Bearer ${token}`)
   return config
