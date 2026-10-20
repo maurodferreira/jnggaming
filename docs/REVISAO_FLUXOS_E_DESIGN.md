@@ -1,5 +1,8 @@
 # Revisão de fluxo e fidelidade ao Figma — KURIO
 
+> **Registro histórico de revisão (fluxos e fidelidade ao Figma).** Este documento contém achados e pendências identificados durante a implementação. Para o estado atualizado com **117 testes Playwright aprovados**, Lighthouse mobile **100/90** e as condições ainda pendentes de publicação e aceite visual, consulte o [checklist final](CHECKLIST_ENTREGA.md). A presença de snapshots automáticas não substitui a comparação humana com os 15 frames do Figma.
+
+
 **Base de revisão:** Figma `HuEe6XFEtLBuMlCI8pYddf`, desktop `11:2862` (pagamento), mobile `16:748` (pagamento) e desktop `11:4385` (confirmação).  
 **Branch:** `feat/figma-kurio-ui`. **Escopo:** desafio técnico primeiro; melhorias opcionais somente depois de concluir os critérios eliminatórios.
 
