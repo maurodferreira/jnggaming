@@ -39,6 +39,37 @@ export function useCart() {
   })
 }
 
+export interface CartSummary {
+  coupon: string | null
+  totalQuantity: number
+  subtotalEth: string
+  discountEth: string
+  feeEth: string
+  totalEth: string
+}
+
+export function useCartSummary(coupon: string) {
+  const cart = useCart()
+  const session = useSession()
+  return useQuery({
+    queryKey: [
+      'cart-summary',
+      session.data?.id ?? 'guest',
+      coupon,
+      cart.data?.items.map(item => [item.id, item.quantity, item.unitPriceEth, item.available]),
+    ],
+    enabled: !session.isPending && Boolean(cart.data?.items.length),
+    retry: false,
+    queryFn: async ({ signal }) => {
+      const { data } = await api.get<CartSummary>('/cart/summary', {
+        signal,
+        params: { coupon },
+      })
+      return data
+    },
+  })
+}
+
 export function useAddToCart() {
   const queryClient = useQueryClient()
   const { queryKey } = useCartKey()
