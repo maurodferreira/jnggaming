@@ -68,7 +68,7 @@ export function NftArtworkGallery({ nftId, nftName }: { nftId: string; nftName: 
           ))}
         </div>
         <div className="relative self-start overflow-hidden rounded-[24px] bg-[#241612] p-1 sm:rounded-lg sm:p-3">
-          <div className="aspect-square overflow-hidden rounded-[20px] sm:rounded-lg" aria-live="polite">
+          <div className="aspect-[1.13] overflow-hidden rounded-[20px] sm:aspect-square sm:rounded-lg" aria-live="polite">
             <ArtworkImage src={src} name={nftName} view={selected} eager />
           </div>
           <div
