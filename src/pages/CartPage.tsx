@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { ArrowLeft, Trash2 } from 'lucide-react'
 import { useNfts } from '@/features/catalog/useNfts'
 import { NftCard } from '@/components/catalog/NftCard'
+import { FavoritesControlsProvider } from '@/components/catalog/FavoritesControlsProvider'
 import { getNftArtwork } from '@/lib/nftArtwork'
 import {
   useCart,
@@ -294,11 +295,13 @@ export function CartPage() {
         {related.data && (
           <section aria-label="Colecionadores também viram" className="border-t border-[#624230] pt-8">
             <h2 className="mb-7 font-semibold text-primary">Colecionadores também viram</h2>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-              {related.data.items.slice(0, 5).map(item => (
-                <NftCard key={item.id} nft={item} compact/>
-              ))}
-            </div>
+            <FavoritesControlsProvider>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                {related.data.items.slice(0, 5).map(item => (
+                  <NftCard key={item.id} nft={item} compact/>
+                ))}
+              </div>
+            </FavoritesControlsProvider>
           </section>
         )}
       </div>
