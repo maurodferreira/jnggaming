@@ -225,7 +225,7 @@ export function HomePage() {
             ) : (
               <>
                 <div className="mt-7 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-7 md:gap-y-12 lg:grid-cols-3">
-                  {data.items.map(nft => <NftCard key={nft.id} nft={nft}/>)}
+                  {data.items.map((nft, index) => <NftCard key={nft.id} nft={nft} priority={filters.page === 1 && index === 0}/>)}
                 </div>
                 <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
                   <p role="status" className="text-xs text-muted-foreground">{data.total} NFTs encontrados {isFetching ? '· Atualizando...' : ''}</p>
