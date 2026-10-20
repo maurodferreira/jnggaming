@@ -6,6 +6,19 @@ Um marketplace de NFTs desenvolvido como desafio técnico de Frontend para a **J
 
 > **Uma demonstração, não um marketplace financeiro.** Não há pagamentos, transferência de NFTs, conexão com blockchain ou carteira real. Os dados e as operações são simulados de ponta a ponta com MSW.
 
+## Status da entrega — 20/10/2026
+
+**Versão avaliada:** branch `feat/figma-kurio-ui`, commit de implementação `7ea96bf1`, com o teste adicional no HEAD `114fa5d4`. A `main` não foi modificada; o [PR #1](https://github.com/maurodferreira/jnggaming/pull/1) permanece em rascunho até a aprovação da entrega.
+
+- **Código:** [CI aprovado — 117 Playwright, 9 skips intencionais](https://github.com/maurodferreira/jnggaming/actions/runs/39483364599), além de typecheck, lint, build e build alternativo Windows.
+- **Qualidade:** [Lighthouse — três execuções por página e dispositivo](https://github.com/maurodferreira/jnggaming/actions/runs/39483283845). Home mobile **100**, NFT mobile **90**, Home desktop **98**, NFT desktop **99** em Performance; as demais três categorias ficaram em **100** nas quatro combinações.
+- **Dependências:** `npm audit` da mesma auditoria registrou **0 vulnerabilidades** (inclusive high/critical).
+- **Figma:** nove telas implementadas, com 27 screenshots de regressão em 390, 768 e 1440 px. Esses snapshots protegem o layout do projeto, mas **não comprovam equivalência pixel a pixel** com todos os 15 frames originais.
+- **Publicação:** o domínio público já passou em um smoke test, mas **a versão de produção publicada ainda é anterior ao HEAD desta branch**. Validar o deploy do commit aprovado antes de usar a URL como evidência da entrega final. Veja o [checklist de entrega](docs/CHECKLIST_ENTREGA.md).
+
+O relatório do Lighthouse é uma medição automatizada em preview de produção local, não uma garantia de nota idêntica em todos os celulares. Não atribuímos uma nota oficial ao desafio.
+
+
 ## O que você pode testar
 
 O fluxo começa no catálogo. Você consegue procurar coleções, combinar filtros, ordenar NFTs e abrir os detalhes de cada item. Lá, é possível escolher a edição e a quantidade disponível, adicionar ao carrinho e continuar explorando.
@@ -136,20 +149,18 @@ Além dos fluxos funcionais, existem **27 imagens de referência versionadas** p
 
 A última auditoria de dependências confirmada reportou **0 vulnerabilidades no `npm audit`**. O domínio público também passou no teste de navegação, imagens, rotas profundas e API simulada.
 
-### Resultado da auditoria — 20/10/2026
+### Resultado validado — 20/10/2026
 
-O último CI completo passou com **81 testes aprovados e 7 ignorados intencionalmente** (baselines de screenshot são executadas no projeto desktop em três larguras). [Execução do Playwright](https://github.com/maurodferreira/jnggaming/actions/runs/39432370225).
+A [suíte final](https://github.com/maurodferreira/jnggaming/actions/runs/39483364599) encerrou com **117 testes aprovados, 9 ignorados intencionalmente, zero falhas**. O commit da medição Lighthouse precede apenas a adição de um teste E2E, sem mudança no código de produção.
 
-O Lighthouse mede cada página três vezes no preview do build e publica as **medianas**. [Relatório da última rodada](https://github.com/maurodferreira/jnggaming/actions/runs/39432357361):
+| Página | Dispositivo | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS | TBT |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Início | Mobile | **100** | 100 | 100 | 100 | 1,24 s | 0,000 | 43 ms |
+| Início | Desktop | **98** | 100 | 100 | 100 | 0,95 s | 0,000 | 0 ms |
+| Detalhe NFT | Mobile | **90** | 100 | 100 | 100 | 3,04 s | 0,000 | 67 ms |
+| Detalhe NFT | Desktop | **99** | 100 | 100 | 100 | 0,94 s | 0,000 | 0 ms |
 
-| Página | Dispositivo | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Início | Mobile | **84** | 100 | 100 | 100 | 3,74 s | 0,000 |
-| Início | Desktop | **99** | 100 | 100 | 100 | 0,85 s | 0,000 |
-| Detalhe NFT | Mobile | **85** | 100 | 100 | 100 | 3,66 s | 0,000 |
-| Detalhe NFT | Desktop | **99** | 100 | 100 | 100 | 0,84 s | 0,002 |
-
-O requisito de **Performance mobile ≥90 ainda não foi atingido**. Mantive MSW, autenticação, Socket.IO, assets e fluxos ativos durante as medições; não desativei funcionalidades para obter uma nota maior. Os relatórios brutos, incluindo TBT, ficam nos artefatos do workflow.
+[Relatório completo, métricas individuais e artefatos](https://github.com/maurodferreira/jnggaming/actions/runs/39483283845). Valores de Performance são medianas de três execuções por combinação. Todas as metas do enunciado foram atingidas nessa rodada, com APIs mock, MSW e Socket.IO ativos.
 
 ## Figma: fidelidade com decisões conscientes
 
@@ -161,7 +172,7 @@ Os detalhes de requisitos, as diferenças justificadas e o aceite visual estão 
 
 ## Deploy
 
-A demonstração está publicada em **[kurio-jungle-challenge.vercel.app](https://kurio-jungle-challenge.vercel.app/)**.
+Existe uma implantação pública em **[kurio-jungle-challenge.vercel.app](https://kurio-jungle-challenge.vercel.app/)**. **Atenção:** ao revisar esta entrega, a URL pública ainda servia o commit `9a2289a9`, mais antigo que o HEAD `114fa5d4` da branch. O preview da branch não deve ser tratado como URL pública acessível sem testar a proteção de acesso da Vercel.
 
 - Projeto Vercel: `kurio-jungle-challenge`.
 - Framework: Vite; build: `npm run build`; saída: `dist`.
@@ -169,7 +180,7 @@ A demonstração está publicada em **[kurio-jungle-challenge.vercel.app](https:
 - Os mocks ficam habilitados por padrão. `VITE_ENABLE_MOCKS=false` só faz sentido se você configurar um backend compatível; sem isso, o catálogo e o checkout não funcionarão.
 - O Service Worker é servido em `/mockServiceWorker.js`.
 
-O deploy foi validado com um navegador Chromium acessando a URL pública: a Home, os mocks, os assets, as rotas diretas e o refresh passaram no teste automatizado.
+Um smoke test anterior em Chromium validou a URL pública, o MSW, a API mock, os assets, deep links e refresh; **o teste não atesta que o commit atual esteja em produção**. Depois de liberar a implantação da versão aprovada, execute novamente `node scripts/quality/deployment-smoke.mjs` apontando `KURIO_DEPLOY_URL` para o domínio escolhido.
 
 ## Onde encontrar cada parte
 
