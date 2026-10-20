@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import type { Nft } from '@/features/catalog/types'
-import { getNftArtwork } from '@/lib/nftArtwork'
+import { getNftArtwork, getNftThumbnail } from '@/lib/nftArtwork'
 import { FavoriteButton } from './FavoriteButton'
 
 interface NftCardProps {
@@ -27,7 +27,9 @@ export function NftCard({ nft, compact = false, priority = false }: NftCardProps
           </span>
         )}
         <img
-          src={getNftArtwork(nft.id)}
+          src={getNftThumbnail(nft.id)}
+          srcSet={`${getNftThumbnail(nft.id)} 400w, ${getNftArtwork(nft.id)} 960w`}
+          sizes="(max-width: 639px) calc((100vw - 60px) / 2), (max-width: 1023px) 33vw, 250px"
           alt={`Arte digital ${nft.name}`}
           className={`aspect-square w-full rounded-lg object-cover ${compact ? 'max-h-[240px]' : ''}`}
           loading={priority ? 'eager' : 'lazy'}
