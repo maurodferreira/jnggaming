@@ -119,6 +119,7 @@ export function HomePage() {
       </section>
 
       <section id="market" aria-label="Mercado de NFTs" className="mt-10 scroll-mt-6 lg:mt-24">
+        <h2 className="sr-only">Mercado de NFTs</h2>
         <div className="grid items-start gap-8 lg:grid-cols-[310px_minmax(0,1fr)] lg:gap-12">
           <aside
             id="catalog-filters"
