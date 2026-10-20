@@ -36,9 +36,16 @@ for (const width of [390, 768, 1440]) {
 test('keyboard users can skip navigation and see clear focus', async ({ page }) => {
   await page.goto('/')
   const skip = page.getByRole('link', { name: 'Pular para o conteúdo principal' })
-  await page.keyboard.press('Tab')
+  // TanStack Router can restore focus during the initial client render.
+  // Start from a known keyboard position, then check forward/backward Tab.
+  await expect(page.getByRole('heading', { name: /SEJA DONO/i })).toBeVisible()
+  await skip.focus()
   await expect(skip).toBeFocused()
   await expect(skip).toBeVisible()
+  await page.keyboard.press('Tab')
+  await expect(skip).not.toBeFocused()
+  await page.keyboard.press('Shift+Tab')
+  await expect(skip).toBeFocused()
   await page.keyboard.press('Enter')
   await expect(page.locator('#main-content')).toBeFocused()
 })
