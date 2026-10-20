@@ -31,6 +31,13 @@
         location.pathname === '/nft/1' ? 'nft' : 'none'
     </script>
     <style>
+      /* Match the app's Tailwind preflight from the very first HTML paint.
+         Otherwise its late-arriving box sizing/margin reset moves the fallback
+         and can exceed the CLS budget before React renders. */
+      html, body { margin: 0; padding: 0; }
+      #kurio-first-paint, #kurio-first-paint * { box-sizing: border-box; }
+      #kurio-first-paint p { margin: 0; }
+      #kurio-first-paint img { display: block; max-width: 100%; }
       #kurio-first-paint { display: none; position: fixed; inset: 0; overflow: hidden;
         z-index: 1; background: #20130e; color: #f5f1eb; font: 14px system-ui, sans-serif; }
       html[data-kurio-shell="home"] #kurio-first-paint,
