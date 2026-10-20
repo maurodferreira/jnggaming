@@ -395,7 +395,8 @@ export function NftDetailPage() {
 
           <EditionSelector key={nft.id} nft={nft} />
 
-          <dl className="space-y-1 text-xs leading-6 text-[#cfb28c]" aria-label="Metadados demonstrativos">
+          <section aria-label="Metadados demonstrativos">
+            <dl className="space-y-1 text-xs leading-6 text-[#cfb28c]">
             <div className="flex flex-wrap gap-2">
               <dt>ID do token:</dt>
               <dd>{nft.metadata.tokenId}</dd>
@@ -410,7 +411,8 @@ export function NftDetailPage() {
                 ? nft.metadata.attributes.join(', ')
                 : 'Não informados nesta demonstração'}</dd>
             </div>
-          </dl>
+            </dl>
+          </section>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span>Compartilhar este NFT:</span>
             <button
