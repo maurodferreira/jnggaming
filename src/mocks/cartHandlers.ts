@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from 'msw'
 import { nfts } from './fixtures/nfts'
+import { calculateCartSummary } from './checkoutHandlers'
 import { getUserFromRequest, hasAuthHeader } from './authStore'
 import { getMockEditions } from './fixtures/editions'
 import {
@@ -60,6 +61,30 @@ export const cartHandlers = [
   http.post('/api/mock/reset', () => {
     resetGuestCart()
     return HttpResponse.json({ reset: true })
+  }),
+
+  // Preview estimates for guests and signed-in collectors use exactly the
+  // same pricing math as the final authenticated quote.
+  http.get('/api/cart/summary', async ({ request }) => {
+    const ownerId = cartOwner(request)
+    if (!ownerId) return unauthorized()
+    await delay(180)
+    const coupon = new URL(request.url).searchParams.get('coupon')?.trim().toUpperCase() || null
+    if (coupon && !['KURIO10', 'EXPIRED'].includes(coupon)) {
+      return HttpResponse.json({ message: 'Cupom inválido.' }, { status: 400 })
+    }
+    if (coupon === 'EXPIRED') {
+      return HttpResponse.json({ message: 'Cupom expirado.' }, { status: 410 })
+    }
+    const cart = buildCart(ownerId)
+    if (cart.items.length === 0 || cart.items.some(item => item.available < item.quantity)) {
+      return HttpResponse.json({ message: 'Carrinho vazio ou item indisponível. Revise as quantidades.' }, { status: 409 })
+    }
+    return HttpResponse.json({
+      coupon,
+      totalQuantity: cart.totalQuantity,
+      ...calculateCartSummary(cart.subtotalEth, coupon),
+    })
   }),
 
   // Consultar carrinho
