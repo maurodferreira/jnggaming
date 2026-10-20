@@ -34,8 +34,17 @@ async function captureWidths(page: Page, name: string) {
   for (const width of widths) {
     await page.setViewportSize({ width, height: 900 })
     await visuallyReady(page)
+    // Identificadores e data do pedido variam; só eles ficam mascarados.
+    const volatileFields = name === 'order-confirmed'
+      ? [
+          page.getByText('ID simulado', { exact: true }).locator('..').locator('dd'),
+          page.getByText('Data', { exact: true }).locator('..').locator('dd'),
+        ]
+      : []
     await expect(page).toHaveScreenshot(`${name}-${width}.png`, {
       fullPage: true,
+      mask: volatileFields,
+      maskColor: '#382117',
       animations: 'disabled',
       caret: 'hide',
       maxDiffPixelRatio: 0.02,
@@ -95,4 +104,57 @@ test('visual baseline: checkout with saved demo wallet', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Pagamento com carteira' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Confirmar compra simulada' })).toBeEnabled()
   await captureWidths(page, 'checkout')
+})
+
+
+test('visual baseline: login and registration', async ({ page }) => {
+  test.setTimeout(120_000)
+  for (const path of ['/login', '/register'] as const) {
+    await page.goto(path)
+    await expect(page.getByLabel('E-mail', { exact: true })).toBeVisible()
+    await captureWidths(page, path === '/login' ? 'login' : 'register')
+  }
+})
+
+test('visual baseline: collector profile and wallets', async ({ page }) => {
+  test.setTimeout(120_000)
+  await page.goto('/login')
+  await page.getByLabel('E-mail', { exact: true }).fill('colecionador@kurio.demo')
+  await page.getByLabel('Senha', { exact: true }).fill('KurioDemo123!')
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+  await expect(page).toHaveURL(/\\?q=/)
+
+  await page.goto('/profile')
+  await expect(page.locator('#profile-display-name')).toBeVisible()
+  await captureWidths(page, 'profile')
+
+  await page.goto('/wallets')
+  await expect(page.locator('#wallet-true-address')).toBeVisible()
+  await captureWidths(page, 'wallets')
+})
+
+test('visual baseline: API-confirmed demo receipt', async ({ page }) => {
+  test.setTimeout(150_000)
+  await page.goto('/login')
+  await page.getByLabel('E-mail', { exact: true }).fill('colecionador@kurio.demo')
+  await page.getByLabel('Senha', { exact: true }).fill('KurioDemo123!')
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+  await expect(page).toHaveURL(/\\?q=/)
+
+  await page.goto('/wallets')
+  await page.locator('#wallet-true-label').fill('Principal')
+  await page.locator('#wallet-true-nickname').fill('Minha coleção')
+  await page.locator('#wallet-true-address').fill('0x' + 'a'.repeat(40))
+  await page.getByRole('button', { name: 'Salvar carteira' }).first().click()
+  await expect(page.getByRole('status')).toContainText('Carteira salva com sucesso.')
+
+  await page.goto('/nft/1')
+  await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click()
+  await expect(page.getByText('NFT adicionado ao carrinho!')).toBeVisible()
+  await page.goto('/checkout')
+  await expect(page.getByRole('button', { name: 'Confirmar compra simulada' })).toBeEnabled()
+  await page.getByRole('button', { name: 'Confirmar compra simulada' }).click()
+  await expect(page).toHaveURL(/\\/orders\\/[^/]+$/)
+  await expect(page.getByRole('heading', { name: 'Pedido confirmado na demonstração!' })).toBeVisible({ timeout: 20_000 })
+  await captureWidths(page, 'order-confirmed')
 })
