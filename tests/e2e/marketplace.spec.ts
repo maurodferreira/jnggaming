@@ -158,3 +158,18 @@ test('carrinhos ficam isolados entre usuários demo', async ({ page }) => {
   await page.goto('/cart')
   await expect(page.getByRole('heading', { name: 'Seu carrinho está vazio' })).toBeVisible()
 })
+
+test('desktop sorting control is keyboard accessible and persists in the URL', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'Sort control is only shown at XL widths.')
+
+  const sort = page.getByRole('combobox', { name: 'Ordenar por:' })
+  await expect(sort).toBeVisible()
+  await expect(sort).toHaveValue('featured')
+  await sort.selectOption('price_desc')
+  await expect(sort).toHaveValue('price_desc')
+  await expect(page.getByRole('link', { name: /Ver detalhes de Neon Origins #101/i })).toBeVisible()
+  expect(new URL(page.url()).searchParams.get('sort')).toBe('price_desc')
+
+  await page.reload()
+  await expect(page.getByRole('combobox', { name: 'Ordenar por:' })).toHaveValue('price_desc')
+})
