@@ -3,9 +3,11 @@
 > **Revisão de requisitos (20/10/2026):** [Escopo original e auditoria dos 15 frames do Figma](docs/ESCOPO_ORIGINAL_E_AUDITORIA_FIGMA.md). Essa é a matriz atual de aderência ao desafio; os documentos mais antigos registram etapas históricas e não devem ser usados como status final.
 
 
+[Regras obrigatórias, liberdade de design e decisões justificadas](docs/REGRAS_E_LIBERDADES_DO_DESAFIO.md).
+
 Marketplace demonstrativo em **React + TypeScript**, baseado no [Figma Frontend Challenge](https://www.figma.com/design/HuEe6XFEtLBuMlCI8pYddf/Frontend-Challenge--c%C3%B3pia-). O código usa **dados e operações simuladas no navegador**: nenhuma blockchain, conexão de carteira ou compra verdadeira é realizada.
 
-> **Estado atual (19/10/2026):** catálogo, carrinho, conta, checkout/recibo **simulados** e eventos Socket.IO via mock MSW implementados. O projeto **ainda está em revisão**: faltam comparar todas as capturas visuais com o Figma, auditar acessibilidade/performance, tratar advisories das dependências e validar o deploy. Consulte [PLANO_CONFORMIDADE_DESAFIO.md](docs/PLANO_CONFORMIDADE_DESAFIO.md), [REVISAO_VISUAL_ACESSIBILIDADE.md](docs/REVISAO_VISUAL_ACESSIBILIDADE.md) e o PR em rascunho.
+> **Estado da revisão (20/10/2026):** os 9 fluxos estão implementados; carrinho/cupom por API, tratamentos de falha de catálogo, retomada de sessão e Socket.IO simulado estão em validação. **Ainda não é entrega final:** falta CI verde no commit final, baselines visuais versionadas, completar revisões de Figma, Performance mobile ≥90, segurança das ferramentas de desenvolvimento e URL pública validada. Consulte [PLANO_CONFORMIDADE_DESAFIO.md](docs/PLANO_CONFORMIDADE_DESAFIO.md), [REVISAO_VISUAL_ACESSIBILIDADE.md](docs/REVISAO_VISUAL_ACESSIBILIDADE.md) e o PR em rascunho.
 
 ## Executar localmente
 
@@ -77,7 +79,7 @@ As contas cadastradas no formulário também são fictícias. O MSW deriva hashe
 | --- | --- |
 | `/` | Hero, catálogo, filtros, busca, ordenação, paginação |
 | `/nft/:nftId` | Detalhe, edição, quantidade, carrinho, favoritos |
-| `/cart` | Carrinho de visitante/conta e ajustes de quantidade |
+| `/cart` | Carrinho visitante/conta, quantidades, cupom, desconto, taxa e total por API MSW |
 | `/login` | Login com retorno ao destino solicitado |
 | `/register` | Criação de conta e tratamento de conflito |
 | `/profile` | Perfil protegido, avatar e atualização de senha |
@@ -92,7 +94,7 @@ Os controles sociais Google/Facebook não realizam login real e aparecem desativ
 **Todas as chamadas** passam pelo Axios (`src/services/api.ts`) e são interceptadas pelo MSW (`src/mocks/`), sem respostas fictícias diretamente nos componentes.
 
 - `GET /api/nfts` e `GET /api/nfts/:id`
-- `GET/POST/PATCH/DELETE /api/cart...`
+- `GET/POST/PATCH/DELETE /api/cart...`, `GET /api/cart/summary` (prévia de cupom, desconto, taxa e total)
 - `POST /api/auth/login`, `POST /api/auth/register`, `GET /api/auth/session`, `POST /api/auth/logout`
 - `GET/PATCH /api/profile`, `PATCH /api/profile/password`
 - `GET/PUT/DELETE /api/wallets...`
@@ -108,6 +110,21 @@ Para **zerar todos os dados simulados** durante desenvolvimento/testes:
 await fetch('/api/mock/reset-all', { method: 'POST' })
 location.reload()
 ```
+
+### Perfis de rede do catálogo (MSW)
+
+Após a aplicação iniciar, configure um cenário determinístico via DevTools:
+
+```js
+await fetch('/api/mock/catalog-network', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ scenario: 'slow' }),
+})
+location.reload()
+```
+
+Valores possíveis de `scenario`: `normal`, `slow` (1,5 s), `variable` (1,1 s/120 ms alternados), `http-500` (HTTP 503) e `offline` (erro de rede). Alteram somente listagem e detalhe de NFTs; o reset geral também restaura o perfil normal. A operação é **simulada**.
 
 Para testar expiração da sessão autenticada:
 
