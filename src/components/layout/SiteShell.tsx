@@ -25,7 +25,7 @@ export function SiteShell() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <a href="#main-content" className="sr-only fixed left-4 top-4 z-[100] rounded-md bg-primary px-5 py-3 font-bold text-primary-foreground focus:not-sr-only focus:outline-2 focus:outline-offset-2 focus:outline-primary">Pular para o conteúdo principal</a>
-      {!isAuthPage && <header className="mx-auto hidden w-full max-w-[1248px] px-6 pt-6 md:block">
+      {!isAuthPage && <header className="mx-auto hidden w-full max-w-[1248px] px-6 pt-6 lg:block">
         <div className="flex min-h-[45px] items-start justify-between gap-5 border-b border-[#674332]">
           <Brand />
           <nav aria-label="Navegação principal" className="flex items-center gap-9 text-sm">
@@ -69,7 +69,7 @@ export function SiteShell() {
         <Outlet />
       </div>
 
-      {!isAuthPage && <footer className="mt-24 hidden bg-[#241612] px-6 py-12 md:block">
+      {!isAuthPage && <footer className="mt-24 hidden bg-[#241612] px-6 py-12 lg:block">
         <div className="mx-auto grid max-w-[1200px] gap-14 border-b border-[#674332] pb-10 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
           <div className="space-y-4">
             <p className="font-bold tracking-[0.18em]">KURIO</p>
@@ -94,7 +94,7 @@ export function SiteShell() {
         <p className="mx-auto max-w-[1200px] pt-6 text-xs text-muted-foreground">© 2026 KURIO. Projeto demonstrativo de frontend.</p>
       </footer>}
 
-      {!isAuthPage && <nav aria-label="Navegação mobile" className="fixed inset-x-0 bottom-0 z-50 grid h-[calc(78px+env(safe-area-inset-bottom))] grid-cols-4 items-center rounded-t-[28px] border-t border-[#42291d] bg-[#241612]/95 pb-[calc(12px+env(safe-area-inset-bottom))] shadow-2xl backdrop-blur md:hidden">
+      {!isAuthPage && <nav aria-label="Navegação mobile" className="fixed inset-x-0 bottom-0 z-50 grid h-[calc(78px+env(safe-area-inset-bottom))] grid-cols-4 items-center rounded-t-[28px] border-t border-[#42291d] bg-[#241612]/95 pb-[calc(12px+env(safe-area-inset-bottom))] shadow-2xl backdrop-blur lg:hidden">
         <Link to="/" search={defaultCatalogSearch} className={pathname === '/' ? 'flex justify-center text-primary' : 'flex justify-center text-[#cfb28c]'} aria-label="Início">
           <House size={23} fill={pathname === '/' ? 'currentColor' : 'none'} />
         </Link>
