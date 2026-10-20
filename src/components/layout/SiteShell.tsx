@@ -69,30 +69,74 @@ export function SiteShell() {
         <Outlet />
       </div>
 
-      {!isAuthPage && <footer className="mt-24 hidden bg-[#241612] px-6 py-12 lg:block">
-        <div className="mx-auto grid max-w-[1200px] gap-14 border-b border-[#674332] pb-10 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
-          <div className="space-y-4">
-            <p className="font-bold tracking-[0.18em]">KURIO</p>
-            <p className="text-sm leading-7 text-muted-foreground">Arte e cultura digital cuidadosamente selecionadas para colecionadores curiosos.</p>
+      {!isAuthPage && (
+        <footer className="mt-20 hidden bg-[#241612] text-foreground lg:block">
+          {/* Information cards reproduce the Figma composition without adding
+              fake newsletter subscriptions or pages outside the brief. */}
+          <div className="mx-auto grid max-w-[1248px] grid-cols-4 gap-0 px-6 py-10">
+            {[
+              { initial: 'S', title: 'Segurança da carteira', description: 'Aprenda a proteger seu acesso e seus ativos digitais.' },
+              { initial: 'C', title: 'Criadores em destaque', description: 'Descubra artistas e comunidades que movimentam a arte digital.' },
+              { initial: 'D', title: 'Novidades do mercado', description: 'Explore coleções, lançamentos e tendências da cultura digital.' },
+            ].map(item => (
+              <div key={item.initial} className="space-y-3 border-r border-[#8c542d] px-5 first:pl-0">
+                <div aria-hidden="true" className="grid size-14 place-items-center rounded-full bg-primary text-lg font-bold text-primary-foreground">{item.initial}</div>
+                <p className="text-sm font-bold">{item.title}</p>
+                <p className="max-w-[215px] text-xs leading-6 text-[#cfb28c]">{item.description}</p>
+              </div>
+            ))}
+            <div className="space-y-3 pl-5">
+              <p className="text-sm font-bold">Explore o próximo lançamento</p>
+              <p className="text-xs leading-6 text-[#cfb28c]">
+                Encontre NFTs e coleções no catálogo demonstrativo da KURIO.
+              </p>
+              <Link to="/" hash="market" search={defaultCatalogSearch} className="inline-flex min-h-10 items-center rounded-md bg-primary px-5 text-xs font-bold text-primary-foreground hover:bg-[#e89b55] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                Explorar NFTs
+              </Link>
+            </div>
           </div>
-          <div className="space-y-3 text-sm">
-            <p className="font-bold">Explore</p>
-            <Link to="/" hash="market" search={defaultCatalogSearch} className="block text-muted-foreground hover:text-primary">Mercado de NFTs</Link>
-            <Link to="/cart" className="block text-muted-foreground hover:text-primary">Meu carrinho</Link>
+
+          <div className="bg-[#422613] px-6 py-6">
+            <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-6 text-xs">
+              <p className="font-bold tracking-[0.18em]">KURIO</p>
+              <p className="text-[#f2d3b2]">Feito para colecionadores, criadores e cultura digital.</p>
+              <p className="text-[#f2d3b2]">Marketplace demonstrativo de NFTs</p>
+            </div>
           </div>
-          <div className="space-y-3 text-sm">
-            <p className="font-bold">Coleções</p>
-            <p className="text-muted-foreground">Arte digital</p>
-            <p className="text-muted-foreground">Colecionáveis</p>
-            <p className="text-muted-foreground">Música</p>
+
+          <div className="mx-auto grid max-w-[1248px] grid-cols-4 gap-10 px-6 py-10 text-sm">
+            <div className="space-y-4">
+              <h2 className="font-bold">Meu perfil</h2>
+              <Link to="/profile" className="block text-[#cfb28c] hover:text-primary">Dados da conta</Link>
+              <Link to="/wallets" className="block text-[#cfb28c] hover:text-primary">Carteiras</Link>
+              <Link to="/cart" className="block text-[#cfb28c] hover:text-primary">Meu carrinho</Link>
+            </div>
+            <div className="space-y-4">
+              <h2 className="font-bold">Explorar</h2>
+              <Link to="/" hash="market" search={defaultCatalogSearch} className="block text-[#cfb28c] hover:text-primary">Mercado de NFTs</Link>
+              <Link to="/" search={defaultCatalogSearch} className="block text-[#cfb28c] hover:text-primary">Início</Link>
+              <p className="text-xs leading-5 text-[#cfb28c]">O catálogo e os pedidos utilizam APIs simuladas.</p>
+            </div>
+            <div className="space-y-4">
+              <h2 className="font-bold">Coleções</h2>
+              <p className="text-[#cfb28c]">Arte digital</p>
+              <p className="text-[#cfb28c]">Fotografia</p>
+              <p className="text-[#cfb28c]">Música</p>
+              <p className="text-[#cfb28c]">Arte 3D</p>
+            </div>
+            <div className="space-y-4">
+              <h2 className="font-bold">Carteiras e redes</h2>
+              <p className="text-xs leading-6 text-[#cfb28c]">
+                Ethereum, Polygon e Solana fazem parte da simulação. Não conecte carteiras reais.
+              </p>
+              <p className="text-xs leading-6 text-[#cfb28c]">Provedores simulados: MetaMask, WalletConnect e Coinbase Wallet.</p>
+            </div>
           </div>
-          <div className="space-y-3 text-sm">
-            <p className="font-bold">Sobre a demonstração</p>
-            <p className="leading-6 text-muted-foreground">Catálogo, API e carrinho simulados. Nenhuma transação real é realizada.</p>
-          </div>
-        </div>
-        <p className="mx-auto max-w-[1200px] pt-6 text-xs text-muted-foreground">© 2026 KURIO. Projeto demonstrativo de frontend.</p>
-      </footer>}
+          <p className="border-t border-[#624230] px-6 py-5 text-center text-xs text-[#cfb28c]">
+            © 2026 KURIO. Projeto demonstrativo · Nenhuma transação real é realizada.
+          </p>
+        </footer>
+      )}
 
       {!isAuthPage && <nav aria-label="Navegação mobile" className="fixed inset-x-0 bottom-0 z-50 grid h-[calc(78px+env(safe-area-inset-bottom))] grid-cols-4 items-center rounded-t-[28px] border-t border-[#42291d] bg-[#241612]/95 pb-[calc(12px+env(safe-area-inset-bottom))] shadow-2xl backdrop-blur lg:hidden">
         <Link to="/" search={defaultCatalogSearch} className={pathname === '/' ? 'flex justify-center text-primary' : 'flex justify-center text-[#cfb28c]'} aria-label="Início">
