@@ -1,4 +1,8 @@
+export type NftNetwork = 'Ethereum' | 'Polygon' | 'Solana'
+export type CatalogNetwork = NftNetwork | 'all'
+
 export interface Nft {
+    network: NftNetwork
     id: string
     name: string
     collection: string
@@ -18,6 +22,9 @@ export interface CatalogFilters {
     q: string
     collection: string
     available: boolean
+    network?: CatalogNetwork
+    minPriceEth?: string
+    maxPriceEth?: string
     sort: CatalogSort
     page: number
 }
@@ -31,6 +38,14 @@ export interface NftListResponse {
 }
 
 export const PAGE_SIZE = 9
+
+/** Decimal ETH filters use strings, just like our REST prices and bigint quotes. */
+export function normalizeEthFilter(value: unknown): string {
+    if (typeof value !== 'string') return ''
+    const decimal = value.trim().replace(',', '.')
+    if (!/^\\d{1,6}(?:\\.\\d{1,18})?$/.test(decimal)) return ''
+    return decimal
+}
 
 export function parseCatalogSearch(
     search: Record<string, unknown>
@@ -57,6 +72,9 @@ export function parseCatalogSearch(
         available:
             search.available === true ||
             search.available === 'true',
+        network: search.network === 'Ethereum' || search.network === 'Polygon' || search.network === 'Solana' ? search.network : 'all',
+        minPriceEth: normalizeEthFilter(search.minPriceEth),
+        maxPriceEth: normalizeEthFilter(search.maxPriceEth),
         sort,
         page:
             Number.isSafeInteger(page) && page > 0 && page <= 1000
