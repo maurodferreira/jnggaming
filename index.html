@@ -17,11 +17,88 @@
       type="image/webp"
       fetchpriority="high"
     />
+    <!-- Progressive first paint for the two main entry routes.
+         It has no simulated transaction data and never replaces REST/MSW.
+         CSS removes it automatically once React renders into #root. -->
+    <script>
+      document.documentElement.dataset.kurioShell =
+        location.pathname === '/' ? 'home' :
+        location.pathname === '/nft/1' ? 'nft' : 'none'
+    </script>
+    <style>
+      #kurio-first-paint { display: none; position: fixed; inset: 0; overflow: hidden;
+        z-index: 1; background: #20130e; color: #f5f1eb; font: 14px system-ui, sans-serif; }
+      html[data-kurio-shell="home"] #kurio-first-paint,
+      html[data-kurio-shell="nft"] #kurio-first-paint { display: block; }
+      #root:not(:empty) + #kurio-first-paint { display: none !important; }
+      .kurio-first-header { height: 68px; display: flex; align-items: center;
+        justify-content: space-between; max-width: 1248px; padding: 0 24px; margin: auto; }
+      .kurio-first-brand { color: #e89b55; font-size: 23px; font-weight: 800; letter-spacing: -1px; }
+      .kurio-first-pill { width: 64px; height: 10px; border-radius: 20px; background: #624230; }
+      .kurio-first-main { max-width: 1248px; padding: 12px 24px; margin: 0 auto; }
+      .kurio-first-hero { display: flex; gap: 18px; align-items: center;
+        min-height: 190px; padding: 16px; border-radius: 16px;
+        background: radial-gradient(ellipse at 85% 25%, #6f492a 0%, #3d2418 42%, #20130e 100%); }
+      .kurio-first-copy { flex: 1; min-width: 0; }
+      .kurio-first-kicker { font-size: 11px; color: #e9c7a1; margin: 0 0 14px; }
+      .kurio-first-title { font-size: 17px; line-height: 1.55; font-weight: 750; margin: 0 0 12px; }
+      .kurio-first-description { font-size: 11px; line-height: 1.5; color: #cfb28c; }
+      .kurio-first-hero-img { flex: 0 0 40%; min-width: 0; width: 40%; aspect-ratio: 1;
+        max-width: 450px; border-radius: 14px; object-fit: cover; }
+      .kurio-first-market { margin-top: 40px; }
+      .kurio-first-line { height: 12px; margin: 16px 0; width: 45%; border-radius: 3px; background: #624230; }
+      .kurio-first-cards { display: flex; gap: 16px; }
+      .kurio-first-card { width: 50%; max-width: 220px; aspect-ratio: 1; border-radius: 12px; background: #38241a; }
+      .kurio-first-nft-img { display: block; width: 100%; max-width: 640px; aspect-ratio: 1.33;
+        border-radius: 22px; object-fit: cover; }
+      .kurio-first-nft-copy { margin-top: 18px; font-size: 20px; font-weight: 700; }
+      .kurio-first-home, .kurio-first-nft { display: none; }
+      html[data-kurio-shell="home"] .kurio-first-home,
+      html[data-kurio-shell="nft"] .kurio-first-nft { display: block; }
+      @media (min-width: 768px) {
+        .kurio-first-header { height: 82px; }
+        .kurio-first-main { padding-top: 18px; }
+        .kurio-first-hero { min-height: 450px; padding: 40px; gap: 48px; }
+        .kurio-first-title { font-size: clamp(28px, 3.4vw, 43px); }
+        .kurio-first-description { font-size: 14px; }
+        .kurio-first-hero-img { width: 42%; flex-basis: 42%; }
+        .kurio-first-nft-img { max-width: 480px; aspect-ratio: 1; }
+      }
+    </style>
     <meta name="description" content="Marketplace demonstrativo de NFTs com compras simuladas." />
     <title>NFT Marketplace | Frontend Challenge</title>
   </head>
   <body>
     <div id="root"></div>
+    <div id="kurio-first-paint" aria-hidden="true">
+      <div class="kurio-first-header">
+        <span class="kurio-first-brand">Kurio</span>
+        <span class="kurio-first-pill"></span>
+      </div>
+      <div class="kurio-first-home">
+        <main class="kurio-first-main">
+          <section class="kurio-first-hero">
+            <div class="kurio-first-copy">
+              <p class="kurio-first-kicker">Bem-vindo à Kurio</p>
+              <p class="kurio-first-title">ARTE DIGITAL PARA EXPLORAR</p>
+              <p class="kurio-first-description">Descubra obras e coleções digitais.</p>
+            </div>
+            <img class="kurio-first-hero-img" src="/assets/nfts/emerald-ape.webp" alt="" width="400" height="400" fetchpriority="high" />
+          </section>
+          <section class="kurio-first-market">
+            <div class="kurio-first-line"></div>
+            <div class="kurio-first-cards"><div class="kurio-first-card"></div><div class="kurio-first-card"></div></div>
+          </section>
+        </main>
+      </div>
+      <div class="kurio-first-nft">
+        <main class="kurio-first-main">
+          <img class="kurio-first-nft-img" src="/assets/nfts/emerald-ape.webp" alt="" width="640" height="640" fetchpriority="high" />
+          <div class="kurio-first-nft-copy">Emerald Ape #042</div>
+          <div class="kurio-first-line"></div>
+        </main>
+      </div>
+    </div>
     <script type="module" src="/src/mocks/earlyStart.ts"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
