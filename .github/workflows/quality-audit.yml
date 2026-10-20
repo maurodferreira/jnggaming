@@ -52,6 +52,9 @@ jobs:
           node --input-type=module -e "import fs from 'node:fs'; const audit=JSON.parse(fs.readFileSync('reports/quality/npm-audit.json','utf8')); console.log('Dependency vulnerability counts:', JSON.stringify(audit.metadata?.vulnerabilities ?? {}))"
       - name: Lighthouse mobile and desktop — three runs each
         run: node scripts/quality/lighthouse.mjs
+      - name: Diagnose initial JavaScript and main-thread work
+        if: always()
+        run: node scripts/quality/main-thread-diagnostics.mjs
       - name: Upload raw Lighthouse reports and audit summary
         if: always()
         uses: actions/upload-artifact@v4
