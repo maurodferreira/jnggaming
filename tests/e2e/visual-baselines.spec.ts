@@ -71,6 +71,8 @@ test('visual baseline: NFT detail', async ({ page }) => {
   test.setTimeout(90_000)
   await page.goto('/nft/1')
   await expect(page.getByRole('heading', { name: 'Emerald Ape #042', level: 1 })).toBeVisible()
+  // Avoid photographing the transition from related-card placeholders to API data.
+  await expect(page.getByRole('region', { name: 'Mais desta coleção' }).locator('article')).toHaveCount(5)
   await captureWidths(page, 'nft')
 })
 
