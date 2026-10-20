@@ -66,9 +66,9 @@ test('login recupera sessão e protege perfil e carteiras', async ({ page }) => 
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
 
   await expect(page).toHaveURL(/\/profile$/)
-  await expect(page.getByRole('heading', { name: 'Meu perfil' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Meu perfil', level: 1 })).toBeVisible()
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'Meu perfil' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Meu perfil', level: 1 })).toBeVisible()
   await page.goto('/wallets')
   await expect(page.getByRole('heading', { name: 'Carteira principal' })).toBeVisible()
 })
