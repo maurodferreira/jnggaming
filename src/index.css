@@ -868,3 +868,11 @@ textarea:focus-visible {
     background-image: none;
   }
 }
+
+/* O catálogo mobile tem colunas levemente desencontradas, como no Figma.
+   Fora do celular, os cards voltam à grade regular. */
+@media (max-width: 639px) {
+  .kurio-catalog-grid > article:nth-child(even) {
+    margin-top: 1.75rem;
+  }
+}
