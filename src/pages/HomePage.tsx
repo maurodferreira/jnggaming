@@ -11,6 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const routeApi = getRouteApi('/')
 const categories = ['Arte digital', 'Fotografia', 'Música', 'Arte 3D', 'Colecionáveis', 'Generativa', 'Jogos', 'Assinaturas', 'Utilidade']
+const sortLabels: Record<CatalogSort, string> = {
+  featured: 'Destaques',
+  newest: 'Listados recentemente',
+  trending: 'Em alta',
+  name_asc: 'Nome (A-Z)',
+  price_asc: 'Menor preço',
+  price_desc: 'Maior preço',
+}
+
 const resetFilters: CatalogFilters = {
   q: '',
   collection: 'all',
@@ -195,7 +204,7 @@ export function HomePage() {
                   }}
                 >
                   <SelectTrigger aria-labelledby="catalog-sort-label" className="h-9 w-[190px] rounded-md border-[#624230] bg-[#241612] text-xs text-[#f5f1eb] hover:border-primary focus-visible:ring-2 focus-visible:ring-primary/50">
-                    <SelectValue />
+                    <SelectValue>{sortLabels[filters.sort]}</SelectValue>
                   </SelectTrigger>
                   <SelectContent align="end" sideOffset={6} className="z-[100] rounded-lg border-[#624230] bg-[#241612] text-[#f5f1eb] shadow-xl">
                     <SelectItem value="featured">Destaques</SelectItem>
