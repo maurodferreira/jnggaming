@@ -24,3 +24,8 @@ const artwork: Record<string, string> = {
 export function getNftArtwork(id: string): string {
   return artwork[id] ?? '/assets/nfts/emerald-ape.webp'
 }
+
+/** Optimized 400px versions for catalog cards; full art remains in the NFT gallery. */
+export function getNftThumbnail(id: string): string {
+  return getNftArtwork(id).replace('/assets/nfts/', '/assets/nfts/thumbs/')
+}
