@@ -69,19 +69,19 @@ O GitHub Actions executa `npm ci`, `npm run typecheck`, `npm run lint`, `npm run
 
 Artefatos do Playwright (HTML e traces) são anexados ao CI. Os cenários cobrem busca/filtro/refresh, detalhe inexistente, carrinho, sessão, conflito de cadastro, isolamento de usuários, bloqueio de checkout sem carteira e confirmação com refresh. **Esses cenários não substituem a cobertura completa de 12 conjuntos exigidos**; também faltam baselines visuais versionadas. Não declarar a suíte aprovada sem consultar o resultado de CI da revisão atual.
 
-## Ainda não implementado: checklist eliminatório
+## Validações e lacunas do desafio — revisão 20/10/2026
 
-- Cobrir cenários avançados de cotação (cupom inválido/expirado, preço alterado e indisponibilidade).
-- Ampliar testes de pedidos idempotentes, recusa, timeout, repetição de requisição e recuperação.
-- Validar em navegador a fidelidade completa dos layouts desktop/mobile de pagamento e recibo.
-- Socket.IO com `nft.updated` e `order.updated`, versões monotônicas, deduplicação, reconexão e reconciliação via REST.
-- MSW com cenários parametrizáveis de latência variável, conexões offline e HTTP 500.
-- Todos os testes E2E do enunciado, regressão visual baseline e acessibilidade por teclado/foco/zoom.
-- Lighthouse home/detalhe em desktop/mobile: 3 execuções e mediana Performance ≥90, A11y ≥95, BP ≥95, SEO ≥90; LCP/CLS/TBT documentados.
-- URL pública de deploy final e inspeção de refresh nas rotas profundas.
+**Implementações existentes e em validação pelo CI:** cotação `GET /api/quote` com controle de versão, eventos Socket.IO/REST, criação idempotente de pedidos, descontos, recuperação de rede, cenários de falha, 404, skeleton shimmer, carrinho com `GET /api/cart/summary` e retorno ao checkout após expiração da sessão (mantendo o cupom).
 
-O código da branch `feat/figma-kurio-ui` só será considerado pronto quando estas pendências forem tratadas, os relatórios existirem e a versão publicada corresponder à versão do GitHub.
+**Ainda sem aceite:** capturas visuais comparadas contra os 15 frames e baselines versionadas `toHaveScreenshot`; todos os cenários avançados da matriz de Playwright; zoom/foco/acessibilidade manual; Lighthouse Performance mobile ≥90; resolução/justificativa das vulnerabilidades do `npm audit`; deploy público acessível e funcionando com MSW, WebSocket e deep links.
 
+**Auditoria de segurança (20/10):** sete advisories altos afetam a cadeia de desenvolvimento de `shadcn` CLI (`braces` → `micromatch` → `fast-glob`, `ts-morph` e `@ts-morph/common`). A inspeção dos advisories não identificou esses pacotes como dependências de runtime da aplicação React. Não fazer `npm audit fix --force` nem atualizar versões major sem repetir CI e visual. O pacote `shadcn` também fornece CSS importado no build.
+
+**Performance antes da otimização da latência padrão:** desktop Home/NFT 99/99; mobile Home/NFT 87/87. Os relatórios apontaram LCP ~3,5 s e grande atraso até renderizar dados; o perfil normal de catálogo foi reduzido para 150 ms mantendo cenários lentos reproduzíveis. É necessária nova medição, não declarar ≥90 sem relatório.
+
+**Configuração MSW:** `POST /api/mock/catalog-network` alterna entre `normal`, `slow`, `variable`, `http-500` e `offline` para catalogação/detalhes; `POST /api/mock/reset-all` restaura também o perfil normal. A lógica de simulação reside em `src/mocks/networkScenario.ts`; componentes não possuem branches de negócio falsos.
+
+**Decisões de Figma:** ver `docs/REGRAS_E_LIBERDADES_DO_DESAFIO.md`.
 
 ## Tempo real (implementação inicial; validar com Playwright)
 
