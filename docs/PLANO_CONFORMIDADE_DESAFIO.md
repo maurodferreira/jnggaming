@@ -1,5 +1,10 @@
 # Plano de conformidade — Desafio Frontend KURIO
 
+> **Histórico de planejamento (19/10/2026).** Este arquivo preserva o diagnóstico feito **antes** da implementação integral das nove telas e dos testes de integração. Os rótulos “Pendente” e “Não pronto para entrega” abaixo são os registros daquele momento e **não** representam o status atual. Consulte a [auditoria atualizada](ESCOPO_ORIGINAL_E_AUDITORIA_FIGMA.md), o [checklist final](CHECKLIST_ENTREGA.md) e a execução mais recente ([117 testes aprovados](https://github.com/maurodferreira/jnggaming/actions/runs/39483364599); [Lighthouse mobile 100/90](https://github.com/maurodferreira/jnggaming/actions/runs/39483283845)). A revisão humana do Figma e o deploy público do commit aprovado continuam pendentes.
+>
+> ---
+
+
 **Data da auditoria:** 19/10/2026  
 **Fonte:** enunciado integral *Desafio Frontend — Marketplace de NFTs* (arquivo fornecido pelo responsável); Figma `HuEe6XFEtLBuMlCI8pYddf`; código da branch `feat/figma-kurio-ui`.  
 **Status:** EM DESENVOLVIMENTO. **NÃO PRONTO PARA ENTREGA**.
