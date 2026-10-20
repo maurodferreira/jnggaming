@@ -24,69 +24,69 @@ export function useRealtime() {
     // conecta logo depois, sem impedir navegação nem a consulta REST.
     const timeoutId = window.setTimeout(() => {
       void import('socket.io-client').then(({ io }) => {
-      if (cancelled) return
-      const socket = io(window.location.origin, {
-        path: '/socket.io/',
-        transports: ['websocket'],
-        reconnection: true,
-        reconnectionDelay: 500,
-        reconnectionDelayMax: 4000,
-        timeout: 5000,
-        forceNew: true,
-        autoConnect: false,
-      })
+        if (cancelled) return
+        const socket = io(window.location.origin, {
+          path: '/socket.io/',
+          transports: ['websocket'],
+          reconnection: true,
+          reconnectionDelay: 500,
+          reconnectionDelayMax: 4000,
+          timeout: 5000,
+          forceNew: true,
+          autoConnect: false,
+        })
 
-      const isNew = (resource: string, version: number) => {
-        if (!Number.isSafeInteger(version) || version <= 0) return false
-        const previous = versions.current.get(resource) ?? 0
-        if (version <= previous) return false
-        versions.current.set(resource, version)
-        return true
-      }
-
-      const reconcile = () => {
-        void queryClient.invalidateQueries({ queryKey: ['nfts'] })
-        void queryClient.invalidateQueries({ queryKey: ['cart'] })
-        if (accountId) {
-          void queryClient.invalidateQueries({ queryKey: ['quote', accountId] })
-          void queryClient.invalidateQueries({ queryKey: ['order', accountId] })
+        const isNew = (resource: string, version: number) => {
+          if (!Number.isSafeInteger(version) || version <= 0) return false
+          const previous = versions.current.get(resource) ?? 0
+          if (version <= previous) return false
+          versions.current.set(resource, version)
+          return true
         }
-      }
 
-      socket.on('connect', () => {
-        const token = localStorage.getItem('kurio:demo:access-token:v1')
-        if (token && accountId) socket.emit('session.subscribe', { token })
-        reconcile()
-      })
+        const reconcile = () => {
+          void queryClient.invalidateQueries({ queryKey: ['nfts'] })
+          void queryClient.invalidateQueries({ queryKey: ['cart'] })
+          if (accountId) {
+            void queryClient.invalidateQueries({ queryKey: ['quote', accountId] })
+            void queryClient.invalidateQueries({ queryKey: ['order', accountId] })
+          }
+        }
 
-      socket.io.on('reconnect', () => {
-        versions.current.clear()
-        reconcile()
-      })
+        socket.on('connect', () => {
+          const token = localStorage.getItem('kurio:demo:access-token:v1')
+          if (token && accountId) socket.emit('session.subscribe', { token })
+          reconcile()
+        })
 
-      socket.on('nft.updated', (data: NftUpdatedEvent) => {
-        if (!data || typeof data.resourceId !== 'string' ||
-            !isNew(`nft:${data.resourceId}`, data.version)) return
-        void queryClient.invalidateQueries({ queryKey: ['nfts'] })
-        void queryClient.invalidateQueries({ queryKey: ['cart'] })
-        if (accountId) void queryClient.invalidateQueries({ queryKey: ['quote', accountId] })
-        setNotice('Um NFT foi atualizado. Preço e disponibilidade foram conferidos novamente.')
-      })
+        socket.io.on('reconnect', () => {
+          versions.current.clear()
+          reconcile()
+        })
 
-      socket.on('order.updated', (data: OrderUpdatedEvent) => {
-        if (!accountId || data?.userId !== accountId ||
-            !isNew(`order:${accountId}:${data.resourceId}`, data.version)) return
-        void queryClient.invalidateQueries({ queryKey: ['order', accountId, data.resourceId] })
-        void queryClient.invalidateQueries({ queryKey: ['cart', accountId] })
-        setNotice('O estado do pedido foi atualizado na demonstração.')
-      })
+        socket.on('nft.updated', (data: NftUpdatedEvent) => {
+          if (!data || typeof data.resourceId !== 'string' ||
+              !isNew(`nft:${data.resourceId}`, data.version)) return
+          void queryClient.invalidateQueries({ queryKey: ['nfts'] })
+          void queryClient.invalidateQueries({ queryKey: ['cart'] })
+          if (accountId) void queryClient.invalidateQueries({ queryKey: ['quote', accountId] })
+          setNotice('Um NFT foi atualizado. Preço e disponibilidade foram conferidos novamente.')
+        })
 
-      socket.connect()
-      dispose = () => {
-        socket.removeAllListeners()
-        socket.io.removeAllListeners('reconnect')
-        socket.disconnect()
-      }
+        socket.on('order.updated', (data: OrderUpdatedEvent) => {
+          if (!accountId || data?.userId !== accountId ||
+              !isNew(`order:${accountId}:${data.resourceId}`, data.version)) return
+          void queryClient.invalidateQueries({ queryKey: ['order', accountId, data.resourceId] })
+          void queryClient.invalidateQueries({ queryKey: ['cart', accountId] })
+          setNotice('O estado do pedido foi atualizado na demonstração.')
+        })
+
+        socket.connect()
+        dispose = () => {
+          socket.removeAllListeners()
+          socket.io.removeAllListeners('reconnect')
+          socket.disconnect()
+        }
       }).catch(() => {
         // O REST continua sendo a fonte de verdade quando o socket falha.
       })
