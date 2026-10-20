@@ -38,17 +38,15 @@ declare module '@tanstack/react-router' {
 }
 
 
-async function bootstrap() {
-  // Instalamos o mock antes de iniciar a interface e as consultas REST.
+function bootstrap() {
+  // Start (or reuse) the worker promise, then render immediately.
+  // Axios waits on this promise before touching REST; the Socket.IO client
+  // already waits for useSession, which also goes through Axios.
   if (import.meta.env.VITE_ENABLE_MOCKS !== 'false') {
-    const startup = (window as Window & { __kurioMockReady?: Promise<void> }).__kurioMockReady
-    if (startup) {
-      await startup
-    } else {
-      // Fallback quando a aplicação é executada fora do HTML do Vite.
-      const { worker } = await import('./mocks/browser')
-      await worker.start()
-    }
+    const target = window as Window & { __kurioMockReady?: Promise<void> }
+    target.__kurioMockReady ??= import('./mocks/browser')
+      .then(({ worker }) => worker.start())
+      .then(() => undefined)
   }
 
   const rootElement = document.getElementById('root')
@@ -66,4 +64,4 @@ async function bootstrap() {
   )
 }
 
-void bootstrap()
+bootstrap()
