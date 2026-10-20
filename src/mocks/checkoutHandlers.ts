@@ -45,6 +45,21 @@ function fingerprintCart(items: CartItem[], coupon: string | null, network: stri
   })
 }
 
+/**
+ * The same bigint pricing calculation feeds the public cart preview and
+ * authenticated checkout quote. Neither endpoint initiates a real purchase.
+ */
+export function calculateCartSummary(subtotalEth: string, coupon: string | null) {
+  const subtotalWei = ethToWei(subtotalEth)
+  const discountWei = coupon === 'KURIO10' ? subtotalWei / 10n : 0n
+  return {
+    subtotalEth,
+    discountEth: weiToEth(discountWei),
+    feeEth: weiToEth(FEE_WEI),
+    totalEth: weiToEth(subtotalWei - discountWei + FEE_WEI),
+  }
+}
+
 function estimateQuote(
   userId: string,
   coupon: string | null,
@@ -53,16 +68,12 @@ function estimateQuote(
   const cart = buildCart(userId)
   if (cart.items.length === 0) return null
   if (cart.items.some(item => item.available < item.quantity)) return null
-  const subtotalWei = ethToWei(cart.subtotalEth)
-  const discountWei = coupon === 'KURIO10' ? subtotalWei / 10n : 0n
+  const pricing = calculateCartSummary(cart.subtotalEth, coupon)
   return {
     id: crypto.randomUUID(),
     userId, coupon, network,
     items: cart.items,
-    subtotalEth: cart.subtotalEth,
-    discountEth: weiToEth(discountWei),
-    feeEth: weiToEth(FEE_WEI),
-    totalEth: weiToEth(subtotalWei - discountWei + FEE_WEI),
+    ...pricing,
     expiresAt: Date.now() + QUOTE_LIFETIME_MS,
     fingerprint: fingerprintCart(cart.items, coupon, network),
   }
