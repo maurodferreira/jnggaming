@@ -65,18 +65,18 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Escolha da edição */}
-      <fieldset className="space-y-3">
+      <fieldset className="space-y-2 sm:space-y-3">
         <legend className="font-medium">
           Escolha uma edição
         </legend>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-wrap gap-2 sm:grid sm:grid-cols-2 sm:gap-3">
           {nft.editions.map((edition) => (
             <label
               key={edition.id}
-              className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors ${
+              className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-sm transition-colors focus-within:ring-2 focus-within:ring-primary sm:flex sm:items-start sm:gap-3 sm:rounded-xl sm:p-4 ${
                 editionId === edition.id
                   ? 'border-primary bg-muted/50'
                   : 'hover:bg-muted/30'
@@ -92,7 +92,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
                   setQuantity(1)
                   addToCart.reset()
                 }}
-                className="mt-1 accent-primary"
+                className="sr-only sm:not-sr-only sm:mt-1 sm:accent-primary"
               />
 
               <span className="space-y-1">
@@ -100,11 +100,11 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
                   {edition.name}
                 </span>
 
-                <span className="block text-sm">
+                <span className="hidden text-sm sm:block">
                   {edition.priceEth} ETH
                 </span>
 
-                <span className="block text-xs text-muted-foreground">
+                <span className="hidden text-xs text-muted-foreground sm:block">
                   {edition.available > 0
                     ? `${edition.available} disponíveis`
                     : 'Esgotada'}
@@ -116,10 +116,10 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
       </fieldset>
 
       {/* Controle de quantidade */}
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         <p className="font-medium">Quantidade</p>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Button
             type="button"
             variant="outline"
@@ -154,9 +154,12 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
           >
             +
           </Button>
+          <p className="ml-auto text-lg font-bold text-primary sm:hidden" aria-label={`Subtotal: ${total} ETH`}>
+            {total} ETH
+          </p>
         </div>
 
-        <p className="text-sm text-muted-foreground">
+        <p className="hidden text-sm text-muted-foreground sm:block">
           {available > 0
             ? `Limite de ${available} unidades nesta edição.`
             : 'Esta edição não está disponível.'}
@@ -164,7 +167,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
       </div>
 
       {/* Resumo dos valores */}
-      <div className="rounded-xl border p-5">
+      <div className="hidden rounded-xl border p-5 sm:block">
         <p className="text-sm text-muted-foreground">
           Preço unitário
         </p>
@@ -370,9 +373,9 @@ export function NftDetailPage() {
         </div>
 
         {/* Informações */}
-        <div className="relative -mx-5 -mt-6 space-y-6 rounded-t-[28px] bg-[#241612] px-5 pb-7 pt-8 shadow-[0_-12px_32px_rgba(0,0,0,0.22)] sm:mx-0 sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
+        <div className="relative -mx-5 -mt-6 space-y-4 rounded-t-[28px] bg-[#241612] px-5 pb-7 pt-6 shadow-[0_-12px_32px_rgba(0,0,0,0.22)] sm:mx-0 sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           <div>
-            <p className="text-muted-foreground">
+            <p className="hidden text-muted-foreground sm:block">
               {nft.collection}
             </p>
 
@@ -380,7 +383,7 @@ export function NftDetailPage() {
               <h1 className="text-xl font-bold sm:text-3xl">{nft.name}</h1>
               <div className="hidden sm:block"><FavoriteButton nftId={nft.id} /></div>
             </div>
-            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:mt-4 sm:leading-7">
               Conheça esta edição da coleção Kurio. As informações de preço, estoque e compra são demonstrativas.
             </p>
           </div>
