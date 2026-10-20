@@ -116,3 +116,14 @@ Esta seção é o status **mais recente** e substitui afirmações históricas s
 Referências: [CI do código](https://github.com/maurodferreira/jnggaming/actions/workflows/frontend-checks.yml), [Lighthouse](https://github.com/maurodferreira/jnggaming/actions/workflows/quality-audit.yml), [smoke de produção](https://github.com/maurodferreira/jnggaming/actions/runs/39428035215), [snapshots](https://github.com/maurodferreira/jnggaming/tree/feat/figma-kurio-ui/tests/e2e/visual-baselines.spec.ts-snapshots).
 
 **Aceite:** manter o PR em rascunho e a `main` sem merge até finalizar a medição mobile e a revisão visual final. Não confundir uma execução de CI verde com pontuação perfeita na avaliação.
+
+
+### Fechamento da rodada técnica (20/10/2026)
+
+- **[Frontend checks](https://github.com/maurodferreira/jnggaming/actions/runs/39432370225): aprovado.** `npm ci`, `typecheck`, `lint`, builds normal e fallback, e Playwright com **81 testes aprovados / 7 skips intencionais** (baselines restritas ao Chromium desktop com diferentes larguras).
+- **[Lighthouse](https://github.com/maurodferreira/jnggaming/actions/runs/39432357361):** Home mobile **84**, NFT mobile **85**, desktop **99/99**; Acessibilidade, Boas práticas e SEO **100**. LCP mobile 3,74 s e 3,66 s, CLS 0. **Performance mobile ≥90 ainda não foi alcançada.**
+- **Segurança:** última execução `npm audit` com **0 vulnerabilidades**.
+- **Regressão visual:** 27 screenshots versionadas (9 páginas × 390/768/1440 px), comparação final humana com os 15 frames ainda necessária.
+- **Deploy:** a URL pública já passou em 11 verificações automáticas; o commit publicado deve ser comparado ao último commit da branch depois da próxima implantação.
+
+**Conclusão:** os fluxos principais e o ambiente demonstrativo estão entregues e testados, mas não é correto declarar cumprimento integral dos critérios de performance ou equivalência pixel a pixel ao Figma.
