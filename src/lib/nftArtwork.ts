@@ -1,6 +1,7 @@
 /**
- * Assets are copied from the original Figma file, not temporary Figma URLs.
- * Repeated portraits reflect the original Kurio catalog mockups.
+ * High-quality WebP copies come from the original Figma PNG artworks.
+ * Keep the original PNGs in public/assets/nfts for provenance and review.
+ * Repeated portraits follow the existing Kurio catalog mockup.
  */
 const artwork: Record<string, string> = {
   '1': '/assets/nfts/emerald-ape.webp',
