@@ -84,6 +84,9 @@ test('cadastro rejeita conflito e mostra erro da API simulada', async ({ page })
 })
 
 test('carrinhos ficam isolados entre usuários demo', async ({ page }) => {
+  // Two login cycles, one logout and cart merge need more than the 15s
+  // budget used by short catalog tests on a contended CI runner.
+  test.setTimeout(35_000)
   await page.goto('/nft/1')
   await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click()
   await expect(page.getByText('NFT adicionado ao carrinho!')).toBeVisible()
@@ -100,10 +103,16 @@ test('carrinhos ficam isolados entre usuários demo', async ({ page }) => {
   await page.getByRole('button', { name: 'Sair', exact: true }).click()
   await expect(page).toHaveURL(/\/login/)
 
-  await page.getByLabel('E-mail').fill('artista@kurio.demo')
+  // URL change can precede the login route finishing its initial render.
+  // Wait for the new form before typing to avoid losing the first input.
+  await expect(page.getByRole('heading', { name: 'Entrar', level: 1 })).toBeVisible()
+  const signInButton = page.getByRole('button', { name: 'Entrar', exact: true })
+  await expect(signInButton).toBeEnabled()
   await page.getByLabel('Senha', { exact: true }).fill('KurioDemo123!')
-  await page.getByRole('button', { name: 'Entrar', exact: true }).click()
-  await expect(page).toHaveURL(/\?q=/, { timeout: 10_000 })
+  await page.getByLabel('E-mail').fill('artista@kurio.demo')
+  await expect(page.getByLabel('E-mail')).toHaveValue('artista@kurio.demo')
+  await signInButton.click()
+  await expect(page).toHaveURL(/\?q=/, { timeout: 15_000 })
   await page.goto('/cart')
   await expect(page.getByRole('heading', { name: 'Seu carrinho está vazio' })).toBeVisible()
 })
