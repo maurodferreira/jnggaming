@@ -437,7 +437,11 @@ export function NftDetailPage() {
       >
         <h2 className="mb-8 font-bold text-[#e89b55]">Mais desta coleção</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {related.data
+          {related.isError ? (
+            <p className="col-span-full text-sm text-[#cfb28c]" role="status">
+              Não foi possível carregar outras obras no momento.
+            </p>
+          ) : related.data
             ? related.data.items
                 .filter(item => item.id !== nft.id)
                 .slice(0, 5)
