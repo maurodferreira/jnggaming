@@ -74,7 +74,15 @@ Eventos tratados:
 - `nft.updated`: invalida catálogo, detalhe, carrinho e cotação para conferir preço/estoque novamente via REST.
 - `order.updated`: reconcilia o pedido correspondente apenas para a conta autenticada.
 
-A implementação mantém a maior versão recebida por recurso, ignora repetições e eventos atrasados e reconcilia dados quando há reconexão. O socket é desconectado ao trocar de conta ou sair. A inicialização do bundle de tempo real pode aguardar brevemente o conteúdo inicial; os testes aguardam a conexão antes de emitir eventos.
+A implementação mantém a maior versão recebida por recurso, ignora repetições e eventos atrasados e reconcilia dados quando há reconexão. **Na primeira conexão, não invalida o catálogo recém-carregado**: o snapshot inicial já veio do REST e uma invalidação extra causava fetch/render duplicados. Na **reconexão**, o cliente limpa os contadores de versão e reconcilia as consultas REST para recuperar alterações perdidas. O socket é desconectado ao trocar de conta ou sair. A inicialização do bundle de tempo real pode aguardar brevemente o conteúdo inicial; os testes aguardam a conexão antes de emitir eventos.
+
+## Performance e pintura progressiva
+
+As telas usam importação dinâmica por rota no TanStack Router. O seletor original do Figma, necessário somente em desktop XL, também é carregado sob demanda. Isso evita incluir os controles mais pesados na entrada mobile.
+
+O HTML inicial utiliza um **shell progressivo apenas em telas menores que 1024 px** para a Home e para `/nft/1`: um template inerte da rota é instanciado antes do React, com fontes, dimensões e arte responsivas. O shell é ocultado quando o React renderiza e nunca simula respostas de API. No desktop foi desativado porque causava deslocamento perceptível ao desaparecer (CLS). O preload da arte também é específico da rota e respeita o tamanho renderizado.
+
+Essas escolhas foram comparadas com múltiplas execuções do Lighthouse; propostas que regrediram a pontuação (como separar React/MSW indiscriminadamente) foram revertidas. Nenhuma otimização desativa MSW, Socket.IO ou validação de pedidos.
 
 ## Estados de erro e testes reproduzíveis
 
@@ -101,8 +109,8 @@ As screenshots Playwright são baselines de regressão da aplicação: uma compa
 
 - **Backend e persistência:** são mocks locais; a aplicação não substitui um serviço seguro multiusuário.
 - **Socket.IO:** demonstra os fluxos necessários em WebSocket, não um servidor completo.
-- **Performance:** o desktop e as demais categorias Lighthouse alcançaram as metas nas rodadas confirmadas. A Performance mobile ainda está sendo otimizada; consulte o último relatório antes de declarar aceite.
+- **Performance:** na auditoria de referência de 20/10/2026, Home mobile **100**, NFT mobile **90**, Home desktop **98** e NFT desktop **99** em Performance; A11y, boas práticas e SEO foram **100** nas quatro combinações. Medianas de três execuções, com LCP/CLS/TBT registrados em [Lighthouse 39483283845](https://github.com/maurodferreira/jnggaming/actions/runs/39483283845). As métricas podem variar conforme hardware e rede; não equivalem à nota oficial da empresa.
 - **Fidelidade:** há 27 capturas versionadas e revisão dos frames, mas a validação humana final deve considerar também os estados não cobertos pelo desenho.
-- **Publicação:** a Vercel entrega a SPA com `vercel.json`, assets e Service Worker; o smoke test público confirmou catálogo, REST, rota direta e refresh.
+- **Publicação:** a Vercel entrega a SPA com `vercel.json`, assets e Service Worker; um smoke test anterior confirmou catálogo, REST, rota direta e refresh. Em 20/10/2026 a alias pública ainda servia o commit antigo `9a2289a9`, portanto **o último código aprovado não estava comprovadamente publicado no domínio definitivo**. Veja o [checklist](docs/CHECKLIST_ENTREGA.md).
 
 Todas essas limitações são intencionais ou estão explícitas para avaliação. **Não tratar dados simulados como transações reais nem usar contas pessoais na demonstração.**
