@@ -77,6 +77,10 @@ Ler também [ARCHITECTURE.md](../ARCHITECTURE.md) e [regras e liberdades](REGRAS
 
 ## 5. Publicação e aceite pendentes
 
+> **Revisão visual e roteiro de Vercel:** veja [Revisão final — Figma e publicação](REVISAO_FINAL_FIGMA_E_PUBLICACAO.md), com a comparação dos 15 frames, as adaptações conscientes, os links de CI e os passos de **Create Deployment → Promote to Production** no painel correto. O preview antigo não deve ser promovido sem conferir o SHA.
+
+
+
 - [x] Nove telas navegáveis com demonstração funcional, testes e documentação.
 - [x] Medianas Lighthouse dentro das metas **na rodada registrada** e CI verde.
 - [x] Regressão visual automatizada com 27 screenshots.
