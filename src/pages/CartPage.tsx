@@ -8,6 +8,7 @@ import {
     useCart,
     useUpdateCartItem,
     useRemoveCartItem,
+    useCartSummary,
     getCartErrorMessage,
 } from '@/features/cart/useCart'
 
@@ -29,6 +30,9 @@ export function CartPage() {
     const updateItem = useUpdateCartItem()
     const removeItem = useRemoveCartItem()
     const [notice, setNotice] = useState('')
+    const [couponInput, setCouponInput] = useState('')
+    const [appliedCoupon, setAppliedCoupon] = useState('')
+    const summary = useCartSummary(appliedCoupon)
 
     const isUpdating =
         updateItem.isPending || removeItem.isPending
@@ -234,18 +238,77 @@ export function CartPage() {
                                         <span>{data.totalQuantity}</span>
                                     </div>
 
-                                    <div className="flex justify-between gap-4 border-t pt-4">
-                                        <span className="font-medium">Subtotal</span>
-                                        <strong className="text-[#e89b55]">{data.subtotalEth} ETH</strong>
+                                    <div className="space-y-2">
+                                        <label htmlFor="cart-coupon" className="block text-sm font-medium">
+                                            Código promocional
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                id="cart-coupon"
+                                                value={couponInput}
+                                                onChange={event => setCouponInput(event.target.value)}
+                                                placeholder="Digite o código promocional..."
+                                                className="min-w-0 flex-1 rounded-md border border-[#624230] bg-background p-2 text-xs outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => setAppliedCoupon(couponInput.trim().toUpperCase())}
+                                            >
+                                                Aplicar
+                                            </Button>
+                                        </div>
+                                        {appliedCoupon && (
+                                            <button
+                                                type="button"
+                                                className="text-xs text-[#e89b55] underline underline-offset-4"
+                                                onClick={() => {
+                                                    setAppliedCoupon('')
+                                                    setCouponInput('')
+                                                }}
+                                            >
+                                                Remover cupom {appliedCoupon}
+                                            </button>
+                                        )}
                                     </div>
 
+                                    {summary.isFetching && (
+                                        <p role="status" className="text-xs text-muted-foreground">
+                                            Atualizando valores na API simulada...
+                                        </p>
+                                    )}
+                                    {summary.isError && (
+                                        <p role="alert" className="text-xs text-destructive">
+                                            {getCartErrorMessage(summary.error)}
+                                        </p>
+                                    )}
+                                    <dl className="space-y-3 border-t pt-4 text-sm" aria-label="Valores estimados do pedido">
+                                        <div className="flex justify-between gap-4">
+                                            <dt>Subtotal</dt>
+                                            <dd>{summary.data?.subtotalEth ?? '—'} ETH</dd>
+                                        </div>
+                                        <div className="flex justify-between gap-4">
+                                            <dt>Desconto do lançamento</dt>
+                                            <dd>{summary.data?.discountEth ?? '—'} ETH</dd>
+                                        </div>
+                                        <div className="flex justify-between gap-4">
+                                            <dt>Taxa de rede estimada</dt>
+                                            <dd>{summary.data?.feeEth ?? '—'} ETH</dd>
+                                        </div>
+                                        <div className="flex justify-between gap-4 border-t pt-4 font-semibold text-[#e89b55]">
+                                            <dt>Total estimado</dt>
+                                            <dd>{summary.data?.totalEth ?? '—'} ETH</dd>
+                                        </div>
+                                    </dl>
+
                                     <p className="text-xs text-muted-foreground">
-                                        Cupons, taxas e cotação final serão
-                                        calculados no checkout.
+                                        Prévia pela API simulada. Preços, disponibilidade e cupom
+                                        serão validados novamente antes da compra demonstrativa.
                                     </p>
 
                                     <Link
                                         to="/checkout"
+                                        search={{ coupon: appliedCoupon }}
                                         className="flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[#e89b55] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                                     >
                                         Ir para pagamento simulado
