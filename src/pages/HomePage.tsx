@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react'
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
 import { ArrowRight, Search, SlidersHorizontal } from 'lucide-react'
 import { useNfts } from '@/features/catalog/useNfts'
@@ -9,7 +9,13 @@ import { CatalogPriceRange } from '@/components/catalog/CatalogPriceRange'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+// Figma's desktop-only select stays identical, but phones never download it.
+const DesktopCatalogSort = lazy(() =>
+  import('@/components/catalog/DesktopCatalogSort').then(module => ({
+    default: module.DesktopCatalogSort,
+  })),
+)
 
 const routeApi = getRouteApi('/')
 const categories = ['Arte digital', 'Fotografia', 'Música', 'Arte 3D', 'Colecionáveis', 'Generativa', 'Jogos', 'Assinaturas', 'Utilidade']
@@ -19,15 +25,6 @@ const networks: { value: CatalogNetwork; label: string }[] = [
   { value: 'Polygon', label: 'Polygon' },
   { value: 'Solana', label: 'Solana' },
 ]
-const sortLabels: Record<CatalogSort, string> = {
-  featured: 'Destaques',
-  newest: 'Listados recentemente',
-  trending: 'Em alta',
-  name_asc: 'Nome (A-Z)',
-  price_asc: 'Menor preço',
-  price_desc: 'Maior preço',
-}
-
 const resetFilters: CatalogFilters = {
   q: '',
   collection: 'all',
@@ -57,6 +54,16 @@ export function HomePage() {
   const filters = routeApi.useSearch()
   const navigate = useNavigate({ from: '/' })
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [showDesktopSort, setShowDesktopSort] = useState(
+    () => window.matchMedia('(min-width: 1280px)').matches,
+  )
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 1280px)')
+    const handleChange = () => setShowDesktopSort(media.matches)
+    media.addEventListener('change', handleChange)
+    return () => media.removeEventListener('change', handleChange)
+  }, [])
   const { data, isPending, isError, isFetching, refetch } = useNfts(filters)
 
   function updateFilters(patch: Partial<CatalogFilters>) {
@@ -229,24 +236,14 @@ export function HomePage() {
               </div>
               <div className="hidden shrink-0 items-center gap-2 text-xs xl:flex">
                 <span id="catalog-sort-label">Ordenar por:</span>
-                <Select
-                  value={filters.sort}
-                  onValueChange={value => {
-                    if (value) updateFilters({ sort: value as CatalogSort, page: 1 })
-                  }}
-                >
-                  <SelectTrigger aria-labelledby="catalog-sort-label" className="h-9 w-[190px] rounded-md border-[#624230] bg-[#241612] text-xs text-[#f5f1eb] hover:border-primary focus-visible:ring-2 focus-visible:ring-primary/50">
-                    <SelectValue>{sortLabels[filters.sort]}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent align="end" sideOffset={6} className="z-[100] rounded-lg border-[#624230] bg-[#241612] text-[#f5f1eb] shadow-xl">
-                    <SelectItem value="featured">Destaques</SelectItem>
-                    <SelectItem value="newest">Listados recentemente</SelectItem>
-                    <SelectItem value="trending">Em alta</SelectItem>
-                    <SelectItem value="name_asc">Nome (A-Z)</SelectItem>
-                    <SelectItem value="price_asc">Menor preço</SelectItem>
-                    <SelectItem value="price_desc">Maior preço</SelectItem>
-                  </SelectContent>
-                </Select>
+                {showDesktopSort && (
+                  <Suspense fallback={<div aria-hidden="true" className="h-9 w-[190px] rounded-md bg-[#241612]" />}>
+                    <DesktopCatalogSort
+                      value={filters.sort}
+                      onChange={sort => updateFilters({ sort, page: 1 })}
+                    />
+                  </Suspense>
+                )}
               </div>
             </div>
 
