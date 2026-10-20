@@ -1,0 +1,58 @@
+name: Optimize NFT card artwork
+
+# Reproducibly generate compact card copies. Keep full-resolution original art
+# for the detail gallery and original PNGs for provenance.
+on:
+  push:
+    branches: [feat/figma-kurio-ui]
+    paths:
+      - '.github/workflows/optimize-card-artwork.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kurio-card-artwork
+  cancel-in-progress: false
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout review branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/figma-kurio-ui
+          persist-credentials: true
+      - name: Install WebP encoder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq webp
+      - name: Generate 400px square thumbnails
+        run: |
+          mkdir -p public/assets/nfts/thumbs
+          for image in emerald-ape sage-nomad neon-vessel golden-beat; do
+            cwebp -quiet -resize 400 400 -q 80 -m 6               "public/assets/nfts/${image}.webp"               -o "public/assets/nfts/thumbs/${image}.webp"
+          done
+          du -h public/assets/nfts/thumbs/*.webp
+      - name: Commit only binary thumbnail assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/nfts/thumbs/
+          if git diff --cached --quiet; then
+            echo "All compact artwork is already up to date"
+          else
+            git commit -m "perf(assets): version compact WebP catalog thumbnails"
+            for attempt in 1 2 3; do
+              if git push origin HEAD:feat/figma-kurio-ui; then
+                exit 0
+              fi
+              git fetch origin feat/figma-kurio-ui
+              git rebase origin/feat/figma-kurio-ui
+            done
+            echo "Unable to safely push compact artwork" >&2
+            exit 1
+          fi
