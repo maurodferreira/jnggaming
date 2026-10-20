@@ -2,8 +2,9 @@ import { useState, type FormEvent } from 'react'
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
 import { ArrowRight, Search, SlidersHorizontal } from 'lucide-react'
 import { useNfts } from '@/features/catalog/useNfts'
-import type { CatalogFilters, CatalogSort } from '@/features/catalog/types'
+import type { CatalogFilters, CatalogNetwork, CatalogSort } from '@/features/catalog/types'
 import { NftCard } from '@/components/catalog/NftCard'
+import { CatalogPriceRange } from '@/components/catalog/CatalogPriceRange'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const routeApi = getRouteApi('/')
 const categories = ['Arte digital', 'Fotografia', 'Música', 'Arte 3D', 'Colecionáveis', 'Generativa', 'Jogos', 'Assinaturas', 'Utilidade']
+const networks: { value: CatalogNetwork; label: string }[] = [
+  { value: 'all', label: 'Todas as redes' },
+  { value: 'Ethereum', label: 'Ethereum' },
+  { value: 'Polygon', label: 'Polygon' },
+  { value: 'Solana', label: 'Solana' },
+]
 const sortLabels: Record<CatalogSort, string> = {
   featured: 'Destaques',
   newest: 'Listados recentemente',
@@ -24,6 +31,9 @@ const resetFilters: CatalogFilters = {
   q: '',
   collection: 'all',
   available: false,
+  network: 'all',
+  minPriceEth: '',
+  maxPriceEth: '',
   sort: 'featured',
   page: 1,
 }
@@ -158,16 +168,32 @@ export function HomePage() {
               </div>
             </div>
 
-            <div className="mt-9 space-y-4">
-              <h2 className="text-[18px] font-bold">Faixa de preço</h2>
-              <div className="space-y-3 pl-2 text-sm text-[#cfb28c]">
-                <p>Ordene os NFTs pelo valor em ETH.</p>
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" className={`rounded-md border px-3 py-2 ${filters.sort === 'price_asc' ? 'border-primary bg-primary text-primary-foreground' : 'border-[#624230]'}`} onClick={() => updateFilters({ sort: 'price_asc', page: 1 })}>Menor preço</button>
-                  <button type="button" className={`rounded-md border px-3 py-2 ${filters.sort === 'price_desc' ? 'border-primary bg-primary text-primary-foreground' : 'border-[#624230]'}`} onClick={() => updateFilters({ sort: 'price_desc', page: 1 })}>Maior preço</button>
-                </div>
-              </div>
+            <div className="mt-9">
+              <CatalogPriceRange
+                minPriceEth={filters.minPriceEth}
+                maxPriceEth={filters.maxPriceEth}
+                onApply={(minPriceEth, maxPriceEth) => updateFilters({ minPriceEth, maxPriceEth, page: 1 })}
+              />
             </div>
+
+            <fieldset className="mt-9 space-y-3">
+              <legend className="text-[18px] font-bold">Rede</legend>
+              <div className="space-y-2 pl-2">
+                {networks.map(network => (
+                  <label key={network.value} className="flex cursor-pointer items-center gap-3 py-1 text-sm text-[#cfb28c]">
+                    <input
+                      type="radio"
+                      name="catalog-network"
+                      value={network.value}
+                      checked={(filters.network ?? 'all') === network.value}
+                      onChange={() => updateFilters({ network: network.value, page: 1 })}
+                      className="size-4 accent-[#d28a4c]"
+                    />
+                    {network.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
             <div className="mt-9 space-y-4">
               <h2 className="text-[18px] font-bold">Disponibilidade</h2>
