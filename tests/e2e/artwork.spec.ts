@@ -43,7 +43,7 @@ test('hero artwork and NFT details render the correct optimized image', async ({
   await expect.poll(() => hero.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0)
 
   await page.goto('/nft/1')
-  const detail = page.getByRole('img', { name: 'Arte digital Emerald Ape #042' })
+  const detail = page.getByRole('img', { name: 'Emerald Ape #042, arte completa' })
   await expect(detail).toBeVisible()
   await expect(detail).toHaveAttribute('src', '/assets/nfts/emerald-ape.webp')
   await expect.poll(() => detail.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0)
