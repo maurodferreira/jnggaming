@@ -50,8 +50,10 @@ test('faixa de preço e rede combinam com coleção, ficam na URL e sobrevivem a
   const url = new URL(page.url())
   expect(url.searchParams.get('network')).toBe('Polygon')
   expect(url.searchParams.get('collection')).toBe('Colecionáveis')
-  expect(url.searchParams.get('minPriceEth')).toBe('1.50')
-  expect(url.searchParams.get('maxPriceEth')).toBe('1.80')
+  // TanStack Router protects numeric-looking strings with JSON quoting in URLs.
+  // The decoded values must remain strings after refresh for precise ETH parsing.
+  expect(JSON.parse(url.searchParams.get('minPriceEth') ?? 'null')).toBe('1.50')
+  expect(JSON.parse(url.searchParams.get('maxPriceEth') ?? 'null')).toBe('1.80')
   expect(url.searchParams.get('page')).toBe('1')
 
   await page.reload()
