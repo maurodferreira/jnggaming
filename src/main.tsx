@@ -38,15 +38,16 @@ declare module '@tanstack/react-router' {
 }
 
 
-function bootstrap() {
-  // Start (or reuse) the worker promise, then render immediately.
-  // Axios waits on this promise before touching REST; the Socket.IO client
-  // already waits for useSession, which also goes through Axios.
+async function bootstrap() {
+  // Start MSW before rendering components that use REST or the realtime client.
   if (import.meta.env.VITE_ENABLE_MOCKS !== 'false') {
-    const target = window as Window & { __kurioMockReady?: Promise<void> }
-    target.__kurioMockReady ??= import('./mocks/browser')
-      .then(({ worker }) => worker.start())
-      .then(() => undefined)
+    const startup = (window as Window & { __kurioMockReady?: Promise<void> }).__kurioMockReady
+    if (startup) {
+      await startup
+    } else {
+      const { worker } = await import('./mocks/browser')
+      await worker.start()
+    }
   }
 
   const rootElement = document.getElementById('root')
@@ -64,4 +65,4 @@ function bootstrap() {
   )
 }
 
-bootstrap()
+void bootstrap()
