@@ -1,6 +1,6 @@
 # KURIO — escopo original, auditoria do Figma e plano de entrega
 
-**Revisão:** 20/10/2026  
+**Revisão:** 20/10/2026 (complementada após testes e deploy)  
 **Documento-base:** `Texto colado(20261019-155647).txt` — *Desafio Frontend — Marketplace de NFTs*, recebido do processo seletivo.  
 **Figma:** https://www.figma.com/design/HuEe6XFEtLBuMlCI8pYddf/Frontend-Challenge--c%C3%B3pia-  
 **Código:** https://github.com/maurodferreira/jnggaming/tree/feat/figma-kurio-ui  
@@ -30,7 +30,7 @@ Implementar um **marketplace de NFTs demonstrativo**, desktop e mobile, capaz de
 | Perfil do colecionador | `9:1238` | não fornecido | `/profile` — edição, avatar e mudança de senha | Contraste, zoom, e-mail/ENS conforme mock e estados de erro |
 | Carteiras | `9:1670` | não fornecido | `/wallets` — carteira principal e secundária, rede, endereço, tipo e apelido | **Diferença visível:** Figma mostra campos complementares (nome de perfil, e-mail, ENS, código de indicação). Decidir integração aos contratos mock sem coletar dados reais |
 
-**Resultado:** existem rotas/componentes para **todas as 9 telas** do enunciado e versões responsivas para todas. Existem **15 frames explícitos** (9 desktop e 6 mobile). A presença das rotas é comprovável, porém ainda NÃO existe prova de equivalência pixel a pixel em todas as 15 combinações. Os testes `visual-review` e `visual-account-review` guardam capturas, mas ainda não versionam baselines com `toHaveScreenshot`.
+**Resultado:** existem rotas/componentes para **todas as 9 telas** do enunciado e versões responsivas para todas. Existem **15 frames explícitos** (9 desktop e 6 mobile). A presença das rotas é comprovável, porém ainda NÃO existe prova de equivalência pixel a pixel em todas as 15 combinações. A suíte `visual-baselines.spec.ts` agora versiona **27 snapshots** das 9 telas em 390, 768 e 1440 px; isso é regressão visual da implementação, **não** equivalência automática com o Figma.
 
 ## 3. Funcionalidades e integração
 
@@ -38,17 +38,17 @@ Implementar um **marketplace de NFTs demonstrativo**, desktop e mobile, capaz de
 | --- | --- | --- |
 | Catálogo + estado URL + filtros combinados | Implementado | Validar filtros, paginação e respostas fora de ordem na matriz completa |
 | Detalhe, edição, quantidade, favorito | Implementado no código | Validação da galeria frente ao Figma e cenários de estoque |
-| Carrinho visitante, merge e isolamento entre contas | Implementado, com testes E2E | Nova API de resumo e handoff de cupom adicionados; verificar CI final e ajustes de UX |
+| Carrinho visitante, merge e isolamento entre contas | Implementado, com testes E2E | Prévia por API e passagem do cupom verificadas por E2E; validar último commit |
 | Login, cadastro, perfil, avatar, senha e carteiras | Implementado via API mock | Expiração, autenticação em múltiplas abas e erros específicos |
 | Quote, cupom, rede, taxa e precisão ETH em `bigint` | Implementado no checkout | Confirmar mudanças de valor mediante revalidação clara ao usuário |
 | Pedido idempotente, snapshot e recuperação após falha de rede | Implementado na API MSW e no recibo | Completar testes de perda de resposta múltipla, clique repetido e pendência |
 | `nft.updated` / `order.updated`, versões e reconexão | Implementado com `socket.io-client` + adaptador WebSocket MSW | Cobrir eventos e cenários extremos, documentar WebSocket-only |
 | Skeleton e reduced-motion | Presente | Garantir shimmer obrigatório e baselines de todos os estados |
-| Rotas inválidas | Página 404 adicionada nesta revisão | Aguardar execução CI do commit atual |
-| Testes Playwright desktop/mobile | Presentes, resultados aprovados em commits anteriores | Validar **todos** os testes no commit final; baselines de screenshot obrigatórios |
-| Lighthouse (3 execuções/página/dispositivo) | Implementado, com relatórios | Última versão confiável: desktop 99; mobile Home 86, NFT 88. Meta de Performance mobile é 90 |
-| Dependências e build | Build local Windows com fallback passou, CI validou ambos os modos | Analisar e corrigir 7 avisos altos da cadeia de desenvolvimento; investigar `EPERM` definitivamente |
-| Deploy público | Configuração `vercel.json` presente | **URL pública e refresh profundo não verificados**. Deploy é obrigatório |
+| Rotas inválidas | Página 404 adicionada nesta revisão | Implementada e coberta por testes E2E |
+| Testes Playwright desktop/mobile | Presentes, com execuções aprovadas e 27 screenshots versionadas | Revalidar no último commit após ajustes |
+| Lighthouse (3 execuções/página/dispositivo) | Implementado, com relatórios | Auditorias anteriores: desktop 98–99, mobile abaixo de 90; a mediana final precisa ser conferida após os últimos ajustes |
+| Dependências e build | Build local Windows com fallback passou, CI validou ambos os modos | A migração oficial `shadcn eject` eliminou os 7 avisos altos (auditoria npm retornou zero); fallback `EPERM` documentado e testado |
+| Deploy público | Configuração `vercel.json` presente | Domínio publicado e teste Chromium público aprovado (11/11, incluindo Service Worker, rotas profundas e refresh) |
 
 ## 4. Pontuação oficial (não é nota obtida)
 
@@ -96,3 +96,23 @@ Implementar um **marketplace de NFTs demonstrativo**, desktop e mobile, capaz de
 - O checkout continua simulando operações, sem conectar carteiras nem processar transações financeiras reais. A `main` não recebeu merge.
 
 **Foco restante:** CI final, fidelidade visual e baselines das 15 telas, acessibilidade, 3× Lighthouse por página/dispositivo (mobile ≥90), dependências vulneráveis, rotas profundas e URL de deploy público. Não confundir implementação com aceite.
+
+
+## 8. Consolidação de evidências — 20/10/2026
+
+Esta seção é o status **mais recente** e substitui afirmações históricas sobre falta de deploy, baselines e advisories nas seções acima.
+
+| Verificação | Evidência e estado |
+| --- | --- |
+| Nove telas / rotas | Implementadas, com estados simulados navegáveis |
+| Playwright | Fluxos funcionais aprovados em execuções anteriores; suíte estendida em revalidação após refinamentos |
+| Regressão visual | **27 snapshots versionadas**, 9 telas × 3 larguras; comparação manual de fidelidade ao Figma ainda necessária |
+| Desktop | Lighthouse Performance normalmente 98–99; Accessibility/Best Practices/SEO 100 em auditorias recentes |
+| Mobile | Performance **ainda abaixo da meta ≥90** em auditorias confirmadas; não anunciar aceite até alcançar a mediana |
+| Dependências | Migração oficial de `shadcn eject` passou em TypeScript, lint, build, E2E e `npm audit` (0 vulnerabilidades) |
+| Produção | [kurio-jungle-challenge.vercel.app](https://kurio-jungle-challenge.vercel.app/) — smoke test público Chromium 11/11 |
+| Regras de escopo | Sem pagamentos reais, blockchain, OAuth social ou newsletter ficticiamente funcionais |
+
+Referências: [CI do código](https://github.com/maurodferreira/jnggaming/actions/workflows/frontend-checks.yml), [Lighthouse](https://github.com/maurodferreira/jnggaming/actions/workflows/quality-audit.yml), [smoke de produção](https://github.com/maurodferreira/jnggaming/actions/runs/39428035215), [snapshots](https://github.com/maurodferreira/jnggaming/tree/feat/figma-kurio-ui/tests/e2e/visual-baselines.spec.ts-snapshots).
+
+**Aceite:** manter o PR em rascunho e a `main` sem merge até finalizar a medição mobile e a revisão visual final. Não confundir uma execução de CI verde com pontuação perfeita na avaliação.
