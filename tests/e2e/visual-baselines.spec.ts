@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-// Revision 2: include the non-overlapping mobile checkout CTA in reference PNGs.
+// Revisão visual: cards do catálogo desencontrados e seletor compacto do NFT no mobile.
 const widths = [390, 768, 1440] as const
 
 async function resetDemo(page: Page) {
