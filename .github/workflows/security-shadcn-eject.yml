@@ -53,7 +53,16 @@ jobs:
             echo "No changes produced by shadcn eject"
           else
             git commit -m "fix(deps): eject shadcn CLI and inline required Tailwind utilities"
-            git push origin HEAD:feat/figma-kurio-ui
+            # Preserve concurrent PR updates (e.g. versioned visual snapshots).
+            for attempt in 1 2 3; do
+              if git push origin HEAD:feat/figma-kurio-ui; then
+                exit 0
+              fi
+              git fetch origin feat/figma-kurio-ui
+              git rebase origin/feat/figma-kurio-ui
+            done
+            echo "Unable to push verified dependency changes safely" >&2
+            exit 1
           fi
       - name: Upload migration diagnostics
         if: always()
