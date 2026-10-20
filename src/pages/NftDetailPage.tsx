@@ -308,17 +308,17 @@ export function NftDetailPage() {
   }
 
   return (
-    <main className="mx-auto max-w-[1248px] space-y-8 px-5 py-8 pb-20 md:px-6 md:pb-0">
+    <main className="mx-auto max-w-[1248px] space-y-5 px-5 pb-24 pt-5 sm:space-y-8 sm:py-8 md:px-6 md:pb-0">
       <Link
         to="/"
         search={catalogSearch}
-        className="text-sm text-muted-foreground hover:underline"
+        className="inline-flex size-10 items-center justify-center rounded-full border border-[#624230] bg-[#241612] text-lg text-primary hover:border-primary focus-visible:outline-2 focus-visible:outline-primary sm:h-auto sm:w-auto sm:justify-start sm:rounded-none sm:border-0 sm:bg-transparent sm:text-sm sm:text-muted-foreground sm:hover:underline"
       >
-        ← Voltar ao catálogo
+        <span aria-hidden="true">←</span><span className="sr-only sm:not-sr-only sm:ml-2">Voltar ao catálogo</span>
       </Link>
 
-      <section className="grid gap-10 lg:grid-cols-2">
-        <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-[76px_minmax(0,1fr)]">
+      <section className="grid gap-0 sm:gap-10 lg:grid-cols-2">
+        <div className="relative grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-[76px_minmax(0,1fr)]">
           <div className="hidden flex-col gap-3 sm:flex" aria-hidden="true">
             {Array.from({ length: 4 }, (_, index) => (
               <img
@@ -329,25 +329,29 @@ export function NftDetailPage() {
               />
             ))}
           </div>
-          <div className="self-start rounded-lg bg-[#241612] p-3">
+          <div className="self-start overflow-hidden rounded-[24px] bg-[#241612] p-1 sm:rounded-lg sm:p-3">
             <img
               src={getNftArtwork(nft.id)}
               alt={`Arte digital ${nft.name}`}
-              className="aspect-square w-full rounded-lg object-cover"
+              className="aspect-square w-full rounded-[20px] object-cover sm:rounded-lg"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
             />
           </div>
+          <div className="absolute right-3 top-3 z-10 sm:hidden"><FavoriteButton nftId={nft.id} /></div>
         </div>
 
         {/* Informações */}
-        <div className="space-y-6">
+        <div className="relative -mx-5 -mt-6 space-y-6 rounded-t-[28px] bg-[#241612] px-5 pb-7 pt-8 shadow-[0_-12px_32px_rgba(0,0,0,0.22)] sm:mx-0 sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           <div>
             <p className="text-muted-foreground">
               {nft.collection}
             </p>
 
             <div className="mt-2 flex items-center justify-between gap-4">
-              <h1 className="text-3xl font-bold">{nft.name}</h1>
-              <FavoriteButton nftId={nft.id} />
+              <h1 className="text-xl font-bold sm:text-3xl">{nft.name}</h1>
+              <div className="hidden sm:block"><FavoriteButton nftId={nft.id} /></div>
             </div>
             <p className="mt-4 text-sm leading-7 text-muted-foreground">
               Conheça esta edição da coleção Kurio. As informações de preço, estoque e compra são demonstrativas.
