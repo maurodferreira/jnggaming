@@ -302,7 +302,9 @@ export function NftDetailPage() {
             <Skeleton className="h-20 w-full" />
           </div>
         </section>
-        <Skeleton className="h-36 w-full" />
+        {/* Reserve the full details/metadata area while the primary NFT loads.
+            This prevents the related collection and footer from jumping on desktop. */}
+        <Skeleton className="h-[380px] w-full sm:h-[360px]" />
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5" aria-hidden="true">
           {Array.from({ length: 5 }, (_, index) => (
             <Skeleton className="aspect-square w-full rounded-lg" key={index} />
