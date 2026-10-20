@@ -5,18 +5,29 @@
     <!-- Viewport must be set before any inline breakpoint/preload logic. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <!-- The same Figma art appears in the home hero and NFT detail.
-         Preload the browser-selected resolution instead of always downloading 960px.
-         Do not eagerly preload secondary artwork on unrelated SPA routes. -->
-    <link
-      rel="preload"
-      as="image"
-      href="/assets/nfts/emerald-ape.webp"
-      imagesrcset="/assets/nfts/thumbs/emerald-ape.webp 400w, /assets/nfts/emerald-ape.webp 960w"
-      imagesizes="(max-width: 639px) 100vw, (max-width: 1023px) 70vw, 640px"
-      type="image/webp"
-      fetchpriority="high"
-    />
+    <!-- Preload the first visible artwork at the size used by this route.
+         The Home hero is 40vw on phones; preloading it as 100vw wasted bandwidth
+         by selecting the larger source. No art preload is needed on other routes. -->
+    <script>
+      const initialArtworkSizes = location.pathname === '/'
+        ? '(max-width: 767px) 40vw, (max-width: 1023px) 42vw, 450px'
+        : location.pathname === '/nft/1'
+          ? '(max-width: 639px) calc(100vw - 48px), (max-width: 1023px) 70vw, 640px'
+          : null
+
+      if (initialArtworkSizes) {
+        const preload = document.createElement('link')
+        preload.rel = 'preload'
+        preload.as = 'image'
+        preload.href = '/assets/nfts/emerald-ape.webp'
+        preload.setAttribute('imagesrcset',
+          '/assets/nfts/thumbs/emerald-ape.webp 400w, /assets/nfts/emerald-ape.webp 960w')
+        preload.setAttribute('imagesizes', initialArtworkSizes)
+        preload.type = 'image/webp'
+        preload.setAttribute('fetchpriority', 'high')
+        document.head.appendChild(preload)
+      }
+    </script>
     <!-- Progressive first paint for the two main entry routes.
          It has no simulated transaction data and never replaces REST/MSW.
          CSS removes it automatically once React renders into #root. -->
