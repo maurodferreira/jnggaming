@@ -1,5 +1,8 @@
 # KURIO — NFT Marketplace Frontend Challenge
 
+> **Revisão de requisitos (20/10/2026):** [Escopo original e auditoria dos 15 frames do Figma](docs/ESCOPO_ORIGINAL_E_AUDITORIA_FIGMA.md). Essa é a matriz atual de aderência ao desafio; os documentos mais antigos registram etapas históricas e não devem ser usados como status final.
+
+
 Marketplace demonstrativo em **React + TypeScript**, baseado no [Figma Frontend Challenge](https://www.figma.com/design/HuEe6XFEtLBuMlCI8pYddf/Frontend-Challenge--c%C3%B3pia-). O código usa **dados e operações simuladas no navegador**: nenhuma blockchain, conexão de carteira ou compra verdadeira é realizada.
 
 > **Estado atual (19/10/2026):** catálogo, carrinho, conta, checkout/recibo **simulados** e eventos Socket.IO via mock MSW implementados. O projeto **ainda está em revisão**: faltam comparar todas as capturas visuais com o Figma, auditar acessibilidade/performance, tratar advisories das dependências e validar o deploy. Consulte [PLANO_CONFORMIDADE_DESAFIO.md](docs/PLANO_CONFORMIDADE_DESAFIO.md), [REVISAO_VISUAL_ACESSIBILIDADE.md](docs/REVISAO_VISUAL_ACESSIBILIDADE.md) e o PR em rascunho.
