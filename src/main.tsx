@@ -19,7 +19,11 @@ const queryClient = new QueryClient({
 // Clearing the account cache also prevents an expired session's private
 // REST data from being rendered after the user is sent back to login.
 window.addEventListener('kurio:session-expired', () => {
-  queryClient.clear()
+  // Keep the active auth query observer mounted so AccountGate receives null
+  // and can navigate to login. Invalidate all other user-scoped cache data.
+  queryClient.removeQueries({
+    predicate: query => query.queryKey[0] !== 'auth',
+  })
   queryClient.setQueryData(['auth', 'session'], null)
 })
 
