@@ -36,7 +36,11 @@ test('catálogo suporta filtros, paginação e restauração da URL', async ({ p
 
 test('faixa de preço e rede combinam com coleção, ficam na URL e sobrevivem ao refresh', async ({ page }) => {
   const toggle = page.getByRole('button', { name: 'Abrir filtros' })
-  if (await toggle.isVisible()) await toggle.click()
+  if (await page.evaluate(() => window.matchMedia('(max-width: 1023px)').matches)) {
+    await expect(toggle).toBeVisible()
+    await toggle.click()
+    await expect(page.locator('#catalog-filters')).toBeVisible()
+  }
 
   await page.getByRole('radio', { name: 'Polygon' }).check()
   await page.getByRole('button', { name: 'Colecionáveis', exact: true }).click()
