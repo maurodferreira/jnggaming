@@ -57,7 +57,7 @@ test('an applied cart coupon is carried to the authenticated quote', async ({ pa
   await page.getByLabel('Código promocional').fill('kurio10')
   await page.getByRole('button', { name: 'Aplicar' }).click()
   await expect(page.locator('dl[aria-label="Valores estimados do pedido"]')).toContainText('1.087 ETH')
-  await page.getByRole('link', { name: /Ir para pagamento simulado/i }).click()
+  await page.getByRole('link', { name: /Conectar e finalizar/i }).click()
   await expect(page).toHaveURL(/\/checkout\?coupon=KURIO10/)
   await expect(page.locator('#promo-code')).toHaveValue('KURIO10')
   await expect(page.locator('section[aria-label="Cupom e resumo"]')).toContainText('1.087 ETH')
