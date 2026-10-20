@@ -92,6 +92,10 @@
         <span class="kurio-first-brand">Kurio</span>
         <span class="kurio-first-pill"></span>
       </div>
+    </div>
+    <!-- Inert templates avoid even discovering artwork for an unrelated route.
+         Only the current route's fallback is activated before Vite boots. -->
+    <template id="kurio-shell-home">
       <div class="kurio-first-home">
         <main class="kurio-first-main">
           <section class="kurio-first-hero">
@@ -111,6 +115,8 @@
           </section>
         </main>
       </div>
+    </template>
+    <template id="kurio-shell-nft">
       <div class="kurio-first-nft">
         <main class="kurio-first-main">
           <img class="kurio-first-nft-img" src="/assets/nfts/emerald-ape.webp" alt="" width="640" height="640" fetchpriority="high" />
@@ -118,7 +124,15 @@
           <div class="kurio-first-line"></div>
         </main>
       </div>
-    </div>
+    </template>
+    <script>
+      const initialView = document.documentElement.dataset.kurioShell
+      const initialTemplate = document.getElementById('kurio-shell-' + initialView)
+      if (initialTemplate) {
+        document.getElementById('kurio-first-paint')
+          .appendChild(initialTemplate.content.cloneNode(true))
+      }
+    </script>
     <script type="module" src="/src/mocks/earlyStart.ts"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
