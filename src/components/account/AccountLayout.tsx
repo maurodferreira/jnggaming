@@ -1,4 +1,4 @@
-import { Navigate, Link, useNavigate } from '@tanstack/react-router'
+import { Navigate, Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { LogOut, MapPin, UserRound } from 'lucide-react'
 import { useLogout, useSession } from '@/features/auth/useAuth'
@@ -8,6 +8,12 @@ type ProtectedPath = '/profile' | '/wallets' | '/checkout' | '/cart'
 
 export function AccountGate({ path, children }: { path: ProtectedPath; children: ReactNode }) {
   const session = useSession()
+  const checkoutCoupon = useRouterState({
+    select: state => {
+      const search = state.location.search
+      return 'coupon' in search && typeof search.coupon === 'string' ? search.coupon : ''
+    },
+  })
 
   if (session.isPending) {
     return (
@@ -25,7 +31,13 @@ export function AccountGate({ path, children }: { path: ProtectedPath; children:
       </main>
     )
   }
-  if (!session.data) return <Navigate to="/login" search={{ next: path }} replace />
+  if (!session.data) return (
+    <Navigate
+      to="/login"
+      search={{ next: path, ...(path === '/checkout' && checkoutCoupon ? { coupon: checkoutCoupon } : {}) }}
+      replace
+    />
+  )
   return <>{children}</>
 }
 
