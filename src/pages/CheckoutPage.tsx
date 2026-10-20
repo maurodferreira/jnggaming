@@ -10,6 +10,7 @@ import type { OrderInput, OrderResponse, QuoteResponse } from '@/features/checko
 import { api } from '@/services/api'
 import { getNftArtwork } from '@/lib/nftArtwork'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AccountField } from '@/components/account/AccountField'
 
 const providers: OrderInput['provider'][] = [
   'WalletConnect', 'MetaMask', 'Coinbase Wallet',
@@ -97,9 +98,21 @@ export function CheckoutPage() {
             {profile.isPending ? <Skeleton className="h-24 w-full"/> : profile.isError ? (
               <p role="alert" className="text-sm text-destructive">Não foi possível carregar seus dados.</p>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2"><p className="text-xs text-muted-foreground">Nome de exibição</p><p className="rounded-md border border-[#624230] p-3 text-sm">{profile.data?.displayName}</p></div>
-                <div className="space-y-2"><p className="text-xs text-muted-foreground">E-mail</p><p className="break-all rounded-md border border-[#624230] p-3 text-sm">{profile.data?.email}</p></div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <AccountField id="checkout-display" label="Nome de exibição" value={profile.data?.displayName ?? ''} readOnly/>
+                <AccountField id="checkout-user" label="Nome de usuário" value={profile.data?.username ?? ''} readOnly/>
+                <AccountField id="checkout-network" label="Rede" value={network} readOnly/>
+                <AccountField id="checkout-profile-name" label="Nome do perfil" value={profile.data?.displayName ?? ''} readOnly/>
+                <AccountField id="checkout-address" label="Endereço da carteira"
+                  value={wallet?.address ?? ''} placeholder="Selecione uma carteira cadastrada" readOnly/>
+                <AccountField id="checkout-ens-secondary" label="ENS ou carteira secundária (opcional)"
+                  value={profile.data?.ensName ?? ''} placeholder="Não configurado" readOnly/>
+                <AccountField id="checkout-wallet-type" label="Tipo de carteira"
+                  value={wallet?.type ?? ''} placeholder="Selecione uma carteira cadastrada" readOnly/>
+                <AccountField id="checkout-referral" label="Código de indicação"
+                  disabled placeholder="Indicações fora do escopo da demonstração"/>
+                <AccountField id="checkout-email" label="E-mail" type="email" value={profile.data?.email ?? ''} readOnly/>
+                <AccountField id="checkout-ens" label="Nome ENS" value={profile.data?.ensName ?? ''} placeholder="Não configurado" readOnly/>
               </div>
             )}
             <p className="text-xs text-[#cfb28c]">Precisa alterar seus dados? <Link to="/profile" className="text-primary underline-offset-4 hover:underline">Editar perfil</Link></p>
