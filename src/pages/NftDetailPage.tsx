@@ -290,7 +290,7 @@ export function NftDetailPage() {
             </div>
             <Skeleton className="aspect-square w-full rounded-[24px] sm:rounded-lg" />
           </div>
-          <div className="relative -mx-5 -mt-6 space-y-6 rounded-t-[28px] bg-[#241612] px-5 pb-7 pt-8 sm:mx-0 sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0">
+          <div className="relative -mx-5 -mt-6 space-y-6 rounded-t-[28px] bg-[#241612] px-5 pb-7 pt-8 sm:mx-0 sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 lg:min-h-[950px]">
             <Skeleton className="h-5 w-1/3" />
             <Skeleton className="h-9 w-3/4" />
             <Skeleton className="h-16 w-full" />
