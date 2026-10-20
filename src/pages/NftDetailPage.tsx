@@ -7,6 +7,7 @@ import { useNfts } from '@/features/catalog/useNfts'
 import { NftCard } from '@/components/catalog/NftCard'
 import { NftArtworkGallery } from '@/components/catalog/NftArtworkGallery'
 import { NftDetailsTabs } from '@/components/catalog/NftDetailsTabs'
+import { NftMetadata } from '@/components/catalog/NftMetadata'
 import { FavoriteButton } from '@/components/catalog/FavoriteButton'
 import type { NftDetail } from '@/features/catalog/types'
 import { multiplyEth } from '@/lib/eth'
@@ -66,11 +67,12 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
   )
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-3 sm:space-y-6">
       {/* Escolha da edição */}
-      <fieldset className="space-y-2 sm:space-y-3">
+      <fieldset className="space-y-1 sm:space-y-3">
         <legend className="font-medium">
-          Escolha uma edição
+          <span className="sm:hidden">Edição:</span>
+          <span className="hidden sm:inline">Escolha uma edição</span>
         </legend>
 
         <div className="flex flex-wrap gap-2 sm:grid sm:grid-cols-2 sm:gap-3">
@@ -370,7 +372,7 @@ export function NftDetailPage() {
         </div>
 
         {/* Informações */}
-        <div className="relative -mx-5 -mt-6 space-y-4 rounded-t-[28px] bg-[#241612] px-5 pb-7 pt-6 shadow-[0_-12px_32px_rgba(0,0,0,0.22)] sm:mx-0 sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
+        <div className="relative -mx-5 -mt-6 space-y-3 rounded-t-[28px] bg-[#241612] px-5 pb-5 pt-4 shadow-[0_-12px_32px_rgba(0,0,0,0.22)] sm:mx-0 sm:mt-0 sm:space-y-4 sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           <div>
             <p className="hidden text-muted-foreground sm:block">
               {nft.collection}
@@ -378,9 +380,14 @@ export function NftDetailPage() {
 
             <div className="mt-2 flex items-center justify-between gap-4">
               <h1 className="text-xl font-bold sm:text-3xl">{nft.name}</h1>
+              {nft.metadata.reviewSummary && (
+                <span className="shrink-0 rounded-full border border-[#624230] px-2 py-1 text-[11px] text-primary sm:hidden">
+                  ★ {nft.metadata.reviewSummary.average.toFixed(1)} ({nft.metadata.reviewSummary.count})
+                </span>
+              )}
               <div className="hidden sm:block"><FavoriteButton nftId={nft.id} /></div>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-3 border-b border-[#624230] pb-3">
+            <div className="mt-3 hidden flex-wrap items-center gap-3 border-b border-[#624230] pb-3 sm:flex">
               <strong className="text-lg text-primary">{nft.priceEth} ETH</strong>
               {nft.metadata.reviewSummary && (
                 <span className="text-xs text-[#cfb28c]">
@@ -389,32 +396,18 @@ export function NftDetailPage() {
                 </span>
               )}
             </div>
-            <p className="mt-3 text-sm leading-6 text-[#cfb28c] sm:mt-4 sm:leading-7">
+            <p className="mt-2 text-xs leading-5 text-[#cfb28c] sm:hidden">
+              Colecionável digital da coleção {nft.metadata.collectionLabel}, disponível para compra simulada na KURIO.
+            </p>
+            <p className="mt-4 hidden text-sm leading-7 text-[#cfb28c] sm:block">
               <span className="font-semibold text-foreground">Sobre este NFT: </span>
               {nft.metadata.description}
             </p>
           </div>
 
+          <NftMetadata nft={nft} className="sm:hidden" />
           <EditionSelector key={nft.id} nft={nft} />
-
-          <section aria-label="Metadados demonstrativos">
-            <dl className="space-y-1 text-xs leading-6 text-[#cfb28c]">
-            <div className="flex flex-wrap gap-2">
-              <dt>ID do token:</dt>
-              <dd>{nft.metadata.tokenId}</dd>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <dt>Coleção:</dt>
-              <dd>{nft.metadata.collectionLabel}</dd>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <dt>Atributos:</dt>
-              <dd>{nft.metadata.attributes.length > 0
-                ? nft.metadata.attributes.join(', ')
-                : 'Não informados nesta demonstração'}</dd>
-            </div>
-            </dl>
-          </section>
+          <NftMetadata nft={nft} className="hidden sm:block" />
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span>Compartilhar este NFT:</span>
             <button
