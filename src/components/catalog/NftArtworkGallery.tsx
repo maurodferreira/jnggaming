@@ -23,16 +23,22 @@ function ArtworkImage({
   view,
   eager = false,
   className = '',
+  sizes = '76px',
+  fullResolution = false,
 }: {
   src: string
   name: string
   view: ArtworkView
   eager?: boolean
   className?: string
+  sizes?: string
+  fullResolution?: boolean
 }) {
   return (
     <img
       src={src}
+      srcSet={fullResolution ? undefined : `${src.replace('/assets/nfts/', '/assets/nfts/thumbs/')} 400w, ${src} 960w`}
+      sizes={fullResolution ? undefined : sizes}
       alt={`${name}, ${view.description}`}
       width={640}
       height={640}
@@ -69,7 +75,13 @@ export function NftArtworkGallery({ nftId, nftName }: { nftId: string; nftName: 
         </div>
         <div className="relative self-start overflow-hidden rounded-[24px] bg-[#241612] p-1 sm:rounded-lg sm:p-3">
           <div className="aspect-[1.33] overflow-hidden rounded-[20px] sm:aspect-square sm:rounded-lg" aria-live="polite">
-            <ArtworkImage src={src} name={nftName} view={selected} eager />
+            <ArtworkImage
+              src={src}
+              name={nftName}
+              view={selected}
+              sizes="(max-width: 639px) calc(100vw - 48px), (max-width: 1023px) 70vw, 640px"
+              eager
+            />
           </div>
           <div
             className="absolute bottom-4 left-4 flex items-center gap-2 sm:hidden"
@@ -116,7 +128,7 @@ export function NftArtworkGallery({ nftId, nftName }: { nftId: string; nftName: 
           <X size={22} aria-hidden="true" />
         </button>
         <div className="aspect-square w-full overflow-hidden rounded-lg">
-          <ArtworkImage src={src} name={nftName} view={selected} eager />
+          <ArtworkImage src={src} name={nftName} view={selected} eager fullResolution />
         </div>
         <p className="pt-3 text-center text-xs text-[#cfb28c]">
           {selected.label} · A visualização usa a arte original do NFT.
