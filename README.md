@@ -2,7 +2,7 @@
 
 Um marketplace de NFTs desenvolvido como desafio técnico de Frontend para a **Jungle Gaming**. A ideia foi transformar o design do Figma em uma aplicação navegável, com catálogo, carrinho, contas de colecionador e uma compra inteiramente simulada — incluindo as situações em que a rede ou a sessão falham.
 
-**[Ver o KURIO online](https://kurio-jungle-challenge.vercel.app/)** · [Figma de referência](https://www.figma.com/design/HuEe6XFEtLBuMlCI8pYddf/Frontend-Challenge--c%C3%B3pia-) · [Regras e decisões de design](docs/REGRAS_E_LIBERDADES_DO_DESAFIO.md) · [Auditoria do desafio](docs/ESCOPO_ORIGINAL_E_AUDITORIA_FIGMA.md)
+**[Demo pública (versão anterior ao PR)](https://kurio-jungle-challenge.vercel.app/)** · [Figma de referência](https://www.figma.com/design/HuEe6XFEtLBuMlCI8pYddf/Frontend-Challenge--c%C3%B3pia-) · [Regras e decisões de design](docs/REGRAS_E_LIBERDADES_DO_DESAFIO.md) · [Auditoria do desafio](docs/ESCOPO_ORIGINAL_E_AUDITORIA_FIGMA.md)
 
 > **Uma demonstração, não um marketplace financeiro.** Não há pagamentos, transferência de NFTs, conexão com blockchain ou carteira real. Os dados e as operações são simulados de ponta a ponta com MSW.
 
