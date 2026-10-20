@@ -76,7 +76,7 @@ export function HomePage() {
 
   return (
     <main className="mx-auto w-full max-w-[1248px] px-5 pb-20 pt-10 text-foreground md:px-6 md:pb-0 md:pt-8">
-      <div className="mb-4 flex items-center gap-2 md:hidden">
+      <div className="mb-4 flex items-center gap-2 lg:hidden">
         <form onSubmit={search} role="search" className="flex h-[45px] min-w-0 flex-1 items-center gap-2 rounded-[10px] bg-[#241612] px-3">
           <Search size={19} className="shrink-0 text-[#b39463]" aria-hidden="true" />
           <input
