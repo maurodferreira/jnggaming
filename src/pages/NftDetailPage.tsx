@@ -260,7 +260,8 @@ export function NftDetailPage() {
     refetch,
   } = useNft(nftId)
 
-  const related = useNfts(catalogSearch)
+  // The primary NFT is needed above the fold. Fetch suggestions only after it resolves.
+  const related = useNfts(catalogSearch, { enabled: Boolean(nft) })
 
   // Carregamento
   if (isPending) {
