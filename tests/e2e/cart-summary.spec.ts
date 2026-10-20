@@ -19,7 +19,9 @@ test('cart coupon preview uses the same API bigint amounts as checkout', async (
   test.setTimeout(35_000)
   await page.goto('/nft/1')
   await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click()
-  await page.goto('/cart')
+  await expect(page.getByText('NFT adicionado ao carrinho!')).toBeVisible()
+  await page.getByRole('link', { name: /Ver meu carrinho/i }).click()
+  await expect(page.getByRole('heading', { name: 'Carrinho de NFTs' })).toBeVisible()
 
   const summary = page.locator('dl[aria-label="Valores estimados do pedido"]')
   await expect(summary).toContainText('1.19 ETH')
@@ -49,7 +51,9 @@ test('an applied cart coupon is carried to the authenticated quote', async ({ pa
 
   await page.goto('/nft/1')
   await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click()
-  await page.goto('/cart')
+  await expect(page.getByText('NFT adicionado ao carrinho!')).toBeVisible()
+  await page.getByRole('link', { name: /Ver meu carrinho/i }).click()
+  await expect(page.getByRole('heading', { name: 'Carrinho de NFTs' })).toBeVisible()
   await page.getByLabel('Código promocional').fill('kurio10')
   await page.getByRole('button', { name: 'Aplicar' }).click()
   await expect(page.locator('dl[aria-label="Valores estimados do pedido"]')).toContainText('1.087 ETH')
