@@ -23,7 +23,7 @@ api.interceptors.response.use(
       axios.isAxiosError(error) &&
       error.response?.status === 401 &&
       localStorage.getItem(ACCESS_TOKEN_KEY) &&
-      !/^\\/auth\\/(login|register)$/.test(error.config?.url ?? '')
+      !/^\/auth\/(login|register)$/.test(error.config?.url ?? '')
     ) {
       localStorage.removeItem(ACCESS_TOKEN_KEY)
       window.dispatchEvent(new Event('kurio:session-expired'))
