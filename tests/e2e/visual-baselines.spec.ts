@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 // Baselines: Figma catalog filters and interactive NFT gallery / metadata at 390, 768 and 1440 CSS px.
+// Baselines regenerated after tablet filter access and stable NFT loading layout.
 const widths = [390, 768, 1440] as const
 
 async function resetDemo(page: Page) {
