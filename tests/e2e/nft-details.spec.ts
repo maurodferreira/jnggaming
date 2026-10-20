@@ -66,6 +66,23 @@ test('detalhes, atributos e avaliações são dados do mock, com abas acessívei
   )
 })
 
+test('CTA de compra no mobile fica visível antes da navegação inferior', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-chromium', 'Visualização compacta do Figma mobile.')
+
+  await page.goto('/nft/1')
+  const buy = page.getByRole('button', { name: 'Adicionar ao carrinho' })
+  const mobileNav = page.getByRole('navigation', { name: 'Navegação mobile' })
+
+  await expect(buy).toBeVisible()
+  await expect(mobileNav).toBeVisible()
+
+  const buyRect = await buy.boundingBox()
+  const navRect = await mobileNav.boundingBox()
+  expect(buyRect).not.toBeNull()
+  expect(navRect).not.toBeNull()
+  expect(buyRect!.y + buyRect!.height).toBeLessThan(navRect!.y - 8)
+})
+
 test('outro NFT não recebe avaliações nem atributos inventados', async ({ page }) => {
   await page.goto('/nft/2')
   await expect(page.getByRole('heading', { name: 'Sage Nomad #009', level: 1 })).toBeVisible()
