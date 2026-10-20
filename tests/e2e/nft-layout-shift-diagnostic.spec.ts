@@ -1,11 +1,10 @@
 import { expect, test } from '@playwright/test'
 
 /**
- * Diagnostic for the NFT detail CLS observed in Lighthouse.
- * Exercises MSW's slow profile to make the skeleton-to-detail transition
- * visible, and prints DOMRect movement reported by PerformanceObserver.
+ * Guard against layout regressions when the simulated NFT API is slow.
+ * The skeleton and the final detail should keep the visible page stable.
  */
-test('diagnose NFT layout shift without hiding real render changes', async ({ page }, testInfo) => {
+test('NFT skeleton-to-detail transition keeps CLS under 0.1', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'Inspect desktop geometry once.')
 
   await page.addInitScript(() => {
@@ -58,6 +57,9 @@ test('diagnose NFT layout shift without hiding real render changes', async ({ pa
     const target = window as Window & { __kurioShifts?: unknown[] }
     return target.__kurioShifts ?? []
   })
-  console.log('KURIO_CLS_DIAGNOSTICS=' + JSON.stringify(diagnostics))
-  await page.screenshot({ path: 'test-results/nft-cls-after-load.png', fullPage: true })
+  const totalCls = (diagnostics as Array<{ value: number }>).reduce(
+    (total, entry) => total + entry.value,
+    0,
+  )
+  expect(totalCls, `Layout shifts: ${JSON.stringify(diagnostics)}`).toBeLessThan(0.1)
 })
