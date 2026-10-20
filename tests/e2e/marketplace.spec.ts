@@ -34,6 +34,42 @@ test('catálogo suporta filtros, paginação e restauração da URL', async ({ p
   await expect(page.getByRole('link', { name: /Emerald Ape #042/i })).toBeVisible()
 })
 
+test('faixa de preço e rede combinam com coleção, ficam na URL e sobrevivem ao refresh', async ({ page }) => {
+  const toggle = page.getByRole('button', { name: 'Abrir filtros' })
+  if (await toggle.isVisible()) await toggle.click()
+
+  await page.getByRole('radio', { name: 'Polygon' }).check()
+  await page.getByRole('button', { name: 'Colecionáveis', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Preço mínimo (ETH)' }).fill('1,50')
+  await page.getByRole('textbox', { name: 'Preço máximo (ETH)' }).fill('1,80')
+  await page.getByRole('button', { name: 'Aplicar faixa de preço' }).click()
+
+  await expect(page.getByRole('link', { name: /Sage Nomad #009/i })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Violet Nomad #314/i })).toHaveCount(0)
+
+  const url = new URL(page.url())
+  expect(url.searchParams.get('network')).toBe('Polygon')
+  expect(url.searchParams.get('collection')).toBe('Colecionáveis')
+  expect(url.searchParams.get('minPriceEth')).toBe('1.50')
+  expect(url.searchParams.get('maxPriceEth')).toBe('1.80')
+  expect(url.searchParams.get('page')).toBe('1')
+
+  await page.reload()
+  await expect(page.getByRole('link', { name: /Sage Nomad #009/i })).toBeVisible()
+  const openFilters = page.getByRole('button', { name: 'Abrir filtros' })
+  if (await openFilters.isVisible()) await openFilters.click()
+  await expect(page.getByRole('radio', { name: 'Polygon' })).toBeChecked()
+
+  await page.getByRole('textbox', { name: 'Preço mínimo (ETH)' }).fill('2,00')
+  await page.getByRole('button', { name: 'Aplicar faixa de preço' }).click()
+  await expect(page.getByRole('alert')).toContainText('O preço mínimo não pode ser maior que o máximo.')
+  await expect(page.getByRole('link', { name: /Sage Nomad #009/i })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Limpar filtros' }).click()
+  await expect(page.getByRole('link', { name: /Emerald Ape #042/i })).toBeVisible()
+  expect(new URL(page.url()).searchParams.get('network')).toBe('all')
+})
+
 test('detalhes suportam acesso direto e NFT inexistente', async ({ page }) => {
   await page.goto('/nft/1')
   await expect(page.getByRole('heading', { name: 'Emerald Ape #042', level: 1 })).toBeVisible()
