@@ -20,7 +20,10 @@ export function useRealtime() {
     let dispose: (() => void) | undefined
     versions.current.clear()
 
-    void import('socket.io-client').then(({ io }) => {
+    // O catálogo recebe prioridade na primeira pintura. O tempo real
+    // conecta logo depois, sem impedir navegação nem a consulta REST.
+    const timeoutId = window.setTimeout(() => {
+      void import('socket.io-client').then(({ io }) => {
       if (cancelled) return
       const socket = io(window.location.origin, {
         path: '/socket.io/',
@@ -84,11 +87,13 @@ export function useRealtime() {
         socket.io.removeAllListeners('reconnect')
         socket.disconnect()
       }
-    }).catch(() => {
-      // REST remains the source of truth when realtime cannot connect.
-    })
+      }).catch(() => {
+        // O REST continua sendo a fonte de verdade quando o socket falha.
+      })
+    }, 700)
 
     return () => {
+      window.clearTimeout(timeoutId)
       cancelled = true
       dispose?.()
     }
