@@ -38,7 +38,7 @@ export async function simulateCatalogNetwork(): Promise<Response | null> {
     ? 1_500
     : scenario === 'variable'
       ? (requestNumber++ % 2 === 0 ? 1_100 : 120)
-      : 150
+      : 40
 
   await delay(duration)
 
