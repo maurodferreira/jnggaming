@@ -2,7 +2,7 @@
 
 Marketplace demonstrativo em **React + TypeScript**, baseado no [Figma Frontend Challenge](https://www.figma.com/design/HuEe6XFEtLBuMlCI8pYddf/Frontend-Challenge--c%C3%B3pia-). O código usa **dados e operações simuladas no navegador**: nenhuma blockchain, conexão de carteira ou compra verdadeira é realizada.
 
-> **Estado atual (19/10/2026):** catálogo, detalhes, carrinho, autenticação, perfil e carteiras em evolução. O projeto **ainda não atende ao desafio completo**: checkout/recibo, Socket.IO, cenários avançados, regressão visual e Lighthouse seguem pendentes. Consulte [PLANO_CONFORMIDADE_DESAFIO.md](docs/PLANO_CONFORMIDADE_DESAFIO.md) e o PR em rascunho.
+> **Estado atual (19/10/2026):** catálogo, carrinho, conta, checkout/recibo **simulados** e eventos Socket.IO via mock MSW implementados. O projeto **ainda está em revisão**: faltam comparar todas as capturas visuais com o Figma, auditar acessibilidade/performance, tratar advisories das dependências e validar o deploy. Consulte [PLANO_CONFORMIDADE_DESAFIO.md](docs/PLANO_CONFORMIDADE_DESAFIO.md), [REVISAO_VISUAL_ACESSIBILIDADE.md](docs/REVISAO_VISUAL_ACESSIBILIDADE.md) e o PR em rascunho.
 
 ## Executar localmente
 
@@ -115,7 +115,7 @@ Esses endpoints são exclusividade da simulação local/MSW. `VITE_ENABLE_MOCKS=
 
 A interface usa labels, aria-live e botões sem navegação fictícia. Mesmo assim, faltam auditorias completas de teclado, zoom, contraste e regressão visual com baselines.
 
-**Ainda pendente:** eventos `nft.updated`/`order.updated` via Socket.IO, simulações abrangentes de recusa e timeout, testes adicionais de idempotência, regressão visual e Lighthouse (metas 90/95/95/90). O deploy final é obrigatório e ainda precisa ser validado em uma URL pública.
+**Tempo real da demonstração:** `socket.io-client` comunica-se por WebSocket com um adaptador limitado do MSW 3 (sem polling ou blockchain real); a API REST é a fonte de verdade após refresh ou reconexão. Os eventos `nft.updated` e `order.updated` têm versão e casos E2E. **Ainda pendente:** comparação visual completa com o Figma, revisão de WCAG/zoom/contraste, resultados e ajustes de Lighthouse (metas 90/95/95/90), atualização segura de dependências e deploy público verificado.
 
 ## Organização
 
