@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
-import { ArrowRight, Search, SlidersHorizontal } from 'lucide-react'
+import { ArrowRight, ChevronDown, Search, SlidersHorizontal } from 'lucide-react'
 import { useNfts } from '@/features/catalog/useNfts'
 import type { CatalogFilters, CatalogNetwork, CatalogSort } from '@/features/catalog/types'
 import { NftCard } from '@/components/catalog/NftCard'
@@ -9,7 +9,6 @@ import { CatalogPriceRange } from '@/components/catalog/CatalogPriceRange'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const routeApi = getRouteApi('/')
 const categories = ['Arte digital', 'Fotografia', 'Música', 'Arte 3D', 'Colecionáveis', 'Generativa', 'Jogos', 'Assinaturas', 'Utilidade']
@@ -229,24 +228,20 @@ export function HomePage() {
               </div>
               <div className="hidden shrink-0 items-center gap-2 text-xs xl:flex">
                 <span id="catalog-sort-label">Ordenar por:</span>
-                <Select
-                  value={filters.sort}
-                  onValueChange={value => {
-                    if (value) updateFilters({ sort: value as CatalogSort, page: 1 })
-                  }}
-                >
-                  <SelectTrigger aria-labelledby="catalog-sort-label" className="h-9 w-[190px] rounded-md border-[#624230] bg-[#241612] text-xs text-[#f5f1eb] hover:border-primary focus-visible:ring-2 focus-visible:ring-primary/50">
-                    <SelectValue>{sortLabels[filters.sort]}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent align="end" sideOffset={6} className="z-[100] rounded-lg border-[#624230] bg-[#241612] text-[#f5f1eb] shadow-xl">
-                    <SelectItem value="featured">Destaques</SelectItem>
-                    <SelectItem value="newest">Listados recentemente</SelectItem>
-                    <SelectItem value="trending">Em alta</SelectItem>
-                    <SelectItem value="name_asc">Nome (A-Z)</SelectItem>
-                    <SelectItem value="price_asc">Menor preço</SelectItem>
-                    <SelectItem value="price_desc">Maior preço</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="relative">
+                  <select
+                    id="catalog-sort"
+                    aria-labelledby="catalog-sort-label"
+                    value={filters.sort}
+                    onChange={event => updateFilters({ sort: event.target.value as CatalogSort, page: 1 })}
+                    className="h-9 w-[190px] appearance-none rounded-md border border-[#624230] bg-[#241612] py-2 pl-3 pr-8 text-xs text-[#f5f1eb] outline-none transition-colors hover:border-primary focus-visible:ring-2 focus-visible:ring-primary/50"
+                  >
+                    {Object.entries(sortLabels).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={16} aria-hidden="true" className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#cfb28c]" />
+                </div>
               </div>
             </div>
 
