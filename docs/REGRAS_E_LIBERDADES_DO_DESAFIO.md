@@ -60,14 +60,16 @@ Portanto, o design **não é sugestão livre**: preserve tipografia, cores, espa
 6. **Skeleton shimmer:** ativado no loading, desativado automaticamente para quem prefere movimento reduzido.
 7. **Cenários de rede:** perfil MSW determinístico para normal, lento, latência variável, HTTP 503 e offline em listagem/detalhe, sem respostas falsas na UI.
 
-## Pendências até autorizar entrega
+## Situação comprovada e aceite final
 
-- [ ] CI verde no commit final (typecheck, lint, build normal e alternativo, Playwright desktop/mobile).
-- [ ] Comparar e aprovar screenshots de todos os **15 frames**; criar e versionar baselines visuais para Home, NFT, Carrinho e Checkout.
-- [ ] Cobrir E2E completos de sessão expirada durante compra, favoritos com rollback, eventos antigos, retomada do pedido e zoom/foco.
-- [ ] Confirmar Lighthouse mobile ≥90 ou explicar causas e otimizar sem falsear a medição.
-- [ ] Avaliar vulnerabilidades de desenvolvimento reportadas pelo npm audit (7 altas, cadeia de CLI shadcn/braces/fast-glob/ts-morph na auditoria de 20/10).
-- [ ] Publicar e validar deployment público (refresh profundo, worker MSW, Socket.IO, rotas e erros).
-- [ ] Rever novamente a fidelidade dos formulários de carteiras, checkout e confirmação diante do Figma.
+- [x] Nove rotas e fluxos obrigatórios implementados; API e pagamentos demonstrativos.
+- [x] Suíte Playwright E2E funcional e testes de sessão, cupons, erro de rede, pedido e tempo real.
+- [x] **27 baselines visuais versionadas**: nove telas em 390, 768 e 1440 px. Ainda é necessária a aprovação de fidelidade de cada uma ao Figma.
+- [x] Auditoria de dependências limpa após remover o CLI shadcn pelo método oficial (`npm audit`: 0 vulnerabilidades na execução validada).
+- [x] Deploy público na Vercel e smoke test de Home, MSW, API, assets, deep links e refresh (11/11).
+- [ ] Confirmar o último CI depois dos ajustes de performance e telas, incluindo as novas baselines.
+- [ ] Fechar **Lighthouse Performance mobile ≥90** nas medianas da Home e do NFT sem desativar funcionalidades ou alterar artificialmente a medição.
+- [ ] Concluir o aceite visual humano dos **15 frames originais do Figma**, incluindo desktop e mobile, e estados não desenhados.
+- [ ] Atualizar a evidência no PR e manter a `main` preservada até a entrega aprovada.
 
-O PR permanece em rascunho e **não deve entrar na main** enquanto os itens obrigatórios e eliminatórios não tiverem validação real.
+**Importante:** o CI do Lighthouse gera e arquiva relatórios, mas uma execução marcada como `success` não significa automaticamente que a meta mobile foi alcançada. A nota atribuída ao desafio pertence à avaliação da Jungle Gaming.
