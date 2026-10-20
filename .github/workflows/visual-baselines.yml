@@ -47,7 +47,17 @@ jobs:
             echo "No new baseline changes"
           else
             git commit -m "test(visual): version approved Chromium snapshot candidates"
-            git push origin HEAD:feat/figma-kurio-ui
+            # The review branch can receive documentation commits while this
+            # job renders screenshots. Never force push or discard those edits.
+            for attempt in 1 2 3; do
+              if git push origin HEAD:feat/figma-kurio-ui; then
+                exit 0
+              fi
+              git fetch origin feat/figma-kurio-ui
+              git rebase origin/feat/figma-kurio-ui
+            done
+            echo "Could not push visual baselines after three safe retries" >&2
+            exit 1
           fi
       - name: Upload screenshot baselines and Playwright report
         if: always()
