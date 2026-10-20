@@ -21,6 +21,11 @@
          It has no simulated transaction data and never replaces REST/MSW.
          CSS removes it automatically once React renders into #root. -->
     <script>
+      const shellDefaults = { q: '', collection: 'all', available: 'false', network: 'all',
+        minPriceEth: '', maxPriceEth: '', sort: 'featured', page: '1' }
+      const shellSearch = new URLSearchParams(location.search)
+      const filteredCatalog = [...shellSearch].some(([key, value]) => shellDefaults[key] !== value)
+      document.documentElement.dataset.kurioFiltered = filteredCatalog ? 'true' : 'false'
       document.documentElement.dataset.kurioShell =
         location.pathname === '/' ? 'home' :
         location.pathname === '/nft/1' ? 'nft' : 'none'
@@ -50,6 +55,7 @@
       .kurio-first-cards { display: flex; gap: 16px; }
       .kurio-first-card { display: block; width: 50%; max-width: 220px; aspect-ratio: 1; border-radius: 12px; background: #38241a; overflow: hidden; }
       .kurio-first-card img { display: block; width: 100%; height: 100%; object-fit: cover; }
+      html[data-kurio-filtered="true"] .kurio-first-card img { display: none; }
       .kurio-first-desktop-title { display: none; }
       .kurio-first-nft-img { display: block; width: 100%; max-width: 640px; aspect-ratio: 1.33;
         border-radius: 22px; object-fit: cover; }
