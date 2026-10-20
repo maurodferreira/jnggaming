@@ -56,10 +56,13 @@ export function useRealtime() {
         socket.on('connect', () => {
           const token = localStorage.getItem('kurio:demo:access-token:v1')
           if (token && accountId) socket.emit('session.subscribe', { token })
-          reconcile()
+          // The initial REST queries are already loading the current snapshot.
+          // Invalidating them here makes the first socket connection trigger
+          // an unnecessary second fetch during the critical mobile paint.
         })
 
         socket.io.on('reconnect', () => {
+          // A missed event while offline needs a fresh REST snapshot.
           versions.current.clear()
           reconcile()
         })
