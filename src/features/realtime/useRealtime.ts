@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@/features/auth/useAuth'
 import type { NftUpdatedEvent, OrderUpdatedEvent } from './types'
-import { waitForMockStartup } from '@/services/mockStartup'
 
 /**
  * The real Socket.IO client is imported only after the MSW worker has started.
@@ -21,7 +20,7 @@ export function useRealtime() {
     let dispose: (() => void) | undefined
     versions.current.clear()
 
-    void waitForMockStartup().then(() => import('socket.io-client')).then(({ io }) => {
+    void import('socket.io-client').then(({ io }) => {
       if (cancelled) return
       const socket = io(window.location.origin, {
         path: '/socket.io/',
