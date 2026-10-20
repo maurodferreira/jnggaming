@@ -43,6 +43,11 @@
       html[data-kurio-shell="home"] #kurio-first-paint,
       html[data-kurio-shell="nft"] #kurio-first-paint { display: block; }
       #root:not(:empty) + #kurio-first-paint { display: none !important; }
+      /* Desktop boot is already fast and the fixed fallback can register a
+         layout shift as it disappears. Reserve progressive artwork for mobile. */
+      @media (min-width: 1024px) {
+        #kurio-first-paint { display: none !important; }
+      }
       .kurio-first-header { height: 68px; display: flex; align-items: center;
         justify-content: space-between; max-width: 1248px; padding: 0 24px; margin: auto; }
       .kurio-first-brand { color: #e89b55; font-size: 23px; font-weight: 800; letter-spacing: -1px; }
