@@ -27,6 +27,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build
+      - name: Verify Windows route-generator fallback build
+        run: KURIO_SKIP_ROUTE_GENERATION=true npm run build
       - name: Install Chromium for E2E tests
         run: npx playwright install --with-deps chromium
       - name: Playwright E2E desktop and mobile
