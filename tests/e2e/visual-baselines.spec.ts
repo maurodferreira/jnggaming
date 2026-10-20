@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-// Baselines: sidebar do catálogo com preço/rede e galeria de NFTs em três larguras.
+// Baselines: Figma catalog filters and interactive NFT gallery / metadata at 390, 768 and 1440 CSS px.
 const widths = [390, 768, 1440] as const
 
 async function resetDemo(page: Page) {
