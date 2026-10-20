@@ -128,7 +128,7 @@ export function HomePage() {
               fetchPriority="high"
             />
             <img
-              src="/assets/nfts/sage-nomad.webp"
+              src="/assets/nfts/thumbs/sage-nomad.webp"
               alt=""
               aria-hidden="true"
               className="absolute -bottom-2 -left-2 block size-[45%] max-h-[70px] max-w-[70px] rounded-xl border-2 border-[#6f492a] object-cover shadow-xl md:hidden"
