@@ -49,7 +49,7 @@ test('compra simulada só confirma após status do pedido e resiste a refresh', 
   await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click()
   await expect(page.getByText('NFT adicionado ao carrinho!')).toBeVisible()
   await page.goto('/cart')
-  await page.getByRole('link', { name: 'Ir para pagamento simulado' }).click()
+  await page.getByRole('link', { name: 'Conectar e finalizar' }).click()
 
   await expect(page.getByRole('heading', { name: 'Pagamento com carteira' })).toBeVisible()
   await expect(page.getByText('Minha coleção')).toBeVisible()
