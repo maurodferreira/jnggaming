@@ -22,7 +22,7 @@ Implementar um **marketplace de NFTs demonstrativo**, desktop e mobile, capaz de
 | --- | --- | --- | --- | --- |
 | Início / catálogo | `2:2` | `14:5226` | `/` — hero, cards, busca, filtros, ordenação, paginação e estado URL | Conferir proporções, filtros mobile, galeria de artes, rodapé e baselines reais |
 | Detalhes do NFT | `10:244` | `15:5536` | `/nft/$nftId` — artwork, edição, quantidade, preço e favoritos | Reproduzir/validar comportamento de galeria e compra mobile vs. frame, validar estoque esgotado |
-| Carrinho de NFTs | `11:1278` | `16:360` | `/cart` — itens, quantidade, remoção, persistência e subtotal | **Lacuna:** campo de cupom, desconto, taxa e total da API ficam no checkout, não no resumo do carrinho, como pede o enunciado |
+| Carrinho de NFTs | `11:1278` | `16:360` | `/cart` — itens, quantidade, remoção, persistência e subtotal | Cupom, desconto, taxa de rede e total estimado agora usam `GET /api/cart/summary` compartilhando cálculo `bigint` com `/api/quote`; validação final ainda depende de E2E no commit atual |
 | Pagamento | `11:2862` | `16:748` | `/checkout` — carteira, rede, provedor, cupom, cotação e pedido simulado | Comparar composição fina, campos do layout, expiração durante a compra, diálogo de revalidação |
 | Confirmação | `11:4385` | não fornecido | `/orders/$orderId` — pending/confirmed/declined, ID, snapshot, taxas | Aproximar comprovante visual e testar retomada em falhas múltiplas. Manter **mensagem explícita de simulação**, sem simular transferência real |
 | Login | `9:115` | `16:1022` | `/login` — validação, sessão e retorno | Testar expiração/cenários lentos e variações de erro; login Google/Facebook está fora do escopo |
@@ -38,7 +38,7 @@ Implementar um **marketplace de NFTs demonstrativo**, desktop e mobile, capaz de
 | --- | --- | --- |
 | Catálogo + estado URL + filtros combinados | Implementado | Validar filtros, paginação e respostas fora de ordem na matriz completa |
 | Detalhe, edição, quantidade, favorito | Implementado no código | Validação da galeria frente ao Figma e cenários de estoque |
-| Carrinho visitante, merge e isolamento entre contas | Implementado, com testes E2E | Completar UI do cupom e resumo por API no carrinho |
+| Carrinho visitante, merge e isolamento entre contas | Implementado, com testes E2E | Nova API de resumo e handoff de cupom adicionados; verificar CI final e ajustes de UX |
 | Login, cadastro, perfil, avatar, senha e carteiras | Implementado via API mock | Expiração, autenticação em múltiplas abas e erros específicos |
 | Quote, cupom, rede, taxa e precisão ETH em `bigint` | Implementado no checkout | Confirmar mudanças de valor mediante revalidação clara ao usuário |
 | Pedido idempotente, snapshot e recuperação após falha de rede | Implementado na API MSW e no recibo | Completar testes de perda de resposta múltipla, clique repetido e pendência |
@@ -78,11 +78,21 @@ Implementar um **marketplace de NFTs demonstrativo**, desktop e mobile, capaz de
 
 ## 6. Próximas etapas em ordem
 
-1. Confirmar o CI da branch após as últimas mudanças de rodapé e rota 404; corrigir regressões antes de novo recurso.
-2. Corrigir o **resumo de cupom/taxas/total no carrinho** por cotação REST e validar mudança de preço/estoque.
+1. Confirmar o CI da branch após as últimas mudanças. A execução `39417467756` mostrou 62/64 Playwright (falha por seletor duplicado no rodapé e espera curta de evento em tempo real); foram corrigidos os testes, e a nova rodada precisa aprovar antes do aceite.
+2. Confirmar via Playwright a **prévia de cupom/taxa/total no carrinho**, a consistência com `/api/quote` e alterações de preço/estoque; a UI/API já foram adicionadas.
 3. Revisar fidelidade dos **15 frames** usando screenshot real e Figma nas larguras originais; produzir baselines Playwright versionadas, sem comparar loading skeleton.
 4. Completar testes de expiração, falha 5xx, offline, latency/out-of-order, confirmação e estado de pedido pendente; revisar formulários conforme layout.
 5. Otimizar Performance mobile até mediana ≥90 sem falsear o Lighthouse ou desativar funcionalidades.
 6. Resolver advisories npm, validar imagem/fontes, deep-links e preview/deploy público com MSW e Socket.IO; atualizar documentação final e encerrar PR somente após aceite.
 
 **Condição de entrega:** código, lockfile, assets, mocks, fixtures, testes, traces, baselines de regressão, relatórios Lighthouse HTML/JSON, README, ARCHITECTURE, link do GitHub e **URL pública funcional**. A `main` permanece sem receber merge prematuro.
+
+## 7. Continuação da revisão — 20/10/2026
+
+- Identificamos nos logs da execução [39417467756](https://github.com/maurodferreira/jnggaming/actions/runs/39417467756) **62 testes Playwright aprovados e dois reprovados**: seletor `Meu perfil` agora ambíguo com o rodapé, e atualização Socket.IO assíncrona que não ficou visível nos 5 segundos anteriores. O seletor foi restringido a `h1`; a espera do segundo foi ampliada sem remover a verificação de tempo real. **É necessário CI verde para comprovar correção.**
+- Conferidos no Figma, de forma direta, os 15 frames originais: nove desktop (1440 px) e seis mobile (414 px). As capturas E2E próprias usam também 390 e 768 px, mas ainda faltam baselines versionadas e comparação visual aprovada.
+- Adicionado resumo de carrinho por API que atende visitantes e usuários autenticados, com subtotal, cupom `KURIO10`, desconto, taxa e total; usa o **mesmo cálculo de precisão `bigint`** das cotações autenticadas. Há feedback explícito de cupom inválido/expirado; o cupom aplicado é transportado para o checkout por parâmetro de URL.
+- Adicionados E2E em `tests/e2e/cart-summary.spec.ts`: valores do subtotal/total, aplicação/remoção de cupom, erro da API e passagem do desconto para o checkout. **Ainda aguardam o CI da versão final.**
+- O checkout continua simulando operações, sem conectar carteiras nem processar transações financeiras reais. A `main` não recebeu merge.
+
+**Foco restante:** CI final, fidelidade visual e baselines das 15 telas, acessibilidade, 3× Lighthouse por página/dispositivo (mobile ≥90), dependências vulneráveis, rotas profundas e URL de deploy público. Não confundir implementação com aceite.
