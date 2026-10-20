@@ -41,8 +41,14 @@ declare module '@tanstack/react-router' {
 async function bootstrap() {
   // Instalamos o mock antes de iniciar a interface e as consultas REST.
   if (import.meta.env.VITE_ENABLE_MOCKS !== 'false') {
-    const { worker } = await import('./mocks/browser')
-    await worker.start()
+    const startup = (window as Window & { __kurioMockReady?: Promise<void> }).__kurioMockReady
+    if (startup) {
+      await startup
+    } else {
+      // Fallback quando a aplicação é executada fora do HTML do Vite.
+      const { worker } = await import('./mocks/browser')
+      await worker.start()
+    }
   }
 
   const rootElement = document.getElementById('root')
