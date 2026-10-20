@@ -431,16 +431,26 @@ export function NftDetailPage() {
 
       <NftDetailsTabs key={nft.id} nft={nft} />
 
-      {related.data && (
-        <section aria-label="Mais desta coleção" className="border-t border-[#624230] pt-7">
-          <h2 className="mb-8 font-bold text-[#e89b55]">Mais desta coleção</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {related.data.items.filter(item => item.id !== nft.id).slice(0, 5).map(item => (
-              <NftCard key={item.id} nft={item} compact />
-            ))}
-          </div>
-        </section>
-      )}
+      <section
+        aria-label="Mais desta coleção"
+        className="min-h-[430px] border-t border-[#624230] pt-7"
+      >
+        <h2 className="mb-8 font-bold text-[#e89b55]">Mais desta coleção</h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {related.data
+            ? related.data.items
+                .filter(item => item.id !== nft.id)
+                .slice(0, 5)
+                .map(item => <NftCard key={item.id} nft={item} compact />)
+            : Array.from({ length: 5 }, (_, index) => (
+                <Skeleton
+                  key={index}
+                  className="aspect-square w-full rounded-lg"
+                  aria-hidden="true"
+                />
+              ))}
+        </div>
+      </section>
     </main>
   )
 }
