@@ -7,7 +7,14 @@ export const api = axios.create({
 
 const ACCESS_TOKEN_KEY = 'kurio:demo:access-token:v1'
 
-api.interceptors.request.use(config => {
+api.interceptors.request.use(async config => {
+  // React can paint its shell while MSW initializes, but no REST request
+  // may leave the browser before the simulated API controls the network.
+  if (import.meta.env.VITE_ENABLE_MOCKS !== 'false') {
+    const ready = (window as Window & { __kurioMockReady?: Promise<void> }).__kurioMockReady
+    if (ready) await ready
+  }
+
   const token = localStorage.getItem(ACCESS_TOKEN_KEY)
   if (token) config.headers.set('Authorization', `Bearer ${token}`)
   return config
