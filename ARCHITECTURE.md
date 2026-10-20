@@ -1,99 +1,108 @@
 # Arquitetura e decisões — KURIO
 
-Este arquivo documenta os contratos implementados, as limitações atuais e as próximas integrações do desafio técnico. **Não confundir a API simulada com um backend seguro de produção.**
+Este documento explica como o marketplace demonstrativo funciona por trás da interface. Ele complementa o [README](README.md) e a [matriz do desafio](docs/ESCOPO_ORIGINAL_E_AUDITORIA_FIGMA.md).
 
-## Stack e responsabilidades
+A decisão principal do projeto foi manter as regras de negócio **fora dos componentes React**. A interface apresenta dados e ações; a API MSW valida as operações, inclusive os erros. Assim os testes exercitam um fluxo parecido com o de uma aplicação real, sem movimentar dinheiro ou NFTs.
 
-| Camada | Responsabilidade | Caminho |
+## Mapa das responsabilidades
+
+```text
+Páginas e componentes React
+    ↓ navegação
+TanStack Router
+    ↓ consultas, cache e mutações
+TanStack Query
+    ↓ requisições Axios (REST)
+MSW (Service Worker no navegador)
+    ├── Catálogo e disponibilidade
+    ├── Sessão / contas / perfil / carteiras
+    ├── Carrinhos, favoritos e cotações
+    └── Pedidos e recibos simulados
+
+socket.io-client ↔ WebSocket interceptado pelo MSW
+         ↓
+  Eventos versionados → invalidação do Query → reconciliação REST
+```
+
+| Parte | Local | Responsabilidade |
 | --- | --- | --- |
-| Interface | Páginas e componentes React, Tailwind, shadcn/ui | `src/pages`, `src/components` |
-| Navegação | TanStack Router e search params para filtros | `src/routes` |
-| Estado remoto | TanStack Query com cache, mutations e abort signals | `src/features` |
-| Transporte | Axios `baseURL=/api`, timeout e token demo | `src/services/api.ts` |
-| Backend mock | MSW intercepta REST, valida contratos e gerencia persistência | `src/mocks` |
-| Cálculos ETH | Strings decimais → bigint wei → string | `src/lib/eth.ts` |
-| E2E | Playwright Chromium desktop/mobile | `tests/e2e`, `playwright.config.ts` |
+| Telas | `src/pages/` | Conteúdo, mensagens e interações |
+| Componentes | `src/components/` | Layouts, componentes UI e formulários |
+| Rotas | `src/routes/` | Navegação tipada, caminhos protegidos e parâmetros da URL |
+| Regras do frontend | `src/features/` | Hooks Query e contratos tipados |
+| Transporte REST | `src/services/api.ts` | Axios e token da sessão simulada |
+| API simulada | `src/mocks/` | Validação, estado, respostas e cenários de erro |
+| Matemática monetária | `src/lib/eth.ts` | Conversões decimais em wei usando `bigint` |
+| Testes | `tests/e2e/` | E2E, responsividade e screenshots |
 
-Nenhum componente React devolve dados de negócio fake diretamente. Os mocks estão ativos por padrão (inclusive no build demonstrativo). `VITE_ENABLE_MOCKS=false` só deve ser usado com API externa compatível.
+A árvore de rotas `src/routeTree.gen.ts` é gerada pelo TanStack Router e precisa acompanhar mudanças de rotas. Há um fallback documentado no README para eventuais travamentos do arquivo gerado no Windows.
 
-## Fluxos e rotas
+## Estado remoto e consultas
 
-- `/`: catálogo com busca, coleção, disponibilidade, ordenação e página em URL.
-- `/nft/$nftId`: acesso direto, erro 404, edição, estoque e carrinho.
-- `/cart`: quantidade/remoção e persistência de visitante/usuário.
-- `/login` e `/register`: validação, retorno à página de origem.
-- `/profile` e `/wallets`: rotas protegidas pelo `AccountGate`, renderização desktop/mobile e redirecionamento para login.
-- `/checkout`: conferência de itens, cupom, carteira, taxa, cotação e envio idempotente.
-- `/orders/$orderId`: consulta do status do pedido simulado e recibo apenas após confirmação do mock.
+O TanStack Query gerencia listagens, detalhes, carrinho, dados da conta e pedidos. Mutações atualizam ou invalidam apenas as queries necessárias. Quando há atualização otimista, o código mantém um snapshot anterior e pode restaurá-lo se a API devolver erro.
 
-A navegação é declarativa e o arquivo `src/routeTree.gen.ts` é gerado pelo TanStack Router. Novas rotas precisam ser regeneradas e versionadas. Controles de funcionalidades fora do escopo não devem aparentar ações completas.
+Filtros de catálogo ficam nos parâmetros da URL: busca, coleção, disponibilidade, ordenação e página. Isso permite compartilhar, atualizar e abrir diretamente uma visualização de catálogo sem perder os filtros.
 
-## Sessão demo e segurança
+O Axios aponta para `/api`; no ambiente demonstrativo, o MSW intercepta esses requests. Não existe backend financeiro, conexão de carteira blockchain nem autenticação com terceiros.
 
-O MSW mantém contas locais e sessões opacas com expiração em 60 minutos. O login devolve um bearer token, que o Axios envia nos requests; os handlers validam o token em cada acesso protegido. Nenhuma senha é armazenada em texto puro: a simulação deriva um hash PBKDF2 com salt por usuário.
+## Contas e isolamento
 
-**Limitações intencionais:** o armazenamento fica no navegador (`localStorage`) e, portanto, não é uma arquitetura de autenticação de produção. Não utilizar dados ou senhas pessoais. Login social, blockchain e pagamentos verdadeiros não estão disponíveis.
+O MSW fornece contas de demonstração e um token bearer opaco com prazo de uma hora. Senhas do mock são derivadas via PBKDF2 com salt, mas o armazenamento no navegador **não é uma solução para credenciais de produção**.
 
-As sessões de usuários diferentes não compartilham dados. O cache Query é limpo ao autenticar/trocar conta ou sair; as queries privadas incluem o ID do usuário na chave. Perfis, carteiras, favoritos e carrinhos usam chaves distintas por conta.
+Os estados persistentes têm chaves distintas para visitante e usuários autenticados. Carrinhos, favoritos, perfis e carteiras não devem vazar entre contas. No login, o carrinho visitante é conciliado com a conta considerando a disponibilidade atual. Ao sair ou expirar a sessão, queries privadas são invalidadas e a interface retorna ao login quando necessário.
 
-## Carrinho e reconciliação
+Se a sessão expirar durante o checkout, o destino e um cupom válido são preservados para o retorno depois de autenticar novamente.
 
-- O carrinho visitante existe em `jnggaming:guest-cart:v1`.
-- Cada conta tem um armazenamento próprio `kurio:mock:cart:<userId>:v1`.
-- Ao autenticar, o carrinho visitante é incorporado ao da conta; quantidades são limitadas pelo estoque atual de cada edição. Ao terminar, o carrinho visitante é apagado.
-- Mutations `useAddToCart`, `useRemoveCartItem`, `useUpdateCartItem` trabalham por REST/Query.
-- Atualização de quantidade é **otimista**: há snapshot e rollback em falha.
-- Nomes/preços e disponibilidade são obtidos a partir das fixtures da rede simulada.
+## Carrinho, cotação e pedidos
 
-A API mock implementa `GET /api/quote` com validação de disponibilidade, preço, desconto por cupom e taxa estimada em `bigint`. Antes de criar um pedido, valida novamente o snapshot; o recibo utiliza o snapshot salvo. **Pendente:** tratar mudanças em tempo real, reconciliação automática e todos os cenários de falha exigidos.
+O carrinho usa requisições REST para listar itens, adicionar, alterar quantidade e remover. `GET /api/cart/summary` fornece a prévia de subtotal, desconto, taxa e total também para visitantes.
 
-## Contratos REST existentes
+O checkout utiliza `GET /api/quote` para emitir uma cotação simulada. As duas operações compartilham o cálculo de valores com `bigint` em wei: não fazemos contas de ETH com números de ponto flutuante. O desconto demonstrativo `KURIO10` é aplicado pela API mock.
 
-| Categoria | Operações |
-| --- | --- |
-| Catálogo | `GET /api/nfts`, `GET /api/nfts/:id` |
-| Carrinho | `GET /api/cart`, `POST /api/cart/items`, `PATCH /api/cart/items/:id`, `DELETE /api/cart/items/:id` |
-| Sessão | `POST /api/auth/login`, `POST /api/auth/register`, `GET /api/auth/session`, `POST /api/auth/logout` |
-| Perfil | `GET/PATCH /api/profile`, `PATCH /api/profile/password` |
-| Carteiras | `GET /api/wallets`, `PUT /api/wallets/:slot`, `DELETE /api/wallets/secondary` |
-| Favoritos | `GET /api/favorites`, `POST/DELETE /api/favorites/:id` |
-| Cotação | `GET /api/quote` (carrinho, taxa, cupom e expiração) |
-| Pedido | `POST /api/orders` idempotente, `GET /api/orders/:id` para status/recibo |
-| Testes | `POST /api/mock/reset-all`, `POST /api/mock/expire-session`, e o reset legado `POST /api/mock/reset` |
+Antes de confirmar um pedido, a API revalida cotação, edição, quantidade, estoque e versão do preço. `POST /api/orders` recebe uma chave de idempotência. Se a conexão cair depois do envio, o cliente consulta o pedido pela mesma chave em vez de gerar imediatamente uma nova compra.
 
-As respostas cobrem validações 400, não autorizado 401, recursos inexistentes 404 e conflitos 409 onde aplicável. `/api/mock/reset-all` apaga contas/carrinhos/estado da demonstração para restaurar um cenário inicial determinístico.
+O recibo (`/orders/:orderId`) exibe o snapshot retornado pela API simulada e diferencia estados pendente, confirmado e recusado. Nenhuma tela declara pagamento ou transferência real.
 
-## Pipeline e testes
+## Tempo real e reconciliação
 
-O GitHub Actions executa `npm ci`, `npm run typecheck`, `npm run lint`, `npm run build`, instalação do Chromium e `npm run test:e2e` em 1440 px e Pixel 7.
+O projeto usa `socket.io-client` com transporte **WebSocket-only**. O MSW v3 intercepta a conexão com uma implementação demonstrativa dos quadros necessários do Engine.IO v4/Socket.IO v4 em `src/mocks/realtimeHandlers.ts`.
 
-Artefatos do Playwright (HTML e traces) são anexados ao CI. Os cenários cobrem busca/filtro/refresh, detalhe inexistente, carrinho, sessão, conflito de cadastro, isolamento de usuários, bloqueio de checkout sem carteira e confirmação com refresh. **Esses cenários não substituem a cobertura completa de 12 conjuntos exigidos**; também faltam baselines visuais versionadas. Não declarar a suíte aprovada sem consultar o resultado de CI da revisão atual.
+Isso atende aos eventos do desafio sem introduzir um servidor extra para a demonstração, mas **não equivale ao protocolo completo em produção**: não há polling fallback, salas complexas ou gateway blockchain.
 
-## Validações e lacunas do desafio — revisão 20/10/2026
+Eventos tratados:
 
-**Implementações existentes e em validação pelo CI:** cotação `GET /api/quote` com controle de versão, eventos Socket.IO/REST, criação idempotente de pedidos, descontos, recuperação de rede, cenários de falha, 404, skeleton shimmer, carrinho com `GET /api/cart/summary` e retorno ao checkout após expiração da sessão (mantendo o cupom).
+- `nft.updated`: invalida catálogo, detalhe, carrinho e cotação para conferir preço/estoque novamente via REST.
+- `order.updated`: reconcilia o pedido correspondente apenas para a conta autenticada.
 
-**Ainda sem aceite:** capturas visuais comparadas contra os 15 frames e baselines versionadas `toHaveScreenshot`; todos os cenários avançados da matriz de Playwright; zoom/foco/acessibilidade manual; Lighthouse Performance mobile ≥90; resolução/justificativa das vulnerabilidades do `npm audit`; deploy público acessível e funcionando com MSW, WebSocket e deep links.
+A implementação mantém a maior versão recebida por recurso, ignora repetições e eventos atrasados e reconcilia dados quando há reconexão. O socket é desconectado ao trocar de conta ou sair. A inicialização do bundle de tempo real pode aguardar brevemente o conteúdo inicial; os testes aguardam a conexão antes de emitir eventos.
 
-**Auditoria de segurança (20/10):** sete advisories altos afetam a cadeia de desenvolvimento de `shadcn` CLI (`braces` → `micromatch` → `fast-glob`, `ts-morph` e `@ts-morph/common`). A inspeção dos advisories não identificou esses pacotes como dependências de runtime da aplicação React. Não fazer `npm audit fix --force` nem atualizar versões major sem repetir CI e visual. O pacote `shadcn` também fornece CSS importado no build.
+## Estados de erro e testes reproduzíveis
 
-**Performance antes da otimização da latência padrão:** desktop Home/NFT 99/99; mobile Home/NFT 87/87. Os relatórios apontaram LCP ~3,5 s e grande atraso até renderizar dados; o perfil normal de catálogo foi reduzido para 150 ms mantendo cenários lentos reproduzíveis. É necessária nova medição, não declarar ≥90 sem relatório.
+`src/mocks/networkScenario.ts` possui cenários configuráveis para listagem e detalhe de NFT: `normal`, `slow`, `variable`, `http-500` e `offline`. A simulação de falhas também cobre cupom inválido, sessão expirada, conflito de estoque, perda de resposta e pedido pendente.
 
-**Configuração MSW:** `POST /api/mock/catalog-network` alterna entre `normal`, `slow`, `variable`, `http-500` e `offline` para catalogação/detalhes; `POST /api/mock/reset-all` restaura também o perfil normal. A lógica de simulação reside em `src/mocks/networkScenario.ts`; componentes não possuem branches de negócio falsos.
+`POST /api/mock/reset-all` restaura fixtures, preço, estoque, contas e cenários; esse endpoint existe apenas dentro da demonstração. Não deve ser exposto em um backend real.
 
-**Decisões de Figma:** ver `docs/REGRAS_E_LIBERDADES_DO_DESAFIO.md`.
+O GitHub Actions executa:
+- TypeScript, ESLint e build Vite normal, além do fallback de geração de rotas do Windows.
+- Playwright desktop e mobile, incluindo os fluxos de compra, isolamento, reconexão e erros.
+- Baselines versionadas das **nove telas em 390, 768 e 1440 px** (27 screenshots).
+- Lighthouse com três medições por página/dispositivo e relatório de medianas, LCP, CLS e TBT.
+- Auditoria npm e smoke test com Chromium contra o domínio publicado.
 
-## Tempo real (implementação inicial; validar com Playwright)
+O processo de **`shadcn eject` foi validado com typecheck, lint, build, E2E e `npm audit`**, que retornou 0 vulnerabilidades na rodada de migração.
 
-O cliente utiliza **`socket.io-client` de verdade**, carregado por import dinâmico após o `worker.start()`, para que o MSW consiga interceptar o WebSocket. A implementação demonstrativa `src/mocks/realtimeHandlers.ts` usa `ws.link()` do **MSW v3** e uma adaptação limitada de pacotes textuais Engine.IO v4/Socket.IO v4 (`0`, `40` e `42`), em transporte **WebSocket-only**. Não existem salas, polling, binários ou backend separado.
+## Decisões sobre o design
 
-Essa escolha evita instalar `@mswjs/socket.io-binding@0.2.0` com peer dependency de MSW v2, que não corresponde ao MSW v3 já usado no repositório. Esta limitação precisa ser mencionada na entrega, junto aos resultados E2E comprovando o protocolo.
+O Figma é a referência para a identidade visual e a composição das telas. Há ajustes de responsividade, foco, validação, loading e mensagens de erro que não apareciam desenhados no arquivo original. Em especial, não foram criados login social, newsletter, blockchain ou pagamentos ficticiamente bem-sucedidos apenas para preencher a interface.
 
-- `nft.updated`: evento com `resourceId`, `version`, `priceEth`, `available`; a UI invalida catálogo, detalhes, carrinho e cotação e confirma os valores via REST.
-- `order.updated`: contém `resourceId`, `userId`, `version`, `status`; listeners só reconciliam eventos do usuário autenticado.
-- O hook mantém versão máxima por recurso para descartar duplicatas ou eventos atrasados, reconcilia consultas REST após reconexão e remove o socket no logout/troca de sessão.
-- `POST /api/mock/nfts/:id/update` altera a fixture do NFT para testes de tempo real; `GET /api/mock/socket-status` serve somente ao Playwright para aguardar a conexão real.
-- O reset da demo restaura a fixture de preços/estoque e os contadores de versões.
-- Os pedidos em estado pendente são resolvidos com um temporizador mock e consulta REST; após refresh o REST continua responsável pela recuperação.
+As screenshots Playwright são baselines de regressão da aplicação: uma comparação automática aprovada contra elas **não significa que cada pixel corresponde ao Figma**. A matriz em `docs/ESCOPO_ORIGINAL_E_AUDITORIA_FIGMA.md` registra as diferenças e o estado de aceite.
 
-**Status de qualidade:** o fluxo está em verificação. Testes E2E que aguardam a conexão Socket.IO e um evento `nft.updated` precisam passar no CI antes de declarar esta implementação concluída. Seguimos sem transactions reais.
+## Limites da entrega e critérios finais
+
+- **Backend e persistência:** são mocks locais; a aplicação não substitui um serviço seguro multiusuário.
+- **Socket.IO:** demonstra os fluxos necessários em WebSocket, não um servidor completo.
+- **Performance:** o desktop e as demais categorias Lighthouse alcançaram as metas nas rodadas confirmadas. A Performance mobile ainda está sendo otimizada; consulte o último relatório antes de declarar aceite.
+- **Fidelidade:** há 27 capturas versionadas e revisão dos frames, mas a validação humana final deve considerar também os estados não cobertos pelo desenho.
+- **Publicação:** a Vercel entrega a SPA com `vercel.json`, assets e Service Worker; o smoke test público confirmou catálogo, REST, rota direta e refresh.
+
+Todas essas limitações são intencionais ou estão explícitas para avaliação. **Não tratar dados simulados como transações reais nem usar contas pessoais na demonstração.**
