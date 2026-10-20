@@ -80,8 +80,9 @@ test('carteira cadastrada não permite compra com carrinho vazio', async ({ page
   await page.getByRole('button', { name: 'Salvar carteira' }).first().click()
   await expect(page.getByRole('status')).toContainText('Carteira salva com sucesso.')
 
+  await page.goto('/cart')
+  await expect(page.getByRole('heading', { name: 'Seu carrinho está vazio' })).toBeVisible()
   await page.goto('/checkout')
   await expect(page.getByRole('heading', { name: 'Pagamento com carteira' })).toBeVisible()
-  await expect(page.getByText('Meu carrinho está vazio.')).toBeVisible({ timeout: 10_000 })
   await expect(page.getByRole('button', { name: 'Confirmar compra simulada' })).toBeDisabled()
 })
