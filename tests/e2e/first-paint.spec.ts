@@ -33,3 +33,20 @@ test('non-catalog routes never display the progressive artwork placeholder', asy
   await expect(page.locator('#kurio-first-paint img')).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'Seu carrinho está vazio' })).toBeVisible()
 })
+
+test('only the opened route preloads the correct responsive artwork', async ({ page }) => {
+  const artPreload = page.locator('link[rel="preload"][as="image"]')
+
+  await page.goto('/')
+  await expect(artPreload).toHaveCount(1)
+  await expect(artPreload).toHaveAttribute('imagesizes', /40vw/)
+  await expect(artPreload).toHaveAttribute('imagesrcset', /thumbs\/emerald-ape\.webp 400w/)
+
+  await page.goto('/nft/1')
+  await expect(artPreload).toHaveCount(1)
+  await expect(artPreload).toHaveAttribute('imagesizes', /calc\(100vw - 48px\)/)
+
+  await page.goto('/cart')
+  await expect(artPreload).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Seu carrinho está vazio' })).toBeVisible()
+})
