@@ -123,6 +123,10 @@ export function HomePage() {
           <div className="relative w-[40%] max-w-[450px] shrink-0 md:w-[42%]">
             <img
               src="/assets/nfts/emerald-ape.webp"
+              srcSet="/assets/nfts/thumbs/emerald-ape.webp 400w, /assets/nfts/emerald-ape.webp 960w"
+              sizes="(max-width: 767px) 40vw, (max-width: 1023px) 42vw, 450px"
+              width={960}
+              height={960}
               alt="Emerald Ape, macaco com jaqueta verde e óculos"
               className="aspect-square w-full rounded-2xl object-cover shadow-xl"
               fetchPriority="high"
