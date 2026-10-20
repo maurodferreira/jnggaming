@@ -7,6 +7,7 @@ import {
   registerAccount,
   resetMockAccounts,
   revokeSession,
+  TOKEN_KEY,
 } from './authStore'
 import { mergeGuestCartIntoUser, resetAllMockCarts } from './cartStore'
 import { resetAccountResources } from './accountHandlers'
@@ -79,7 +80,18 @@ export const authHandlers = [
     return HttpResponse.json({ reset: true })
   }),
   http.post('/api/mock/expire-session', ({ request }) => {
-    revokeSession(request)
+    // This endpoint exists only inside the local MSW demonstration.
+    // A direct browser fetch has no Axios Authorization interceptor: resolve
+    // the current demo token so the scenario always revokes the active session.
+    const token = request.headers.get('Authorization')?.match(/^Bearer (.+)$/)?.[1]
+      ?? localStorage.getItem(TOKEN_KEY)
+    if (!token) {
+      return HttpResponse.json({ message: 'Nenhuma sessão demonstrativa ativa.' }, { status: 401 })
+    }
+    const authorizedRequest = new Request(request.url, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    revokeSession(authorizedRequest)
     return HttpResponse.json({ expired: true })
   }),
 ]
