@@ -71,6 +71,24 @@ export function NftArtworkGallery({ nftId, nftName }: { nftId: string; nftName: 
           <div className="aspect-square overflow-hidden rounded-[20px] sm:rounded-lg" aria-live="polite">
             <ArtworkImage src={src} name={nftName} view={selected} eager />
           </div>
+          <div
+            className="absolute bottom-4 left-4 flex items-center gap-2 sm:hidden"
+            role="group"
+            aria-label="Selecionar detalhe da arte"
+          >
+            {artworkViews.map((view, index) => (
+              <button
+                key={view.label}
+                type="button"
+                aria-label={view.label}
+                aria-pressed={selectedView === index}
+                onClick={() => setSelectedView(index)}
+                className={`flex size-8 items-center justify-center rounded-full border border-[#624230] bg-[#241612]/95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selectedView === index ? 'border-primary' : 'hover:border-primary/70'}`}
+              >
+                <span className={`size-2.5 rounded-full ${selectedView === index ? 'bg-primary' : 'bg-[#cfb28c]'}`} aria-hidden="true"/>
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             aria-label="Ampliar arte"
