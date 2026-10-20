@@ -261,11 +261,38 @@ export function NftDetailPage() {
 
   // Carregamento
   if (isPending) {
+    // Match the resolved page geometry to avoid shifting the whole main column
+    // when the mock REST response arrives, especially on direct deep links.
     return (
-      <main className="mx-auto max-w-5xl space-y-6 p-6">
-        <Skeleton className="h-8 w-40" />
-        <Skeleton className="h-80 w-full" />
-        <Skeleton className="h-12 w-64" />
+      <main aria-label="Carregando NFT" className="mx-auto max-w-[1248px] space-y-5 px-5 pb-24 pt-5 sm:space-y-8 sm:py-8 md:px-6 md:pb-0">
+        <Skeleton className="h-10 w-40 rounded-full sm:h-5" />
+        <section className="grid gap-0 sm:gap-10 lg:grid-cols-2">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-[76px_minmax(0,1fr)]">
+            <div className="hidden flex-col gap-3 sm:flex" aria-hidden="true">
+              {Array.from({ length: 4 }, (_, index) => (
+                <Skeleton className="aspect-square w-full rounded-md" key={index} />
+              ))}
+            </div>
+            <Skeleton className="aspect-square w-full rounded-[24px] sm:rounded-lg" />
+          </div>
+          <div className="relative -mx-5 -mt-6 space-y-6 rounded-t-[28px] bg-[#241612] px-5 pb-7 pt-8 sm:mx-0 sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0">
+            <Skeleton className="h-5 w-1/3" />
+            <Skeleton className="h-9 w-3/4" />
+            <Skeleton className="h-16 w-full" />
+            <div className="grid grid-cols-2 gap-3">
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-20 w-full" />
+            </div>
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        </section>
+        <Skeleton className="h-36 w-full" />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5" aria-hidden="true">
+          {Array.from({ length: 5 }, (_, index) => (
+            <Skeleton className="aspect-square w-full rounded-lg" key={index} />
+          ))}
+        </div>
       </main>
     )
   }
