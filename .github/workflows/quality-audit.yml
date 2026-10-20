@@ -35,6 +35,8 @@ jobs:
         run: npm ci
       - name: Build production assets
         run: npm run build
+      - name: Record compressed and uncompressed production chunk sizes
+        run: node scripts/quality/bundle-sizes.mjs
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Resolve Chrome executable
