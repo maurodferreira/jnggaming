@@ -7,7 +7,8 @@ on:
     branches: [feat/figma-kurio-ui]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  # Push and PR checks for the same head branch share one runner slot.
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
