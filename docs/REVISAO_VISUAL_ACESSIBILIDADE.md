@@ -1,5 +1,8 @@
 # KURIO — revisão visual, acessibilidade e desempenho
 
+> **Registro histórico de revisão (visual, acessibilidade e performance).** Este documento contém achados e pendências identificados durante a implementação. Para o estado atualizado com **117 testes Playwright aprovados**, Lighthouse mobile **100/90** e as condições ainda pendentes de publicação e aceite visual, consulte o [checklist final](CHECKLIST_ENTREGA.md). A presença de snapshots automáticas não substitui a comparação humana com os 15 frames do Figma.
+
+
 **Data:** 19/10/2026  
 **Branch:** `feat/figma-kurio-ui` (Pull Request em rascunho).  
 **Critério:** preservar o fluxo de compra e os contratos REST/Socket.IO, corrigindo diferenças visuais e problemas reproduzíveis.
