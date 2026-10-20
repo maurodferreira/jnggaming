@@ -73,16 +73,19 @@ export function CheckoutPage() {
     }
   }
 
-  const disabled = submitOrder.isPending || !wallet || !quote.data || quote.isFetching || !profile.data
+  const disabled = submitOrder.isPending || !wallet || !quote.data || quote.isFetching || !profile.data || !cart.data?.items.length
 
   return (
     <main className="mx-auto min-h-[65vh] max-w-[1248px] px-5 pb-24 pt-6 text-foreground md:px-6 md:pb-12">
-      <Link to="/cart" className="mb-6 inline-flex items-center gap-2 text-sm text-[#cfb28c] hover:text-primary">
-        <ArrowLeft size={17}/> Voltar ao carrinho
-      </Link>
-      <h1 className="mb-8 text-2xl font-bold md:text-xl">Pagamento com carteira</h1>
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,390px)] lg:gap-12">
-        <div className="min-w-0 space-y-8">
+      <div className="mb-7 flex items-center gap-4 lg:mb-8 lg:block">
+        <Link to="/cart" className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-[#624230] bg-[#241612] text-primary hover:border-primary focus-visible:outline-2 focus-visible:outline-primary lg:mb-6 lg:h-auto lg:w-auto lg:justify-start lg:gap-2 lg:rounded-none lg:border-0 lg:bg-transparent lg:text-sm lg:text-[#cfb28c]">
+          <ArrowLeft size={18} aria-hidden="true"/>
+          <span className="sr-only lg:not-sr-only">Voltar ao carrinho</span>
+        </Link>
+        <h1 className="min-w-0 text-lg font-bold leading-tight sm:text-xl">Pagamento com carteira</h1>
+      </div>
+      <div className="grid gap-6 md:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,390px)] lg:gap-12">
+        <div className="min-w-0 space-y-6 lg:space-y-8">
           <section className="hidden space-y-4 lg:block" aria-label="Dados do colecionador">
             <h2 className="text-base font-bold">Perfil do colecionador</h2>
             {profile.isPending ? <Skeleton className="h-24 w-full"/> : profile.isError ? (
@@ -98,8 +101,8 @@ export function CheckoutPage() {
 
           <section className="space-y-4" aria-label="Escolha da carteira">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-base font-bold">Carteira e rede</h2>
-              <Link to="/wallets" className="text-xs text-primary hover:underline">Gerenciar carteiras</Link>
+              <h2 className="text-sm font-bold sm:text-base"><span className="lg:hidden">Carteira conectada</span><span className="hidden lg:inline">Carteira e rede</span></h2>
+              <Link to="/wallets" className="text-xs text-primary hover:underline"><span className="lg:hidden">Trocar carteira</span><span className="hidden lg:inline">Gerenciar carteiras</span></Link>
             </div>
             {wallets.isPending ? <Skeleton className="h-40 w-full"/> : wallets.isError ? (
               <p role="alert" className="text-sm text-destructive">Falha ao consultar carteiras.</p>
@@ -112,7 +115,7 @@ export function CheckoutPage() {
               <fieldset className="space-y-3">
                 <legend className="sr-only">Selecione a carteira para esta compra</legend>
                 {wallets.data.map(item => (
-                  <label key={item.id} className={`flex cursor-pointer items-start gap-3 rounded-xl border bg-[#241612] p-4 transition-colors ${wallet?.id === item.id ? 'border-primary' : 'border-[#624230]/60 hover:border-primary/70'}`}>
+                  <label key={item.id} className={`flex min-h-[90px] cursor-pointer items-start gap-3 rounded-[15px] border bg-[#241612] p-4 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30 ${wallet?.id === item.id ? 'border-primary' : 'border-[#624230]/60 hover:border-primary/70'}`}>
                     <input type="radio" name="wallet" checked={wallet?.id === item.id} onChange={() => {
                       setSelectedWalletId(item.id)
                       setAttemptKey(crypto.randomUUID())
@@ -178,10 +181,10 @@ export function CheckoutPage() {
             </dl>
             <p className="flex items-start gap-2 text-xs text-[#cfb28c]"><ShieldCheck size={17} className="shrink-0"/> A cotação será validada pela API simulada antes do pedido. Nenhuma transação real ocorre.</p>
           </section>
-          <fieldset className="order-1 space-y-3 lg:order-3">
-            <legend className="text-sm font-bold">Carteira e rede · Provedor simulado</legend>
+          <fieldset className="order-1 space-y-4 lg:order-3">
+            <legend className="mb-4 text-sm font-bold">Carteira e rede · Provedor simulado</legend>
             {providers.map(p => (
-              <label key={p} className="flex cursor-pointer items-center gap-3 rounded-md border border-[#624230] bg-[#241612] p-3 text-sm hover:border-primary">
+              <label key={p} className={`flex min-h-16 cursor-pointer items-center gap-3 rounded-[15px] border bg-[#241612] px-4 py-3 text-sm transition-colors hover:border-primary focus-within:ring-2 focus-within:ring-primary/30 ${provider === p ? 'border-primary' : 'border-[#624230]/60'}`}>
                 <input type="radio" name="provider" checked={provider === p} onChange={() => {
                   setProvider(p)
                   setAttemptKey(crypto.randomUUID())
