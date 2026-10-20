@@ -2,9 +2,9 @@ import { useState, type FormEvent } from 'react'
 import { AccountField } from '@/components/account/AccountField'
 import { AccountSelect } from '@/components/account/AccountSelect'
 import { AccountLayout } from '@/components/account/AccountLayout'
-import { useRemoveWallet, useSaveWallet, useWallets } from '@/features/account/useAccount'
+import { useRemoveWallet, useSaveWallet, useWallets, useProfile } from '@/features/account/useAccount'
 import { getAuthErrorMessage } from '@/features/auth/useAuth'
-import type { CollectorWallet, WalletInput, WalletNetwork, WalletType } from '@/features/account/types'
+import type { CollectorWallet, CollectorProfile, WalletInput, WalletNetwork, WalletType } from '@/features/account/types'
 import { Skeleton } from '@/components/ui/skeleton'
 
 const networkOptions: readonly { value: WalletNetwork; label: string }[] = [
@@ -27,11 +27,16 @@ const emptyWallet = (isPrimary: boolean): WalletInput => ({
   isPrimary,
 })
 
-function WalletEditor({ wallet, isPrimary }: { wallet?: CollectorWallet; isPrimary: boolean }) {
+function WalletEditor({ wallet, isPrimary, profile }: {
+  wallet?: CollectorWallet
+  isPrimary: boolean
+  profile?: CollectorProfile
+}) {
   const save = useSaveWallet()
   const remove = useRemoveWallet()
   const [overrides, setOverrides] = useState<Partial<WalletInput>>({})
   const [notice, setNotice] = useState('')
+  const [expanded, setExpanded] = useState(isPrimary || Boolean(wallet))
 
   const draft: WalletInput = {
     ...(wallet ? {
@@ -67,6 +72,7 @@ function WalletEditor({ wallet, isPrimary }: { wallet?: CollectorWallet; isPrima
       await remove.mutateAsync()
       setOverrides({})
       setNotice('Carteira secundária removida.')
+      setExpanded(false)
     } catch {
       // HTTP error is rendered below.
     }
@@ -85,13 +91,30 @@ function WalletEditor({ wallet, isPrimary }: { wallet?: CollectorWallet; isPrima
               : 'Você pode adicionar uma segunda carteira ou usar apenas a principal.'}
           </p>
         </div>
-        {wallet && !isPrimary && (
-          <button type="button" onClick={() => void removeSecondary()} disabled={remove.isPending}
-            className="text-xs text-primary hover:underline disabled:opacity-50">Remover carteira</button>
+        {isPrimary ? (
+          <button type="button" className="text-xs font-semibold text-primary hover:underline"
+            onClick={() => document.getElementById('wallet-true-label')?.focus()}>
+            Adicionar
+          </button>
+        ) : (
+          <div className="flex items-center gap-3">
+            {wallet && <button type="button" onClick={() => void removeSecondary()} disabled={remove.isPending}
+              className="text-xs text-primary hover:underline disabled:opacity-50">Remover</button>}
+            <button type="button" className="text-xs font-semibold text-primary hover:underline"
+              aria-expanded={expanded}
+              onClick={() => setExpanded(value => !value)}>
+              {expanded ? 'Recolher' : wallet ? 'Editar' : 'Adicionar'}
+            </button>
+          </div>
         )}
       </header>
 
-      <form onSubmit={submit} className="space-y-6">
+      {!expanded && (
+        <p className="text-xs text-[#cfb28c]">
+          {isPrimary ? 'Preencha os dados da carteira.' : 'Você ainda não adicionou uma carteira secundária.'}
+        </p>
+      )}
+      {expanded && <form onSubmit={submit} className="space-y-6">
         <div className="grid gap-5 sm:grid-cols-2">
           <AccountField label="Nome de exibição" id={`wallet-${isPrimary}-label`} required minLength={2} maxLength={60}
             value={draft.label} onChange={event => update('label', event.target.value)}/>
@@ -109,6 +132,16 @@ function WalletEditor({ wallet, isPrimary }: { wallet?: CollectorWallet; isPrima
               setNotice('')
             }}
           />
+          <AccountField label="Nome do perfil" id={`wallet-${isPrimary}-profile-name`}
+            readOnly value={profile?.displayName ?? ''} title="Edite este dado no perfil do colecionador."/>
+          <AccountField label="Endereço da carteira" id={`wallet-${isPrimary}-address`} required
+            pattern={draft.network === 'Solana' ? '[1-9A-HJ-NP-Za-km-z]{32,44}' : '0x[a-fA-F0-9]{40}'}
+            placeholder={draft.network === 'Solana' ? 'Endereço Solana (base58)' : '0x...'}
+            hint="Use apenas um endereço fictício para esta demonstração."
+            value={draft.address} onChange={event => update('address', event.target.value)}/>
+          <AccountField label="ENS ou carteira secundária (opcional)" id={`wallet-${isPrimary}-ens-secondary`}
+            readOnly value={profile?.ensName ?? ''}
+            placeholder="Configure seu ENS no perfil" title="Campo ligado ao perfil da conta."/>
           <AccountSelect
             label="Tipo de carteira"
             id={`wallet-${isPrimary}-type`}
@@ -117,13 +150,14 @@ function WalletEditor({ wallet, isPrimary }: { wallet?: CollectorWallet; isPrima
             options={walletTypeOptions}
             onValueChange={value => update('type', value)}
           />
-          <div className="sm:col-span-2">
-            <AccountField label="Endereço da carteira" id={`wallet-${isPrimary}-address`} required
-              pattern={draft.network === 'Solana' ? '[1-9A-HJ-NP-Za-km-z]{32,44}' : '0x[a-fA-F0-9]{40}'}
-              placeholder={draft.network === 'Solana' ? 'Endereço Solana (base58)' : '0x...'}
-              hint="Use apenas um endereço fictício para esta demonstração."
-              value={draft.address} onChange={event => update('address', event.target.value)}/>
-          </div>
+          <AccountField label="Código de indicação" id={`wallet-${isPrimary}-referral`}
+            disabled placeholder="Não utilizado nesta demonstração"
+            title="Indicações não fazem parte do escopo da API simulada."/>
+          <AccountField label="E-mail" id={`wallet-${isPrimary}-email`}
+            type="email" readOnly value={profile?.email ?? ''}/>
+          <AccountField label="Nome ENS" id={`wallet-${isPrimary}-ens`}
+            readOnly value={profile?.ensName ?? ''} placeholder="exemplo.eth"
+            title="Edite o nome ENS no perfil do colecionador."/>
         </div>
 
         {notice && <p role="status" className="text-sm text-[#e89b55]">{notice}</p>}
@@ -133,13 +167,14 @@ function WalletEditor({ wallet, isPrimary }: { wallet?: CollectorWallet; isPrima
           className="rounded-md bg-primary px-7 py-3 text-xs font-bold text-primary-foreground hover:bg-[#e89b55] disabled:opacity-50">
           {save.isPending ? 'Salvando...' : wallet ? 'Atualizar carteira' : 'Salvar carteira'}
         </button>
-      </form>
+      </form>}
     </section>
   )
 }
 
 export function WalletsPage() {
   const wallets = useWallets()
+  const profile = useProfile()
 
   return (
     <AccountLayout active="/wallets">
@@ -155,9 +190,9 @@ export function WalletsPage() {
         </div>
       ) : (
         <div className="max-w-[850px] space-y-10">
-          <WalletEditor isPrimary wallet={wallets.data?.find(wallet => wallet.isPrimary)} />
+          <WalletEditor isPrimary wallet={wallets.data?.find(wallet => wallet.isPrimary)} profile={profile.data} />
           <div className="border-t border-[#624230] pt-8">
-            <WalletEditor isPrimary={false} wallet={wallets.data?.find(wallet => !wallet.isPrimary)} />
+            <WalletEditor isPrimary={false} wallet={wallets.data?.find(wallet => !wallet.isPrimary)} profile={profile.data} />
           </div>
         </div>
       )}
