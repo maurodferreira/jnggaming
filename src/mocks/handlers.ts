@@ -8,6 +8,7 @@ import { checkoutHandlers } from './checkoutHandlers'
 import { realtimeSocketHandler, realtimeScenarioHandlers } from './realtimeHandlers'
 import { nfts } from './fixtures/nfts'
 import { getMockEditions } from './fixtures/editions'
+import { getNftDetailMetadata } from './fixtures/nftDetails'
 import { ethToWei } from '@/lib/eth'
 import {
     PAGE_SIZE,
@@ -134,6 +135,7 @@ export const handlers = [
         const detail: NftDetail = {
             ...nft,
             editions: getMockEditions(nft),
+            metadata: getNftDetailMetadata(nft),
         }
 
         return HttpResponse.json(detail)
