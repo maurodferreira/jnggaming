@@ -62,6 +62,13 @@ export function AuthPage({ mode }: { mode: Mode }) {
       return 'next' in search && typeof search.next === 'string' && (search.next === '/cart' || search.next === '/checkout' || search.next === '/profile' || search.next === '/wallets' || /^\/nft\/[A-Za-z0-9-]+$/.test(search.next)) ? search.next : '/'
     },
   })
+  const coupon = useRouterState({
+    select: state => {
+      const search = state.location.search
+      return 'coupon' in search && typeof search.coupon === 'string' ? search.coupon : ''
+    },
+  })
+  const authSearch = { next, ...(coupon ? { coupon } : {}) }
   const navigate = useNavigate()
   const login = useLogin()
   const register = useRegister()
@@ -92,7 +99,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
       if (isRegister) await register.mutateAsync({ name, email, password, confirmPassword })
       else await login.mutateAsync({ email, password })
       if (next === '/cart') await navigate({ to: '/cart', replace: true })
-      else if (next === '/checkout') await navigate({ to: '/checkout', search: { coupon: '' }, replace: true })
+      else if (next === '/checkout') await navigate({ to: '/checkout', search: { coupon }, replace: true })
       else if (next === '/profile') await navigate({ to: '/profile', replace: true })
       else if (next === '/wallets') await navigate({ to: '/wallets', replace: true })
       else if (next.startsWith('/nft/')) await navigate({ to: '/nft/$nftId', params: { nftId: next.slice(5) }, replace: true })
@@ -121,9 +128,9 @@ export function AuthPage({ mode }: { mode: Mode }) {
           <h1 id="auth-title" className="mb-9 text-[19px] font-bold text-foreground md:mb-4 md:text-sm">
             <span className="md:hidden">{isRegister ? 'Criar perfil de colecionador' : 'Entrar'}</span>
             <span className="hidden md:inline">
-              <Link to="/login" search={{ next }} className={!isRegister ? 'text-primary' : 'hover:text-primary'}>Entrar</Link>
+              <Link to="/login" search={authSearch} className={!isRegister ? 'text-primary' : 'hover:text-primary'}>Entrar</Link>
               {' | '}
-              <Link to="/register" search={{ next }} className={isRegister ? 'text-primary' : 'hover:text-primary'}>Criar conta</Link>
+              <Link to="/register" search={authSearch} className={isRegister ? 'text-primary' : 'hover:text-primary'}>Criar conta</Link>
             </span>
           </h1>
           <p className="mb-6 hidden text-xs leading-5 text-[#cfb28c] md:block">
@@ -172,7 +179,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
         </div>
         <p className="mt-10 text-center text-xs text-[#cfb28c] md:mt-6">
           {isRegister ? 'Já tem uma conta?' : 'Novo na Kurio?'}{' '}
-          <Link to={isRegister ? '/login' : '/register'} search={{ next }} className="font-semibold text-[#e89b55] underline-offset-4 hover:underline">
+          <Link to={isRegister ? '/login' : '/register'} search={authSearch} className="font-semibold text-[#e89b55] underline-offset-4 hover:underline">
             {isRegister ? 'Entre' : 'Crie uma conta'}
           </Link>
         </p>
