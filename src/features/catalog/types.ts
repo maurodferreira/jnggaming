@@ -90,6 +90,18 @@ export interface NftEdition {
     available: number
 }
 
+export interface NftDetailMetadata {
+    tokenId: string
+    collectionLabel: string
+    description: string
+    attributes: string[]
+    reviewSummary?: {
+        average: number
+        count: number
+    }
+}
+
 export interface NftDetail extends Nft {
     editions: NftEdition[]
+    metadata: NftDetailMetadata
 }
