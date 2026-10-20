@@ -1,10 +1,10 @@
-// Start MSW as a separate async bundle while the browser parses React.
-// The promise is registered synchronously, so main.tsx will still wait for
-// the worker before rendering any REST-driven components.
+import { worker } from './browser'
+
+// Register the mock before React starts reading REST data.
+// A static import avoids the extra network waterfall observed with
+// the dynamic worker bundle in mobile Lighthouse.
 const target = window as Window & { __kurioMockReady?: Promise<void> }
 
 if (import.meta.env.VITE_ENABLE_MOCKS !== 'false') {
-  target.__kurioMockReady = import('./browser')
-    .then(({ worker }) => worker.start())
-    .then(() => undefined)
+  target.__kurioMockReady = worker.start().then(() => undefined)
 }
