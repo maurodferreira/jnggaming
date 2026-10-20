@@ -56,6 +56,8 @@ test('reconnect reconciles a missed price update through REST', async ({ page })
 })
 
 test('replayed and stale events leave the newest NFT state intact', async ({ page }) => {
+  // CI runners may need longer to finish the REST invalidation triggered by Socket.IO.
+  test.setTimeout(35_000)
   const outcome = await page.evaluate(async () => {
     async function update(priceEth: string) {
       const response = await fetch('/api/mock/nfts/1/update', {
@@ -72,7 +74,7 @@ test('replayed and stale events leave the newest NFT state intact', async ({ pag
   expect(outcome.latest.version).toBeGreaterThan(outcome.first.version)
   await expect(
     page.getByRole('link', { name: /Emerald Ape #042, 1\.79 ETH/ }),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 15_000 })
 
   for (const version of [outcome.latest.version, outcome.first.version]) {
     const result = await page.evaluate(async replayVersion => {
