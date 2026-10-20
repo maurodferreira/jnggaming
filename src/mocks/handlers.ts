@@ -1,4 +1,6 @@
-import { http, HttpResponse, delay } from 'msw'
+import { http, HttpResponse } from 'msw'
+import { simulateCatalogNetwork, setCatalogNetworkScenario } from './networkScenario'
+import type { CatalogNetworkScenario } from './networkScenario'
 import { cartHandlers } from './cartHandlers'
 import { authHandlers } from './authHandlers'
 import { accountHandlers } from './accountHandlers'
@@ -14,11 +16,21 @@ import {
 } from '@/features/catalog/types'
 
 export const handlers = [
+    http.post('/api/mock/catalog-network', async ({ request }) => {
+        const body = await request.json().catch(() => null) as { scenario?: unknown } | null
+        const scenario = body?.scenario
+        if (scenario !== 'normal' && scenario !== 'slow' && scenario !== 'variable' && scenario !== 'http-500' && scenario !== 'offline') {
+            return HttpResponse.json({ message: 'Cenário de rede inválido.' }, { status: 400 })
+        }
+        setCatalogNetworkScenario(scenario as CatalogNetworkScenario)
+        return HttpResponse.json({ scenario })
+    }),
     realtimeSocketHandler,
     ...realtimeScenarioHandlers,
 
     http.get('/api/nfts', async ({ request }) => {
-        await delay(400)
+        const failure = await simulateCatalogNetwork()
+        if (failure) return failure
 
         const url = new URL(request.url)
         const filters = parseCatalogSearch(
@@ -95,7 +107,8 @@ export const handlers = [
 
     // Detalhes de um NFT
     http.get('/api/nfts/:id', async ({ params }) => {
-        await delay(400)
+        const failure = await simulateCatalogNetwork()
+        if (failure) return failure
 
         const nft = nfts.find(
             (item) => item.id === params.id
