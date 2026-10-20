@@ -5,8 +5,9 @@ import { Link, getRouteApi } from '@tanstack/react-router'
 import { useNft } from '@/features/catalog/useNft'
 import { useNfts } from '@/features/catalog/useNfts'
 import { NftCard } from '@/components/catalog/NftCard'
+import { NftArtworkGallery } from '@/components/catalog/NftArtworkGallery'
+import { NftDetailsTabs } from '@/components/catalog/NftDetailsTabs'
 import { FavoriteButton } from '@/components/catalog/FavoriteButton'
-import { getNftArtwork } from '@/lib/nftArtwork'
 import type { NftDetail } from '@/features/catalog/types'
 import { multiplyEth } from '@/lib/eth'
 
@@ -262,6 +263,16 @@ export function NftDetailPage() {
 
   // The primary NFT is needed above the fold. Fetch suggestions only after it resolves.
   const related = useNfts(catalogSearch, { enabled: Boolean(nft) })
+  const [shareNotice, setShareNotice] = useState('')
+
+  async function copyNftLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setShareNotice('Link copiado para compartilhar.')
+    } catch {
+      setShareNotice('Não foi possível copiar o link neste navegador.')
+    }
+  }
 
   // Carregamento
   if (isPending) {
@@ -349,28 +360,11 @@ export function NftDetailPage() {
       </Link>
 
       <section className="grid gap-0 sm:gap-10 lg:grid-cols-2">
-        <div className="relative grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-[76px_minmax(0,1fr)]">
-          <div className="hidden flex-col gap-3 sm:flex" aria-hidden="true">
-            {Array.from({ length: 4 }, (_, index) => (
-              <img
-                key={index}
-                src={getNftArtwork(nft.id)}
-                alt=""
-                className="aspect-square w-full rounded-md border border-[#624230] object-cover"
-              />
-            ))}
+        <div className="relative">
+          <NftArtworkGallery key={nft.id} nftId={nft.id} nftName={nft.name} />
+          <div className="absolute right-4 top-16 z-10 sm:hidden">
+            <FavoriteButton nftId={nft.id} />
           </div>
-          <div className="self-start overflow-hidden rounded-[24px] bg-[#241612] p-1 sm:rounded-lg sm:p-3">
-            <img
-              src={getNftArtwork(nft.id)}
-              alt={`Arte digital ${nft.name}`}
-              className="aspect-square w-full rounded-[20px] object-cover sm:rounded-lg"
-              loading="eager"
-              fetchPriority="high"
-              decoding="async"
-            />
-          </div>
-          <div className="absolute right-3 top-3 z-10 sm:hidden"><FavoriteButton nftId={nft.id} /></div>
         </div>
 
         {/* Informações */}
@@ -384,24 +378,54 @@ export function NftDetailPage() {
               <h1 className="text-xl font-bold sm:text-3xl">{nft.name}</h1>
               <div className="hidden sm:block"><FavoriteButton nftId={nft.id} /></div>
             </div>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:mt-4 sm:leading-7">
-              Conheça esta edição da coleção Kurio. As informações de preço, estoque e compra são demonstrativas.
+            <div className="mt-3 flex flex-wrap items-center gap-3 border-b border-[#624230] pb-3">
+              <strong className="text-lg text-primary">{nft.priceEth} ETH</strong>
+              {nft.metadata.reviewSummary && (
+                <span className="text-xs text-[#cfb28c]">
+                  <span className="text-primary" aria-hidden="true">★</span>{' '}
+                  {nft.metadata.reviewSummary.average.toFixed(1)} · {nft.metadata.reviewSummary.count} avaliações ilustrativas
+                </span>
+              )}
+            </div>
+            <p className="mt-3 text-sm leading-6 text-[#cfb28c] sm:mt-4 sm:leading-7">
+              <span className="font-semibold text-foreground">Sobre este NFT: </span>
+              {nft.metadata.description}
             </p>
           </div>
 
-          <EditionSelector
-            key={nft.id}
-            nft={nft}
-          />
+          <EditionSelector key={nft.id} nft={nft} />
+
+          <dl className="space-y-1 text-xs leading-6 text-[#cfb28c]" aria-label="Metadados demonstrativos">
+            <div className="flex flex-wrap gap-2">
+              <dt>ID do token:</dt>
+              <dd>{nft.metadata.tokenId}</dd>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <dt>Coleção:</dt>
+              <dd>{nft.metadata.collectionLabel}</dd>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <dt>Atributos:</dt>
+              <dd>{nft.metadata.attributes.length > 0
+                ? nft.metadata.attributes.join(', ')
+                : 'Não informados nesta demonstração'}</dd>
+            </div>
+          </dl>
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span>Compartilhar este NFT:</span>
+            <button
+              type="button"
+              onClick={() => void copyNftLink()}
+              className="rounded-md border border-[#624230] px-3 py-1.5 text-primary hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              Copiar link
+            </button>
+            {shareNotice && <span role="status" className="text-[#cfb28c]">{shareNotice}</span>}
+          </div>
         </div>
       </section>
 
-      <section aria-label="Descrição do NFT" className="border-t border-[#624230] pt-7">
-        <h2 className="mb-4 font-bold text-[#e89b55]">Detalhes do NFT</h2>
-        <p className="max-w-4xl text-sm leading-7 text-muted-foreground">
-          {nft.name} faz parte da curadoria digital Kurio. Confira as edições disponíveis, escolha a quantidade e adicione ao seu carrinho de demonstração.
-        </p>
-      </section>
+      <NftDetailsTabs key={nft.id} nft={nft} />
 
       {related.data && (
         <section aria-label="Mais desta coleção" className="border-t border-[#624230] pt-7">
