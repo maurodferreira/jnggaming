@@ -18,7 +18,7 @@ Também é possível editar o perfil, cadastrar uma carteira secundária, favori
 
 | Página | O que ela faz |
 | --- | --- |
-| [Início](/) | Catálogo, busca, filtros, ordenação e paginação |
+| `/` | Catálogo, busca, filtros, ordenação e paginação |
 | `/nft/:nftId` | Arte, edição, estoque, quantidade e favoritos |
 | `/cart` | Carrinho, alterações de quantidade, cupom e resumo da API |
 | `/login` | Autenticação simulada e retorno à página solicitada |
@@ -136,7 +136,20 @@ Além dos fluxos funcionais, existem **27 imagens de referência versionadas** p
 
 A última auditoria de dependências confirmada reportou **0 vulnerabilidades no `npm audit`**. O domínio público também passou no teste de navegação, imagens, rotas profundas e API simulada.
 
-**Lighthouse:** o desktop e os critérios de acessibilidade, boas práticas e SEO atingiram as metas nas auditorias anteriores. A **Performance mobile ainda está em otimização** e não deve ser anunciada como ≥90 antes de uma medição que comprove o resultado. O workflow executa três medições por página e dispositivo e publica as medianas, o LCP, o CLS e o TBT.
+### Resultado da auditoria — 20/10/2026
+
+O último CI completo passou com **81 testes aprovados e 7 ignorados intencionalmente** (baselines de screenshot são executadas no projeto desktop em três larguras). [Execução do Playwright](https://github.com/maurodferreira/jnggaming/actions/runs/39432370225).
+
+O Lighthouse mede cada página três vezes no preview do build e publica as **medianas**. [Relatório da última rodada](https://github.com/maurodferreira/jnggaming/actions/runs/39432357361):
+
+| Página | Dispositivo | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Início | Mobile | **84** | 100 | 100 | 100 | 3,74 s | 0,000 |
+| Início | Desktop | **99** | 100 | 100 | 100 | 0,85 s | 0,000 |
+| Detalhe NFT | Mobile | **85** | 100 | 100 | 100 | 3,66 s | 0,000 |
+| Detalhe NFT | Desktop | **99** | 100 | 100 | 100 | 0,84 s | 0,002 |
+
+O requisito de **Performance mobile ≥90 ainda não foi atingido**. Mantive MSW, autenticação, Socket.IO, assets e fluxos ativos durante as medições; não desativei funcionalidades para obter uma nota maior. Os relatórios brutos, incluindo TBT, ficam nos artefatos do workflow.
 
 ## Figma: fidelidade com decisões conscientes
 
