@@ -56,7 +56,7 @@ test('detalhes, atributos e avaliações são dados do mock, com abas acessívei
     '4.8',
   )
   await expect(page.getByRole('tabpanel', { name: 'Avaliações de colecionadores (19)' })).toContainText(
-    'não há comentários reais',
+    'Não há comentários reais',
   )
 
   await reviewsTab.press('Home')
