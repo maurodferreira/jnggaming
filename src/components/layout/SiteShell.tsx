@@ -4,7 +4,6 @@ import { useLogout, useSession } from '@/features/auth/useAuth'
 import { useRealtime } from '@/features/realtime/useRealtime'
 import { useCart } from '@/features/cart/useCart'
 import { Brand } from './Brand'
-import { FavoritesControlsProvider } from '@/components/catalog/FavoritesControlsProvider'
 
 const defaultCatalogSearch = {
   q: '',
@@ -21,7 +20,6 @@ export function SiteShell() {
   const { data: user } = useSession()
   const logout = useLogout()
   const isAuthPage = pathname === '/login' || pathname === '/register'
-  const hasCatalogFavorites = pathname === '/' || pathname.startsWith('/nft/')
   const quantity = cart?.totalQuantity ?? 0
 
   return (
@@ -68,9 +66,7 @@ export function SiteShell() {
 
       {realtimeNotice && <p className="mx-auto max-w-[1248px] px-5 pt-3 text-xs text-[#e89b55]" role="status" aria-live="polite">{realtimeNotice}</p>}
       <div id="main-content" tabIndex={-1} className="outline-none focus-visible:outline-none">
-        {hasCatalogFavorites ? (
-          <FavoritesControlsProvider><Outlet /></FavoritesControlsProvider>
-        ) : <Outlet />}
+        <Outlet />
       </div>
 
       {!isAuthPage && (
