@@ -15,6 +15,11 @@ const providers: OrderInput['provider'][] = [
   'WalletConnect', 'MetaMask', 'Coinbase Wallet',
 ]
 
+function formatWalletAddress(address: string): string {
+  if (address.length <= 18) return address
+  return `${address.slice(0, 6)}…${address.slice(-4)}`
+}
+
 export function CheckoutPage() {
   const cart = useCart()
   const profile = useProfile()
@@ -76,7 +81,7 @@ export function CheckoutPage() {
   const disabled = submitOrder.isPending || !wallet || !quote.data || quote.isFetching || !profile.data || !cart.data?.items.length
 
   return (
-    <main className="mx-auto min-h-[65vh] max-w-[1248px] px-5 pb-24 pt-6 text-foreground md:px-6 md:pb-12">
+    <main className="mx-auto min-h-[65vh] max-w-[1248px] px-5 pb-48 pt-6 text-foreground md:px-6 md:pb-12">
       <div className="mb-7 flex items-center gap-4 lg:mb-8 lg:block">
         <Link to="/cart" className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-[#624230] bg-[#241612] text-primary hover:border-primary focus-visible:outline-2 focus-visible:outline-primary lg:mb-6 lg:h-auto lg:w-auto lg:justify-start lg:gap-2 lg:rounded-none lg:border-0 lg:bg-transparent lg:text-sm lg:text-[#cfb28c]">
           <ArrowLeft size={18} aria-hidden="true"/>
@@ -123,7 +128,7 @@ export function CheckoutPage() {
                     <span className="min-w-0 space-y-1">
                       <span className="block font-semibold">{item.label}</span>
                       <span className="block text-xs text-[#cfb28c]">{item.nickname} · {item.network}</span>
-                      <span className="block truncate text-xs text-[#cfb28c]" title={item.address}>{item.address}</span>
+                      <span className="block truncate text-xs text-[#cfb28c]" title={item.address}>{formatWalletAddress(item.address)}</span>
                     </span>
                   </label>
                 ))}
