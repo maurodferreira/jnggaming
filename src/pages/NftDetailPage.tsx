@@ -92,10 +92,10 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
           {nft.editions.map((edition) => (
             <label
               key={edition.id}
-              className={`inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full border border-[#624230] px-3 py-2 text-xs transition-colors focus-within:ring-2 focus-within:ring-primary sm:flex sm:items-start sm:gap-3 sm:rounded-xl sm:p-4 ${
+              className={`inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full border border-[#624230] px-3 py-2 text-xs transition-colors focus-within:ring-2 focus-within:ring-primary sm:min-h-0 sm:text-sm sm:flex sm:items-start sm:gap-3 sm:rounded-xl sm:p-4 ${
                 editionId === edition.id
-                  ? 'border-primary bg-[#39251b] text-primary'
-                  : 'bg-transparent text-[#cfb28c] hover:border-primary/70 hover:bg-muted/30'
+                  ? 'border-primary bg-[#39251b] text-primary sm:bg-muted/50 sm:text-foreground'
+                  : 'bg-transparent text-[#cfb28c] hover:border-primary/70 hover:bg-muted/30 sm:text-foreground'
               }`}
             >
               <input
@@ -226,34 +226,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
             : 'Adicionar ao carrinho'}
         </Button>
 
-        {/* Mensagem de erro */}
-        {addToCart.isError && (
-          <p
-            role="alert"
-            className="text-sm text-destructive"
-          >
-            {getCartErrorMessage(addToCart.error)}
-          </p>
-        )}
 
-        {/* Confirmação de sucesso */}
-        {addToCart.isSuccess && (
-          <div
-            role="status"
-            className="rounded-lg border p-4 text-sm"
-          >
-            <p className="font-medium">
-              NFT adicionado ao carrinho!
-            </p>
-
-            <Link
-              to="/cart"
-              className="mt-2 inline-block font-medium underline underline-offset-4"
-            >
-              Ver meu carrinho →
-            </Link>
-          </div>
-        )}
       </div>
 
       {/* The Figma NFT view has a dedicated purchase area.
@@ -305,21 +278,31 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
           <p className="mt-1.5 text-center text-[10px] leading-4 text-[#cfb28c]">
             Compra simulada · taxas e descontos no checkout
           </p>
-          {addToCart.isError && (
-            <p role="alert" className="mt-2 text-center text-xs text-destructive">
-              {getCartErrorMessage(addToCart.error)}
-            </p>
-          )}
-          {addToCart.isSuccess && (
-            <p role="status" className="mt-2 text-center text-xs text-foreground">
-              NFT adicionado ao carrinho!{' '}
-              <Link to="/cart" className="font-bold text-primary underline underline-offset-4">
-                Ver meu carrinho →
-              </Link>
-            </p>
-          )}
+
         </div>
       </section>
+
+      {/* One accessible result for both layouts. In mobile, keep it above
+          the purchase tray; in desktop it stays in the regular content flow. */}
+      {addToCart.isError && (
+        <p
+          role="alert"
+          className="fixed inset-x-5 bottom-[calc(236px+env(safe-area-inset-bottom))] z-40 rounded-xl border border-destructive/50 bg-[#241612] p-3 text-center text-xs text-destructive shadow-lg sm:static sm:mt-3 sm:text-left sm:text-sm"
+        >
+          {getCartErrorMessage(addToCart.error)}
+        </p>
+      )}
+      {addToCart.isSuccess && (
+        <div
+          role="status"
+          className="fixed inset-x-5 bottom-[calc(236px+env(safe-area-inset-bottom))] z-40 rounded-xl border border-[#624230] bg-[#241612] p-3 text-center text-xs text-foreground shadow-lg sm:static sm:mt-3 sm:p-4 sm:text-left sm:text-sm"
+        >
+          <p className="font-medium">NFT adicionado ao carrinho!</p>
+          <Link to="/cart" className="mt-1 inline-block font-semibold text-primary underline underline-offset-4">
+            Ver meu carrinho →
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
