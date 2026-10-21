@@ -178,7 +178,7 @@ export function CheckoutPage() {
               </div>
             )}
           </section>
-          <section className="kurio-checkout-order-items order-2 space-y-3 lg:hidden" aria-label="NFTs do pedido">
+          <section className="kurio-checkout-order-items order-2 space-y-3 sm:hidden" aria-label="NFTs do pedido">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-bold">Seu pedido</h2>
               <span className="text-xs text-[#cfb28c]">{cart.data?.totalQuantity ?? 0} {cart.data?.totalQuantity === 1 ? 'item' : 'itens'}</span>
@@ -245,7 +245,7 @@ export function CheckoutPage() {
             </div>
           )}
           <div className="kurio-checkout-action order-4 mt-2">
-            <div className="kurio-checkout-action-total lg:hidden" aria-label="Total estimado do pedido">
+            <div className="kurio-checkout-action-total sm:hidden" aria-label="Total estimado do pedido">
               <span>Total estimado</span>
               <strong aria-live="polite">{quote.isFetching ? 'Recalculando...' : quote.data ? `${quote.data.totalEth} ETH` : '—'}</strong>
             </div>
