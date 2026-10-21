@@ -1,0 +1,45 @@
+name: Refresh reviewed NFT screenshot (temporary)
+
+on:
+  push:
+    branches: [feat/nft-mobile-figma-refinement]
+    paths:
+      - '.github/workflows/refresh-nft-mobile-baseline.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-nft-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/nft-mobile-figma-refinement
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Re-render reviewed NFT baseline at 390, 768 and 1440px
+        run: npx playwright test tests/e2e/visual-baselines.spec.ts --project=desktop-chromium --grep 'visual baseline: NFT detail' --update-snapshots
+      - name: Confirm only NFT baselines changed and commit them
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only
+          if git diff --name-only | grep -Ev '^tests/e2e/visual-baselines\.spec\.ts-snapshots/nft-[0-9]+-desktop-chromium-linux\.png$'; then
+            echo 'Unexpected file changed during snapshot update.' >&2
+            exit 1
+          fi
+          git add tests/e2e/visual-baselines.spec.ts-snapshots/nft-390-desktop-chromium-linux.png
+          git add tests/e2e/visual-baselines.spec.ts-snapshots/nft-768-desktop-chromium-linux.png
+          git add tests/e2e/visual-baselines.spec.ts-snapshots/nft-1440-desktop-chromium-linux.png
+          if git diff --cached --quiet; then
+            echo 'NFT screenshot baseline already up to date.'
+            exit 0
+          fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'test(visual): update reviewed NFT mobile screenshot baseline'
+          git push origin HEAD:feat/nft-mobile-figma-refinement
