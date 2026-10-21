@@ -2,9 +2,9 @@ name: Frontend checks
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, feat/figma-kurio-ui]
   push:
-    branches: [feat/figma-kurio-ui]
+    branches: [feat/figma-kurio-ui, feat/nft-mobile-figma-refinement]
 
 concurrency:
   # Push and PR checks for the same head branch share one runner slot.
