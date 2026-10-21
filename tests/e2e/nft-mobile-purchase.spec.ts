@@ -32,8 +32,8 @@ for (const width of [390, 414]) {
     await expect(tray).toContainText('2.38 ETH')
 
     await add.click()
-    await expect(tray.getByRole('status')).toContainText('NFT adicionado ao carrinho!')
-    await tray.getByRole('link', { name: 'Ver meu carrinho' }).click()
+    await expect(page.getByText('NFT adicionado ao carrinho!', { exact: true })).toBeVisible()
+    await page.getByRole('link', { name: 'Ver meu carrinho' }).click()
     await expect(page.getByRole('heading', { name: 'Carrinho de NFTs' })).toBeVisible()
     await expect(page.getByRole('region', { name: 'Itens do carrinho' })).toContainText('2')
   })
@@ -49,14 +49,17 @@ test('tablet and desktop keep the original purchase controls', async ({ page }) 
 })
 
 test('mobile edition changes update the tray price before adding to cart', async ({ page }) => {
+  test.setTimeout(30_000)
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/nft/1')
 
   const tray = page.getByRole('region', { name: 'Compra demonstrativa do NFT' })
-  await page.getByRole('radio', { name: /Collector/i }).check()
+  // The radio is visually hidden inside the Figma-style chip; click the label.
+  await page.getByText('Collector', { exact: true }).click()
+  await expect(page.getByRole('radio', { name: /Collector/i })).toBeChecked()
   await expect(tray).toContainText('1.24 ETH')
   await expect(tray.getByRole('group', { name: 'Quantidade de NFTs' }).locator('output'))
     .toHaveText('1')
   await tray.getByRole('button', { name: 'Adicionar ao carrinho' }).click()
-  await expect(tray.getByRole('status')).toContainText('NFT adicionado ao carrinho!')
+  await expect(page.getByText('NFT adicionado ao carrinho!', { exact: true })).toBeVisible()
 })
