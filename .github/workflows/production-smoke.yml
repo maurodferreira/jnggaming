@@ -1,0 +1,37 @@
+name: Production deploy smoke
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kurio-production-smoke
+  cancel-in-progress: true
+
+jobs:
+  public-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Real Chromium smoke against Vercel production domain
+        env:
+          KURIO_DEPLOY_URL: https://kurio-jungle-challenge.vercel.app
+        run: node scripts/quality/deployment-smoke.mjs
+      - name: Upload screenshot if remote site failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kurio-public-deployment-failure
+          path: kurio-deployment-smoke-failure.png
+          if-no-files-found: ignore
+          retention-days: 7

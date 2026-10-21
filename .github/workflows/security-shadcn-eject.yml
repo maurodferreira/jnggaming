@@ -1,0 +1,76 @@
+name: Harden shadcn dependency chain
+
+# The official shadcn "eject" inlines the build-time styling utilities.
+# Verify build, tests and production audit before committing back to the PR.
+on:
+  push:
+    branches: [feat/figma-kurio-ui]
+    paths:
+      - '.github/workflows/security-shadcn-eject.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kurio-security-eject
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/figma-kurio-ui
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Eject shared shadcn styles with supported CLI
+        run: npx --no-install shadcn eject --yes
+      - name: Reinstall from the generated lockfile
+        run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify functional E2E before committing dependency changes
+        # Visual snapshots are regenerated separately once the CSS is ejected.
+        run: npx playwright test --grep-invert "visual baseline:"
+      - name: Verify no high-severity audit advisories remain
+        run: npm audit --audit-level=high
+      - name: Commit only verified changes to feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json src/index.css
+          if git diff --cached --quiet; then
+            echo "No changes produced by shadcn eject"
+          else
+            git commit -m "fix(deps): eject shadcn CLI and inline required Tailwind utilities"
+            # Preserve concurrent PR updates (e.g. versioned visual snapshots).
+            for attempt in 1 2 3; do
+              if git push origin HEAD:feat/figma-kurio-ui; then
+                exit 0
+              fi
+              git fetch origin feat/figma-kurio-ui
+              git rebase origin/feat/figma-kurio-ui
+            done
+            echo "Unable to push verified dependency changes safely" >&2
+            exit 1
+          fi
+      - name: Upload migration diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kurio-shadcn-eject-validation
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7

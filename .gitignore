@@ -27,3 +27,10 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Playwright runtime output (visual baselines in tests/ remain tracked)
+playwright-report/
+test-results/
+
+# TanStack Router local generator cache (Windows/Vite)
+.tanstack/

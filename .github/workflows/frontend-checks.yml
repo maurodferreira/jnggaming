@@ -1,0 +1,45 @@
+name: Frontend checks
+
+on:
+  pull_request:
+    branches: [main, feat/figma-kurio-ui]
+  push:
+    branches: [feat/figma-kurio-ui, feat/nft-mobile-figma-refinement, feat/auth-mobile-figma-polish, feat/checkout-mobile-figma-polish]
+
+concurrency:
+  # Push and PR checks for the same head branch share one runner slot.
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
+      - name: Verify Windows route-generator fallback build
+        run: KURIO_SKIP_ROUTE_GENERATION=true npm run build
+      - name: Install Chromium for E2E tests
+        run: npx playwright install --with-deps chromium
+      - name: Playwright E2E desktop and mobile
+        run: npm run test:e2e
+      - name: Publish Playwright report and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-and-traces
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -3,6 +3,13 @@ import axios from 'axios'
 import { Link, getRouteApi } from '@tanstack/react-router'
 
 import { useNft } from '@/features/catalog/useNft'
+import { useNfts } from '@/features/catalog/useNfts'
+import { NftCard } from '@/components/catalog/NftCard'
+import { FavoritesControlsProvider } from '@/components/catalog/FavoritesControlsProvider'
+import { NftArtworkGallery } from '@/components/catalog/NftArtworkGallery'
+import { NftDetailsTabs } from '@/components/catalog/NftDetailsTabs'
+import { NftMetadata } from '@/components/catalog/NftMetadata'
+import { FavoriteButton } from '@/components/catalog/FavoriteButton'
 import type { NftDetail } from '@/features/catalog/types'
 import { multiplyEth } from '@/lib/eth'
 
@@ -20,7 +27,7 @@ const catalogSearch = {
   q: '',
   collection: 'all',
   available: false,
-  sort: 'name_asc' as const,
+  sort: 'featured' as const,
   page: 1,
 }
 
@@ -60,22 +67,35 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
     selectedQuantity
   )
 
+  // Capture the narrowed edition ID before the callback runs. This keeps
+  // desktop/mobile actions in sync and preserves TypeScript strict checking.
+  const selectedEditionId = selectedEdition.id
+
+  function addSelectedToCart() {
+    addToCart.mutate({
+      nftId: nft.id,
+      editionId: selectedEditionId,
+      quantity: selectedQuantity,
+    })
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Escolha da edição */}
-      <fieldset className="space-y-3">
+      <fieldset className="space-y-2 sm:space-y-3">
         <legend className="font-medium">
-          Escolha uma edição
+          <span className="sm:hidden">Edição:</span>
+          <span className="hidden sm:inline">Escolha uma edição</span>
         </legend>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-wrap gap-2 sm:grid sm:grid-cols-2 sm:gap-3">
           {nft.editions.map((edition) => (
             <label
               key={edition.id}
-              className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors ${
+              className={`inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full border border-[#624230] px-3 py-2 text-xs transition-colors focus-within:ring-2 focus-within:ring-primary sm:min-h-0 sm:text-sm sm:flex sm:items-start sm:gap-3 sm:rounded-xl sm:p-4 ${
                 editionId === edition.id
-                  ? 'border-primary bg-muted/50'
-                  : 'hover:bg-muted/30'
+                  ? 'border-primary bg-[#39251b] text-primary sm:bg-muted/50 sm:text-foreground'
+                  : 'bg-transparent text-[#cfb28c] hover:border-primary/70 hover:bg-muted/30 sm:text-foreground'
               }`}
             >
               <input
@@ -88,7 +108,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
                   setQuantity(1)
                   addToCart.reset()
                 }}
-                className="mt-1 accent-primary"
+                className="sr-only sm:not-sr-only sm:mt-1 sm:accent-primary"
               />
 
               <span className="space-y-1">
@@ -96,11 +116,11 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
                   {edition.name}
                 </span>
 
-                <span className="block text-sm">
+                <span className="hidden text-sm sm:block">
                   {edition.priceEth} ETH
                 </span>
 
-                <span className="block text-xs text-muted-foreground">
+                <span className="hidden text-xs text-muted-foreground sm:block">
                   {edition.available > 0
                     ? `${edition.available} disponíveis`
                     : 'Esgotada'}
@@ -112,10 +132,10 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
       </fieldset>
 
       {/* Controle de quantidade */}
-      <div className="space-y-3">
+      <div className="hidden space-y-2 sm:block sm:space-y-3">
         <p className="font-medium">Quantidade</p>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Button
             type="button"
             variant="outline"
@@ -150,9 +170,12 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
           >
             +
           </Button>
+          <p className="ml-auto text-lg font-bold text-primary sm:hidden" aria-label={`Subtotal: ${total} ETH`}>
+            {total} ETH
+          </p>
         </div>
 
-        <p className="text-sm text-muted-foreground">
+        <p className="hidden text-sm text-muted-foreground sm:block">
           {available > 0
             ? `Limite de ${available} unidades nesta edição.`
             : 'Esta edição não está disponível.'}
@@ -160,7 +183,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
       </div>
 
       {/* Resumo dos valores */}
-      <div className="rounded-xl border p-5">
+      <div className="hidden rounded-xl border p-5 sm:block">
         <p className="text-sm text-muted-foreground">
           Preço unitário
         </p>
@@ -188,7 +211,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
       </div>
 
       {/* Adicionar ao carrinho */}
-      <div className="space-y-3">
+      <div className="hidden space-y-3 sm:block">
         <Button
           type="button"
           className="w-full"
@@ -196,48 +219,90 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
             selectedQuantity === 0 ||
             addToCart.isPending
           }
-          onClick={() => {
-            addToCart.mutate({
-              nftId: nft.id,
-              editionId: selectedEdition.id,
-              quantity: selectedQuantity,
-            })
-          }}
+          onClick={addSelectedToCart}
         >
           {addToCart.isPending
             ? 'Adicionando...'
             : 'Adicionar ao carrinho'}
         </Button>
 
-        {/* Mensagem de erro */}
-        {addToCart.isError && (
-          <p
-            role="alert"
-            className="text-sm text-destructive"
-          >
-            {getCartErrorMessage(addToCart.error)}
-          </p>
-        )}
 
-        {/* Confirmação de sucesso */}
-        {addToCart.isSuccess && (
-          <div
-            role="status"
-            className="rounded-lg border p-4 text-sm"
-          >
-            <p className="font-medium">
-              NFT adicionado ao carrinho!
-            </p>
-
-            <Link
-              to="/cart"
-              className="mt-2 inline-block font-medium underline underline-offset-4"
-            >
-              Ver meu carrinho →
-            </Link>
-          </div>
-        )}
       </div>
+
+      {/* The Figma NFT view has a dedicated purchase area.
+          On phones it sits above the existing app navigation rather than
+          obscuring it; desktop keeps its original purchase controls. */}
+      <section
+        aria-label="Compra demonstrativa do NFT"
+        className="fixed inset-x-0 bottom-[calc(78px+env(safe-area-inset-bottom))] z-40 rounded-t-[26px] border-t border-[#624230] bg-[#241612]/95 px-5 pb-3 pt-3 shadow-[0_-16px_36px_rgba(0,0,0,0.44)] backdrop-blur-md sm:hidden"
+      >
+        <div className="mx-auto max-w-[540px]">
+          <div className="flex min-h-11 items-center justify-between gap-3">
+            <div role="group" aria-label="Quantidade de NFTs" className="flex items-center gap-2">
+              <span className="mr-1 text-xs font-semibold text-[#cfb28c]">Qtd.</span>
+              <button
+                type="button"
+                aria-label="Diminuir quantidade"
+                disabled={selectedQuantity <= 1}
+                onClick={() => setQuantity(current => Math.max(1, current - 1))}
+                className="grid size-11 place-items-center rounded-full border border-[#624230] bg-[#39251b] text-lg text-primary transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                −
+              </button>
+              <output aria-live="polite" className="min-w-5 text-center text-sm font-bold">
+                {selectedQuantity}
+              </output>
+              <button
+                type="button"
+                aria-label="Aumentar quantidade"
+                disabled={selectedQuantity >= available}
+                onClick={() => setQuantity(current => Math.min(available, current + 1))}
+                className="grid size-11 place-items-center rounded-full border border-[#624230] bg-[#39251b] text-lg text-primary transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                +
+              </button>
+            </div>
+            <p aria-label={`Subtotal: ${total} ETH`} className="min-w-0 text-right">
+              <span className="block text-[10px] text-[#cfb28c]">Subtotal</span>
+              <strong className="whitespace-nowrap text-lg font-bold tracking-tight text-[#e89b55]">{total} ETH</strong>
+            </p>
+          </div>
+          <Button
+            type="button"
+            className="mt-2 h-12 w-full rounded-full text-sm font-bold shadow-[0_6px_20px_rgba(210,138,76,0.15)]"
+            disabled={selectedQuantity === 0 || addToCart.isPending}
+            onClick={addSelectedToCart}
+          >
+            {addToCart.isPending ? 'Adicionando...' : 'Adicionar ao carrinho'}
+          </Button>
+          <p className="mt-1.5 text-center text-[10px] leading-4 text-[#cfb28c]">
+            Compra simulada · taxas e descontos no checkout
+          </p>
+
+        </div>
+      </section>
+
+      {/* One accessible result for both layouts. In mobile, keep it above
+          the purchase tray; in desktop it stays in the regular content flow. */}
+      {addToCart.isError && (
+        <p
+          role="alert"
+          className="fixed inset-x-5 bottom-[calc(236px+env(safe-area-inset-bottom))] z-40 rounded-xl border border-destructive/50 bg-[#241612] p-3 text-center text-xs text-destructive shadow-lg sm:static sm:mt-3 sm:text-left sm:text-sm"
+        >
+          {getCartErrorMessage(addToCart.error)}
+        </p>
+      )}
+      {addToCart.isSuccess && (
+        <div
+          role="status"
+          className="fixed inset-x-5 bottom-[calc(236px+env(safe-area-inset-bottom))] z-40 rounded-xl border border-[#624230] bg-[#241612] p-3 text-center text-xs text-foreground shadow-lg sm:static sm:mt-3 sm:p-4 sm:text-left sm:text-sm"
+        >
+          <p className="font-medium">NFT adicionado ao carrinho!</p>
+          <Link to="/cart" className="mt-1 inline-block font-semibold text-primary underline underline-offset-4">
+            Ver meu carrinho →
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
@@ -253,13 +318,55 @@ export function NftDetailPage() {
     refetch,
   } = useNft(nftId)
 
+  // The primary NFT is needed above the fold. Fetch suggestions only after it resolves.
+  const related = useNfts(catalogSearch, { enabled: Boolean(nft) })
+  const [shareNotice, setShareNotice] = useState('')
+
+  async function copyNftLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setShareNotice('Link copiado para compartilhar.')
+    } catch {
+      setShareNotice('Não foi possível copiar o link neste navegador.')
+    }
+  }
+
   // Carregamento
   if (isPending) {
+    // Match the resolved page geometry to avoid shifting the whole main column
+    // when the mock REST response arrives, especially on direct deep links.
     return (
-      <main className="mx-auto max-w-5xl space-y-6 p-6">
-        <Skeleton className="h-8 w-40" />
-        <Skeleton className="h-80 w-full" />
-        <Skeleton className="h-12 w-64" />
+      <main aria-label="Carregando NFT" className="mx-auto max-w-[1248px] space-y-5 px-5 pb-24 pt-5 sm:space-y-8 sm:py-8 md:px-6 md:pb-0">
+        <Skeleton className="h-10 w-40 rounded-full sm:h-5" />
+        <section className="grid gap-0 sm:gap-10 lg:grid-cols-2">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-[76px_minmax(0,1fr)]">
+            <div className="hidden flex-col gap-3 sm:flex" aria-hidden="true">
+              {Array.from({ length: 4 }, (_, index) => (
+                <Skeleton className="aspect-square w-full rounded-md" key={index} />
+              ))}
+            </div>
+            <Skeleton className="aspect-square w-full rounded-[24px] sm:rounded-lg" />
+          </div>
+          <div className="relative -mx-5 -mt-6 space-y-6 rounded-t-[28px] bg-[#241612] px-5 pb-7 pt-8 sm:mx-0 sm:mt-0 sm:rounded-none sm:bg-transparent sm:p-0 lg:min-h-[950px]">
+            <Skeleton className="h-5 w-1/3" />
+            <Skeleton className="h-9 w-3/4" />
+            <Skeleton className="h-16 w-full" />
+            <div className="grid grid-cols-2 gap-3">
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-20 w-full" />
+            </div>
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        </section>
+        {/* Reserve the full details/metadata area while the primary NFT loads.
+            This prevents the related collection and footer from jumping on desktop. */}
+        <Skeleton className="h-[380px] w-full sm:h-[360px]" />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5" aria-hidden="true">
+          {Array.from({ length: 5 }, (_, index) => (
+            <Skeleton className="aspect-square w-full rounded-lg" key={index} />
+          ))}
+        </div>
       </main>
     )
   }
@@ -302,41 +409,102 @@ export function NftDetailPage() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl space-y-8 px-4 py-10">
+    <FavoritesControlsProvider>
+    <main className="mx-auto max-w-[1248px] space-y-5 px-5 pb-[300px] pt-5 sm:space-y-8 sm:py-8 md:px-6 md:pb-0">
       <Link
         to="/"
         search={catalogSearch}
-        className="text-sm text-muted-foreground hover:underline"
+        className="inline-flex size-10 items-center justify-center rounded-full border border-[#624230] bg-[#241612] text-lg text-primary hover:border-primary focus-visible:outline-2 focus-visible:outline-primary sm:h-auto sm:w-auto sm:justify-start sm:rounded-none sm:border-0 sm:bg-transparent sm:text-sm sm:text-muted-foreground sm:hover:underline"
       >
-        ← Voltar ao catálogo
+        <span aria-hidden="true">←</span><span className="sr-only sm:not-sr-only sm:ml-2">Voltar ao catálogo</span>
       </Link>
 
-      <section className="grid gap-8 md:grid-cols-2">
-        {/* Imagem provisória */}
-        <div className="flex min-h-80 items-center justify-center rounded-xl border bg-muted/30">
-          <p className="text-sm text-muted-foreground">
-            Imagem do NFT
-          </p>
+      <section className="grid gap-0 sm:gap-10 lg:grid-cols-2">
+        <div className="relative">
+          <NftArtworkGallery key={nft.id} nftId={nft.id} nftName={nft.name} />
+          <div className="absolute right-4 top-16 z-10 sm:hidden">
+            <FavoriteButton nftId={nft.id} />
+          </div>
         </div>
 
         {/* Informações */}
-        <div className="space-y-6">
+        <div className="relative -mx-5 -mt-6 space-y-4 rounded-t-[28px] bg-[#241612] px-6 pb-6 pt-5 shadow-[0_-12px_32px_rgba(0,0,0,0.22)] sm:mx-0 sm:mt-0 sm:space-y-4 sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           <div>
-            <p className="text-muted-foreground">
+            <p className="hidden text-muted-foreground sm:block">
               {nft.collection}
             </p>
 
-            <h1 className="mt-2 text-3xl font-bold">
-              {nft.name}
-            </h1>
+            <div className="mt-2 flex items-center justify-between gap-4">
+              <h1 className="text-xl font-bold sm:text-3xl">{nft.name}</h1>
+              {nft.metadata.reviewSummary && (
+                <span className="shrink-0 rounded-full border border-[#624230] px-2 py-1 text-[11px] text-primary sm:hidden">
+                  ★ {nft.metadata.reviewSummary.average.toFixed(1)} ({nft.metadata.reviewSummary.count})
+                </span>
+              )}
+              <div className="hidden sm:block"><FavoriteButton nftId={nft.id} /></div>
+            </div>
+            <div className="mt-3 hidden flex-wrap items-center gap-3 border-b border-[#624230] pb-3 sm:flex">
+              <strong className="text-lg text-primary">{nft.priceEth} ETH</strong>
+              {nft.metadata.reviewSummary && (
+                <span className="text-xs text-[#cfb28c]">
+                  <span className="text-primary" aria-hidden="true">★</span>{' '}
+                  {nft.metadata.reviewSummary.average.toFixed(1)} · {nft.metadata.reviewSummary.count} avaliações ilustrativas
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-xs leading-5 text-[#cfb28c] sm:hidden">
+              Colecionável digital da coleção {nft.metadata.collectionLabel}, disponível para compra simulada na KURIO.
+            </p>
+            <p className="mt-4 hidden text-sm leading-7 text-[#cfb28c] sm:block">
+              <span className="font-semibold text-foreground">Sobre este NFT: </span>
+              {nft.metadata.description}
+            </p>
           </div>
 
-          <EditionSelector
-            key={nft.id}
-            nft={nft}
-          />
+          <EditionSelector key={nft.id} nft={nft} />
+          <NftMetadata nft={nft} className="sm:hidden" />
+          <NftMetadata nft={nft} className="hidden sm:block" />
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span>Compartilhar este NFT:</span>
+            <button
+              type="button"
+              onClick={() => void copyNftLink()}
+              className="rounded-md border border-[#624230] px-3 py-1.5 text-primary hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              Copiar link
+            </button>
+            {shareNotice && <span role="status" className="text-[#cfb28c]">{shareNotice}</span>}
+          </div>
+        </div>
+      </section>
+
+      <NftDetailsTabs key={nft.id} nft={nft} />
+
+      <section
+        aria-label="Mais desta coleção"
+        className="min-h-[430px] border-t border-[#624230] pt-7"
+      >
+        <h2 className="mb-8 font-bold text-[#e89b55]">Mais desta coleção</h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {related.isError ? (
+            <p className="col-span-full text-sm text-[#cfb28c]" role="status">
+              Não foi possível carregar outras obras no momento.
+            </p>
+          ) : related.data
+            ? related.data.items
+                .filter(item => item.id !== nft.id)
+                .slice(0, 5)
+                .map(item => <NftCard key={item.id} nft={item} compact />)
+            : Array.from({ length: 5 }, (_, index) => (
+                <Skeleton
+                  key={index}
+                  className="aspect-square w-full rounded-lg"
+                  aria-hidden="true"
+                />
+              ))}
         </div>
       </section>
     </main>
+    </FavoritesControlsProvider>
   )
 }

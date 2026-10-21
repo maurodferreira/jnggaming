@@ -7,16 +7,27 @@ import axios from 'axios'
 import { ethToWei, weiToEth } from '@/lib/eth'
 
 import { api } from '@/services/api'
+import { useSession } from '@/features/auth/useAuth'
 import type {
   AddCartItemInput,
   CartResponse,
 } from './types'
 
-const cartQueryKey = ['cart', 'guest'] as const
+const cartQueryKey = (accountId: string) => ['cart', accountId] as const
+
+function useCartKey() {
+  const session = useSession()
+  return {
+    queryKey: cartQueryKey(session.data?.id ?? 'guest'),
+    sessionPending: session.isPending,
+  }
+}
 
 export function useCart() {
+  const { queryKey, sessionPending } = useCartKey()
   return useQuery({
-    queryKey: cartQueryKey,
+    queryKey,
+    enabled: !sessionPending,
     queryFn: async ({ signal }) => {
       const { data } = await api.get<CartResponse>(
         '/cart',
@@ -28,8 +39,40 @@ export function useCart() {
   })
 }
 
+export interface CartSummary {
+  coupon: string | null
+  totalQuantity: number
+  subtotalEth: string
+  discountEth: string
+  feeEth: string
+  totalEth: string
+}
+
+export function useCartSummary(coupon: string) {
+  const cart = useCart()
+  const session = useSession()
+  return useQuery({
+    queryKey: [
+      'cart-summary',
+      session.data?.id ?? 'guest',
+      coupon,
+      cart.data?.items.map(item => [item.id, item.quantity, item.unitPriceEth, item.available]),
+    ],
+    enabled: !session.isPending && Boolean(cart.data?.items.length),
+    retry: false,
+    queryFn: async ({ signal }) => {
+      const { data } = await api.get<CartSummary>('/cart/summary', {
+        signal,
+        params: { coupon },
+      })
+      return data
+    },
+  })
+}
+
 export function useAddToCart() {
   const queryClient = useQueryClient()
+  const { queryKey } = useCartKey()
 
   return useMutation({
     mutationFn: async (input: AddCartItemInput) => {
@@ -41,9 +84,9 @@ export function useAddToCart() {
       return data
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(cartQueryKey, data)
+      queryClient.setQueryData(queryKey, data)
       void queryClient.invalidateQueries({
-        queryKey: cartQueryKey,
+        queryKey,
       })
     },
   })
@@ -51,6 +94,7 @@ export function useAddToCart() {
 
 export function useUpdateCartItem() {
   const queryClient = useQueryClient()
+  const { queryKey } = useCartKey()
 
   return useMutation({
     mutationFn: async ({
@@ -68,15 +112,15 @@ export function useUpdateCartItem() {
       return data
     },
     onMutate: async ({ id, quantity }) => {
-      await queryClient.cancelQueries({ queryKey: cartQueryKey })
-      const previous = queryClient.getQueryData<CartResponse>(cartQueryKey)
+      await queryClient.cancelQueries({ queryKey })
+      const previous = queryClient.getQueryData<CartResponse>(queryKey)
 
       if (previous) {
         const items = previous.items.map((item) =>
           item.id === id ? { ...item, quantity } : item
         )
 
-        queryClient.setQueryData<CartResponse>(cartQueryKey, {
+        queryClient.setQueryData<CartResponse>(queryKey, {
           ...previous,
           items,
           totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
@@ -94,20 +138,21 @@ export function useUpdateCartItem() {
     },
     onError: (_error, _variables, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(cartQueryKey, context.previous)
+        queryClient.setQueryData(queryKey, context.previous)
       }
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(cartQueryKey, data)
+      queryClient.setQueryData(queryKey, data)
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: cartQueryKey })
+      void queryClient.invalidateQueries({ queryKey })
     },
   })
 }
 
 export function useRemoveCartItem() {
   const queryClient = useQueryClient()
+  const { queryKey } = useCartKey()
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -118,9 +163,9 @@ export function useRemoveCartItem() {
       return data
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(cartQueryKey, data)
+      queryClient.setQueryData(queryKey, data)
       void queryClient.invalidateQueries({
-        queryKey: cartQueryKey,
+        queryKey,
       })
     },
   })

@@ -1,0 +1,67 @@
+name: Visual quality and Lighthouse
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/figma-kurio-ui, feat/nft-mobile-figma-refinement, feat/auth-mobile-figma-polish]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'scripts/quality/**'
+      - '.github/workflows/quality-audit.yml'
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build production assets
+        run: npm run build
+      - name: Record compressed and uncompressed production chunk sizes
+        run: node scripts/quality/bundle-sizes.mjs
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Resolve Chrome executable
+        run: |
+          echo "CHROME_PATH=$(node --input-type=module -e "import { chromium } from '@playwright/test'; process.stdout.write(chromium.executablePath())")" >> "$GITHUB_ENV"
+      - name: Start production preview
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/kurio-preview.log 2>&1 &
+          echo $! > /tmp/kurio-preview.pid
+          timeout 45 bash -c 'until curl -fsS http://127.0.0.1:4173/ > /dev/null; do sleep 1; done'
+      - name: Audit npm dependency advisories
+        run: |
+          mkdir -p reports/quality
+          npm audit --json > reports/quality/npm-audit.json || true
+          node --input-type=module -e "import fs from 'node:fs'; const audit=JSON.parse(fs.readFileSync('reports/quality/npm-audit.json','utf8')); console.log('Dependency vulnerability counts:', JSON.stringify(audit.metadata?.vulnerabilities ?? {}))"
+      - name: Lighthouse mobile and desktop — three runs each
+        run: node scripts/quality/lighthouse.mjs
+      - name: Diagnose initial JavaScript and main-thread work
+        if: always()
+        run: node scripts/quality/main-thread-diagnostics.mjs
+      - name: Upload raw Lighthouse reports and audit summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kurio-lighthouse-and-npm-audit
+          path: reports/quality/
+          if-no-files-found: ignore
+          retention-days: 14

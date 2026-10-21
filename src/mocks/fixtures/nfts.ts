@@ -1,19 +1,21 @@
 import type { Nft } from '@/features/catalog/types'
 
+// Catalog content mirrors the NFT names/prices shown in the Kurio Figma.
+// Supply, availability and chain distribution are local demo fixtures, not blockchain data.
 export const nfts: Nft[] = [
-    { id: '1', name: 'Nebula #001', collection: 'Nebula', priceEth: '0.125', available: 10 },
-    { id: '2', name: 'Genesis #002', collection: 'Genesis', priceEth: '0.250', available: 5 },
-    { id: '3', name: 'Orbit #003', collection: 'Orbit', priceEth: '0.075', available: 20 },
-    { id: '4', name: 'Nebula #004', collection: 'Nebula', priceEth: '0.300', available: 8 },
-    { id: '5', name: 'Genesis #005', collection: 'Genesis', priceEth: '0.180', available: 0 },
-    { id: '6', name: 'Orbit #006', collection: 'Orbit', priceEth: '0.095', available: 12 },
-    { id: '7', name: 'Nebula #007', collection: 'Nebula', priceEth: '0.420', available: 3 },
-    { id: '8', name: 'Genesis #008', collection: 'Genesis', priceEth: '0.150', available: 7 },
-    { id: '9', name: 'Orbit #009', collection: 'Orbit', priceEth: '0.065', available: 0 },
-    { id: '10', name: 'Nebula #010', collection: 'Nebula', priceEth: '0.210', available: 15 },
-    { id: '11', name: 'Genesis #011', collection: 'Genesis', priceEth: '0.550', available: 2 },
-    { id: '12', name: 'Orbit #012', collection: 'Orbit', priceEth: '0.110', available: 18 },
-    { id: '13', name: 'Nebula #013', collection: 'Nebula', priceEth: '0.375', available: 0 },
-    { id: '14', name: 'Genesis #014', collection: 'Genesis', priceEth: '0.280', available: 6 },
-    { id: '15', name: 'Orbit #015', collection: 'Orbit', priceEth: '0.130', available: 9 },
+  { id: '1', network: 'Ethereum', name: 'Emerald Ape #042', collection: 'Arte digital', priceEth: '1.19', available: 50 },
+  { id: '2', network: 'Polygon', name: 'Sage Nomad #009', collection: 'Colecionáveis', priceEth: '1.69', available: 30 },
+  { id: '3', network: 'Solana', name: 'Neon Vessel #552', collection: 'Arte 3D', priceEth: '1.99', available: 20 },
+  { id: '4', network: 'Ethereum', name: 'Cosmic Bloom #118', collection: 'Arte digital', priceEth: '1.29', available: 25 },
+  { id: '5', network: 'Polygon', name: 'Violet Nomad #314', collection: 'Colecionáveis', priceEth: '1.39', available: 40 },
+  { id: '6', network: 'Ethereum', name: 'Ivory Baron #088', collection: 'Arte 3D', priceEth: '1.79', available: 15 },
+  { id: '7', network: 'Solana', name: 'Golden Beat #207', collection: 'Música', priceEth: '0.99', available: 50 },
+  { id: '8', network: 'Polygon', name: 'Golden Echo #084', collection: 'Música', priceEth: '0.59', available: 12 },
+  { id: '9', network: 'Ethereum', name: 'Golden Signal #160', collection: 'Música', priceEth: '0.39', available: 35 },
+  { id: '10', network: 'Solana', name: 'Emerald Light #224', collection: 'Fotografia', priceEth: '0.79', available: 18 },
+  { id: '11', network: 'Ethereum', name: 'Neon Origins #101', collection: 'Generativa', priceEth: '2.19', available: 8 },
+  { id: '12', network: 'Polygon', name: 'Nomad Archive #020', collection: 'Fotografia', priceEth: '1.09', available: 16 },
+  { id: '13', network: 'Solana', name: 'Golden Arcade #055', collection: 'Jogos', priceEth: '0.69', available: 22 },
+  { id: '14', network: 'Polygon', name: 'Emerald Access #039', collection: 'Utilidade', priceEth: '0.89', available: 14 },
+  { id: '15', network: 'Ethereum', name: 'Neon Membership #777', collection: 'Assinaturas', priceEth: '1.49', available: 10 },
 ]

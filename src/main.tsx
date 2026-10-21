@@ -16,6 +16,17 @@ const queryClient = new QueryClient({
   },
 })
 
+// Clearing the account cache also prevents an expired session's private
+// REST data from being rendered after the user is sent back to login.
+window.addEventListener('kurio:session-expired', () => {
+  // Keep the active auth query observer mounted so AccountGate receives null
+  // and can navigate to login. Invalidate all other user-scoped cache data.
+  queryClient.removeQueries({
+    predicate: query => query.queryKey[0] !== 'auth',
+  })
+  queryClient.setQueryData(['auth', 'session'], null)
+})
+
 const router = createRouter({
   routeTree,
 })
@@ -28,10 +39,15 @@ declare module '@tanstack/react-router' {
 
 
 async function bootstrap() {
+  // Start MSW before rendering components that use REST or the realtime client.
   if (import.meta.env.VITE_ENABLE_MOCKS !== 'false') {
-    const { worker } = await import('./mocks/browser')
-
-    await worker.start()
+    const startup = (window as Window & { __kurioMockReady?: Promise<void> }).__kurioMockReady
+    if (startup) {
+      await startup
+    } else {
+      const { worker } = await import('./mocks/browser')
+      await worker.start()
+    }
   }
 
   const rootElement = document.getElementById('root')

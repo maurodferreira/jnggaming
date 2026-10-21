@@ -7,12 +7,14 @@ import type {
   AddCartItemInput,
 } from '@/features/cart/types'
 
-const STORAGE_KEY = 'jnggaming:guest-cart:v1'
+const GUEST_CART_KEY = 'jnggaming:guest-cart:v1'
+const storageKey = (ownerId: string) =>
+  ownerId === 'guest' ? GUEST_CART_KEY : `kurio:mock:cart:${ownerId}:v1`
 
-export function readCart(): AddCartItemInput[] {
+export function readCart(ownerId = 'guest'): AddCartItemInput[] {
   try {
     const stored: unknown = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) ?? '[]'
+      localStorage.getItem(storageKey(ownerId)) ?? '[]'
     )
     if (!Array.isArray(stored)) return []
 
@@ -42,21 +44,21 @@ export function readCart(): AddCartItemInput[] {
   }
 }
 
-export function saveCart(items: AddCartItemInput[]) {
+export function saveCart(items: AddCartItemInput[], ownerId = 'guest') {
   localStorage.setItem(
-    STORAGE_KEY,
+    storageKey(ownerId),
     JSON.stringify(items)
   )
 }
 
 export function resetGuestCart() {
-  localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(GUEST_CART_KEY)
 }
 
-export function buildCart(): CartResponse {
+export function buildCart(ownerId = 'guest'): CartResponse {
   const items: CartItem[] = []
 
-  for (const saved of readCart()) {
+  for (const saved of readCart(ownerId)) {
     const nft = nfts.find(
       (item) => item.id === saved.nftId
     )
@@ -96,5 +98,30 @@ export function buildCart(): CartResponse {
       0
     ),
     subtotalEth: weiToEth(subtotalWei),
+  }
+}
+
+/** Move guest items to the signed-in cart without exceeding edition availability. */
+export function mergeGuestCartIntoUser(userId: string): void {
+  const combined = new Map<string, AddCartItemInput>()
+  for (const item of [...readCart(userId), ...readCart('guest')]) {
+    const nft = nfts.find(entry => entry.id === item.nftId)
+    const edition = nft && getMockEditions(nft).find(entry => entry.id === item.editionId)
+    if (!edition || edition.available <= 0) continue
+    const key = `${item.nftId}:${item.editionId}`
+    const current = combined.get(key)
+    const quantity = Math.min(edition.available, (current?.quantity ?? 0) + item.quantity)
+    combined.set(key, { nftId: item.nftId, editionId: item.editionId, quantity })
+  }
+  saveCart([...combined.values()], userId)
+  resetGuestCart()
+}
+
+/** Restores all guest and account carts to a known empty demo state. */
+export function resetAllMockCarts(): void {
+  resetGuestCart()
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i)
+    if (key?.startsWith('kurio:mock:cart:')) localStorage.removeItem(key)
   }
 }

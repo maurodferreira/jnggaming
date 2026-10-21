@@ -1,0 +1,72 @@
+name: Versioned visual baselines
+
+# Runs only when baseline test or this workflow changes; the bot's PNG
+# commit does not recurse into this job.
+on:
+  push:
+    branches: [feat/figma-kurio-ui]
+    paths:
+      - 'tests/e2e/visual-baselines.spec.ts'
+      - '.github/workflows/visual-baselines.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kurio-visual-baselines
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout the review branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/figma-kurio-ui
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium for screenshots
+        run: npx playwright install --with-deps chromium
+      - name: Capture reference images with deterministic MSW data
+        run: npx playwright test tests/e2e/visual-baselines.spec.ts --project=desktop-chromium --update-snapshots
+      - name: Verify captured reference images
+        run: npx playwright test tests/e2e/visual-baselines.spec.ts --project=desktop-chromium
+      - name: Version snapshot files on the feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/e2e/visual-baselines.spec.ts-snapshots
+          if git diff --cached --quiet; then
+            echo "No new baseline changes"
+          else
+            git commit -m "test(visual): version approved Chromium snapshot candidates"
+            # The review branch can receive documentation commits while this
+            # job renders screenshots. Never force push or discard those edits.
+            for attempt in 1 2 3; do
+              if git push origin HEAD:feat/figma-kurio-ui; then
+                exit 0
+              fi
+              git fetch origin feat/figma-kurio-ui
+              git rebase origin/feat/figma-kurio-ui
+            done
+            echo "Could not push visual baselines after three safe retries" >&2
+            exit 1
+          fi
+      - name: Upload screenshot baselines and Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kurio-visual-baselines
+          path: |
+            tests/e2e/visual-baselines.spec.ts-snapshots/
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
