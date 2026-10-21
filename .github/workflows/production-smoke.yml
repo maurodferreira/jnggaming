@@ -2,10 +2,7 @@ name: Production deploy smoke
 on:
   workflow_dispatch:
   push:
-    branches: [feat/figma-kurio-ui]
-    paths:
-      - 'scripts/quality/deployment-smoke.mjs'
-      - '.github/workflows/production-smoke.yml'
+    branches: [main]
 
 permissions:
   contents: read
