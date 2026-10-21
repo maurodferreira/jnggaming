@@ -2,19 +2,19 @@
 
 Um marketplace de NFTs desenvolvido como desafio técnico de Frontend para a **Jungle Gaming**. A ideia foi transformar o design do Figma em uma aplicação navegável, com catálogo, carrinho, contas de colecionador e uma compra inteiramente simulada — incluindo as situações em que a rede ou a sessão falham.
 
-**[Demo pública (versão anterior ao PR)](https://kurio-jungle-challenge.vercel.app/)** · [Figma de referência](https://www.figma.com/design/HuEe6XFEtLBuMlCI8pYddf/Frontend-Challenge--c%C3%B3pia-) · [Regras e decisões de design](docs/REGRAS_E_LIBERDADES_DO_DESAFIO.md) · [Auditoria do desafio](docs/ESCOPO_ORIGINAL_E_AUDITORIA_FIGMA.md)
+**[Demonstração pública](https://kurio-jungle-challenge.vercel.app/)** · [Figma original](https://www.figma.com/design/Ff0SksUi7UFtPWUO8kyNtw/Frontend-Challenge?node-id=0-1&p=f) · [Regras e decisões de design](docs/REGRAS_E_LIBERDADES_DO_DESAFIO.md) · [Auditoria do desafio](docs/ESCOPO_ORIGINAL_E_AUDITORIA_FIGMA.md)
 
 > **Uma demonstração, não um marketplace financeiro.** Não há pagamentos, transferência de NFTs, conexão com blockchain ou carteira real. Os dados e as operações são simulados de ponta a ponta com MSW.
 
-## Status da entrega — 20/10/2026
+## Status da entrega — 21/10/2026
 
-**Versão avaliada:** branch `feat/figma-kurio-ui`, commit de implementação `7ea96bf1`, com o teste adicional no HEAD `114fa5d4`. A `main` não foi modificada; o [PR #1](https://github.com/maurodferreira/jnggaming/pull/1) permanece em rascunho até a aprovação da entrega.
+**Versão final para avaliação:** código consolidado no [PR #5](https://github.com/maurodferreira/jnggaming/pull/5), partindo da branch `feat/checkout-mobile-figma-polish`. A produção foi conferida no commit `0dae1479`. O commit `fd3d9601` corrigiu somente a sincronização de um teste Playwright; não mudou o comportamento publicado.
 
-- **Código:** [CI aprovado — 117 Playwright, 9 skips intencionais](https://github.com/maurodferreira/jnggaming/actions/runs/39483364599), além de typecheck, lint, build e build alternativo Windows.
-- **Qualidade:** [Lighthouse — três execuções por página e dispositivo](https://github.com/maurodferreira/jnggaming/actions/runs/39483283845). Home mobile **100**, NFT mobile **90**, Home desktop **98**, NFT desktop **99** em Performance; as demais três categorias ficaram em **100** nas quatro combinações.
+- **Código:** [CI aprovado — 150 testes Playwright, 12 ignorados intencionalmente, 0 falhas](https://github.com/maurodferreira/jnggaming/actions/runs/39606190433), além de typecheck, lint, build e build alternativo Windows.
+- **Qualidade:** [Lighthouse — auditoria histórica de 20/10 (três execuções por página e dispositivo)](https://github.com/maurodferreira/jnggaming/actions/runs/39483283845). Performance Home mobile **100**, NFT mobile **90**, Home desktop **98**, NFT desktop **99**; as demais categorias ficaram em **100**. **Essa medição precede os refinamentos mobile posteriores**, portanto não representa uma nova auditoria do commit entregue.
 - **Dependências:** `npm audit` da mesma auditoria registrou **0 vulnerabilidades** (inclusive high/critical).
 - **Figma:** nove telas implementadas, com 27 screenshots de regressão em 390, 768 e 1440 px. Esses snapshots protegem o layout do projeto, mas **não comprovam equivalência pixel a pixel** com todos os 15 frames originais.
-- **Publicação:** o domínio público já passou em um smoke test, mas **a versão de produção publicada ainda é anterior ao HEAD desta branch**. Validar o deploy do commit aprovado antes de usar a URL como evidência da entrega final. Veja o [checklist de entrega](docs/CHECKLIST_ENTREGA.md).
+- **Publicação:** o domínio [kurio-jungle-challenge.vercel.app](https://kurio-jungle-challenge.vercel.app/) foi confirmado na Vercel como **READY**, branch `feat/checkout-mobile-figma-polish`, commit de aplicação `0dae1479`. O smoke end-to-end em navegador contra esse deploy deve ser conferido separadamente do build da Vercel.
 
 O relatório do Lighthouse é uma medição automatizada em preview de produção local, não uma garantia de nota idêntica em todos os celulares. Não atribuímos uma nota oficial ao desafio.
 
@@ -66,7 +66,7 @@ Requisitos: **Node.js 22.12+**, npm e navegador moderno. Use HTTPS ou localhost;
 ```bash
 git clone https://github.com/maurodferreira/jnggaming.git
 cd jnggaming
-git checkout feat/figma-kurio-ui
+git checkout main
 npm ci
 npm run dev
 ```
@@ -149,9 +149,9 @@ Além dos fluxos funcionais, existem **27 imagens de referência versionadas** p
 
 A última auditoria de dependências confirmada reportou **0 vulnerabilidades no `npm audit`**. O domínio público também passou no teste de navegação, imagens, rotas profundas e API simulada.
 
-### Resultado validado — 20/10/2026
+### Resultado validado — 21/10/2026
 
-A [suíte final](https://github.com/maurodferreira/jnggaming/actions/runs/39483364599) encerrou com **117 testes aprovados, 9 ignorados intencionalmente, zero falhas**. O commit da medição Lighthouse precede apenas a adição de um teste E2E, sem mudança no código de produção.
+A [suíte atual](https://github.com/maurodferreira/jnggaming/actions/runs/39606190433) encerrou com **150 testes aprovados, 12 ignorados intencionalmente e zero falhas**, incluindo checkout mobile. As notas Lighthouse abaixo são **históricas (auditoria de 20/10)** e não foram novamente medidas no commit final.
 
 | Página | Dispositivo | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS | TBT |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -172,7 +172,7 @@ Os detalhes de requisitos, as diferenças justificadas e o aceite visual estão 
 
 ## Deploy
 
-Existe uma implantação pública em **[kurio-jungle-challenge.vercel.app](https://kurio-jungle-challenge.vercel.app/)**. **Atenção:** ao revisar esta entrega, a URL pública ainda servia o commit `9a2289a9`, mais antigo que o HEAD `114fa5d4` da branch. O preview da branch não deve ser tratado como URL pública acessível sem testar a proteção de acesso da Vercel.
+A versão de aplicação está publicada em **[kurio-jungle-challenge.vercel.app](https://kurio-jungle-challenge.vercel.app/)**. A API da Vercel confirmou o deployment de produção como `READY`, commit `0dae1479` da branch `feat/checkout-mobile-figma-polish`. O commit `fd3d9601` contém apenas uma alteração no teste Playwright e não requer redeploy para mudar o comportamento da aplicação.
 
 - Projeto Vercel: `kurio-jungle-challenge`.
 - Framework: Vite; build: `npm run build`; saída: `dist`.
@@ -180,7 +180,7 @@ Existe uma implantação pública em **[kurio-jungle-challenge.vercel.app](https
 - Os mocks ficam habilitados por padrão. `VITE_ENABLE_MOCKS=false` só faz sentido se você configurar um backend compatível; sem isso, o catálogo e o checkout não funcionarão.
 - O Service Worker é servido em `/mockServiceWorker.js`.
 
-Um smoke test anterior em Chromium validou a URL pública, o MSW, a API mock, os assets, deep links e refresh; **o teste não atesta que o commit atual esteja em produção**. Depois de liberar a implantação da versão aprovada, execute novamente `node scripts/quality/deployment-smoke.mjs` apontando `KURIO_DEPLOY_URL` para o domínio escolhido.
+Uma execução anterior do smoke em Chromium verificou URL pública, MSW, API simulada, assets, deep links e refresh. **Ela não substitui uma nova execução no deployment atual.** Para reproduzir: `KURIO_DEPLOY_URL=https://kurio-jungle-challenge.vercel.app node scripts/quality/deployment-smoke.mjs`.
 
 ## Onde encontrar cada parte
 
