@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { Eye, EyeOff, X } from 'lucide-react'
+import '@/styles/auth.css'
 import { getAuthErrorMessage, useLogin, useRegister, useSession } from '@/features/auth/useAuth'
 
 type Mode = 'login' | 'register'
@@ -37,7 +38,7 @@ function Field({
           placeholder={placeholder ?? label}
           required
           minLength={isSecret ? 8 : undefined}
-          className="h-[50px] w-full rounded-[9px] border border-[#624230] bg-[#140d0a] px-4 pr-12 text-sm text-foreground outline-none transition-colors placeholder:text-[#b39463] focus-visible:border-[#e89b55] focus-visible:ring-1 focus-visible:ring-[#e89b55] md:h-10 md:rounded-md"
+          className="h-[52px] w-full rounded-[10px] border border-[#624230]/85 bg-[#140d0a] px-4 pr-12 text-sm text-foreground outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-[#b39463] hover:border-[#8b603f] focus-visible:border-[#e89b55] focus-visible:ring-2 focus-visible:ring-[#e89b55]/25 md:h-10 md:rounded-md"
         />
         {isSecret && (
           <button
@@ -45,7 +46,7 @@ function Field({
             aria-label={visible ? `Ocultar ${label.toLowerCase()}` : `Mostrar ${label.toLowerCase()}`}
             aria-pressed={visible}
             onClick={() => setVisible(!visible)}
-            className="absolute inset-y-0 right-3 flex items-center text-[#b39463] hover:text-primary"
+            className="absolute inset-y-0 right-2 grid w-10 place-items-center text-[#b39463] transition-colors hover:text-primary focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-primary"
           >
             {visible ? <Eye size={19}/> : <EyeOff size={19}/>}
           </button>
@@ -110,7 +111,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
   }
 
   return (
-    <main className="relative isolate flex min-h-[calc(100vh-70px)] items-center justify-center overflow-hidden px-5 py-12 md:min-h-[800px] md:py-20">
+    <main className="relative isolate flex min-h-[100dvh] items-center justify-center overflow-x-hidden bg-[#140d0a] px-4 py-6 sm:min-h-[calc(100vh-70px)] sm:bg-transparent sm:px-5 sm:py-12 md:min-h-[800px] md:py-20">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden overflow-hidden opacity-40 md:block">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,#4b2e20_0%,transparent_65%)]"/>
         <img src="/assets/nfts/emerald-ape.webp" alt="" className="absolute right-[5%] top-[-1%] w-[31%] max-w-[420px] rounded-xl object-cover"/>
@@ -119,13 +120,13 @@ export function AuthPage({ mode }: { mode: Mode }) {
       </div>
       <div className="absolute inset-0 hidden bg-[#140d0a]/55 md:block" aria-hidden="true"/>
 
-      <section aria-labelledby="auth-title" className="relative z-10 w-full max-w-[430px] rounded-lg bg-[#241612] px-2 py-12 shadow-2xl sm:px-10 md:max-w-[430px] md:border md:border-[#624230]/60 md:px-10 md:py-9">
-        <div className="mb-14 text-center md:mb-5">
-          <Link to="/" search={catalogSearch} className="text-3xl font-bold tracking-[0.18em] text-foreground md:hidden">KURIO</Link>
+      <section aria-labelledby="auth-title" className="kurio-auth-enter relative z-10 w-full max-w-[430px] rounded-[28px] border border-[#624230]/30 bg-[#1b120e] px-5 py-9 shadow-[0_22px_52px_rgba(0,0,0,0.23)] sm:rounded-lg sm:border-transparent sm:bg-[#241612] sm:px-10 sm:py-12 sm:shadow-2xl md:max-w-[430px] md:border-[#624230]/60 md:py-9">
+        <div className="mb-12 text-center md:mb-5">
+          <Link to="/" search={catalogSearch} className="inline-flex min-h-11 items-center justify-center text-3xl font-bold tracking-[0.18em] text-foreground transition-colors hover:text-primary md:hidden">KURIO</Link>
           <Link to="/" search={catalogSearch} aria-label="Fechar e voltar ao início" className="absolute right-3 top-3 hidden p-2 text-primary hover:text-[#e89b55] md:block"><X size={18}/></Link>
         </div>
         <div className="text-center">
-          <h1 id="auth-title" className="mb-9 text-[19px] font-bold text-foreground md:mb-4 md:text-sm">
+          <h1 id="auth-title" className="mb-7 text-[19px] font-bold tracking-tight text-foreground md:mb-4 md:text-sm">
             <span className="md:hidden">{isRegister ? 'Criar perfil de colecionador' : 'Entrar'}</span>
             <span className="hidden md:inline">
               <Link to="/login" search={authSearch} className={!isRegister ? 'text-primary' : 'hover:text-primary'}>Entrar</Link>
@@ -140,11 +141,11 @@ export function AuthPage({ mode }: { mode: Mode }) {
           </p>
         </div>
 
-        <form onSubmit={submit} noValidate={false} className="space-y-3">
+        <form onSubmit={submit} noValidate={false} className="space-y-3.5 sm:space-y-3">
           {isRegister && (
-            <Field label="Nome de usuário" id="auth-name" name="name" value={name} onChange={setName} autoComplete="name"/>
+            <Field label="Nome de usuário" id="auth-name" name="name" value={name} onChange={setName} autoComplete="name" placeholder="Nome de usuário"/>
           )}
-          <Field label="E-mail" id="auth-email" name="email" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="contato@email.com"/>
+          <Field label="E-mail" id="auth-email" name="email" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder={isRegister ? 'Digite seu e-mail' : 'contato@email.com'}/>
           <Field label="Senha" id="auth-password" name="password" type="password" value={password} onChange={setPassword} autoComplete={isRegister ? 'new-password' : 'current-password'}/>
           {isRegister && (
             <Field label="Confirmar senha" id="auth-confirm-password" name="confirmPassword" type="password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password"/>
@@ -156,28 +157,33 @@ export function AuthPage({ mode }: { mode: Mode }) {
           <button
             type="submit"
             disabled={mutation.isPending || Boolean(session.data)}
-            className="mt-7 flex h-[58px] w-full items-center justify-center rounded-lg bg-primary text-base font-bold text-primary-foreground transition-colors hover:bg-[#e89b55] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e89b55] disabled:opacity-60 md:mt-4 md:h-10 md:text-sm"
+            className="mt-7 flex h-[58px] w-full items-center justify-center rounded-[10px] bg-primary text-base font-bold text-primary-foreground shadow-[0_7px_22px_rgba(210,138,76,0.13)] transition-[background-color,box-shadow,transform] duration-200 hover:bg-[#e89b55] hover:shadow-[0_10px_25px_rgba(210,138,76,0.22)] motion-safe:active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e89b55] disabled:opacity-60 disabled:shadow-none md:mt-4 md:h-10 md:rounded-lg md:text-sm"
           >
             {mutation.isPending ? 'Aguarde...' : isRegister ? 'Criar perfil' : 'Entrar'}
           </button>
         </form>
 
         <div className="mt-8 md:mt-5">
-          <div className="flex items-center gap-3 text-xs text-[#cfb28c]">
+          <div className="flex items-center gap-3 text-[11px] text-[#cfb28c] md:text-xs">
             <span className="h-px flex-1 bg-[#624230]"/>
             Ou continue com
             <span className="h-px flex-1 bg-[#624230]"/>
           </div>
-          <div className="mt-3 space-y-3">
-            <button type="button" disabled title="Login com Google não faz parte deste mock" className="flex h-11 w-full cursor-not-allowed items-center justify-center gap-3 rounded-md border border-[#624230] text-sm text-muted-foreground opacity-60 md:h-10">
-              <span className="font-bold text-primary">G</span> Continuar com Google (indisponível)
+          <div className="mt-4 space-y-3 md:mt-3">
+            <button type="button" disabled aria-label="Continuar com Google (indisponível na demonstração)" className="flex min-h-12 w-full cursor-not-allowed items-center justify-center gap-3 rounded-[9px] border border-[#624230]/85 bg-[#140d0a]/30 text-xs text-[#cfb28c] opacity-75 md:min-h-10 md:rounded-md md:bg-transparent md:text-sm md:opacity-60">
+              <span aria-hidden="true" className="bg-[conic-gradient(#4285f4_0_25%,#34a853_25%_50%,#fbbc05_50%_75%,#ea4335_75%_100%)] bg-clip-text text-lg font-bold text-transparent">G</span>
+              Continuar com Google
             </button>
-            <button type="button" disabled title="Login com Facebook não faz parte deste mock" className="flex h-11 w-full cursor-not-allowed items-center justify-center gap-3 rounded-md border border-[#624230] text-sm text-muted-foreground opacity-60 md:h-10">
-              <span className="font-bold text-primary">f</span> Continuar com Facebook (indisponível)
+            <button type="button" disabled aria-label="Continuar com Facebook (indisponível na demonstração)" className="flex min-h-12 w-full cursor-not-allowed items-center justify-center gap-3 rounded-[9px] border border-[#624230]/85 bg-[#140d0a]/30 text-xs text-[#cfb28c] opacity-75 md:min-h-10 md:rounded-md md:bg-transparent md:text-sm md:opacity-60">
+              <span aria-hidden="true" className="text-lg font-bold text-[#5f88db]">f</span>
+              Continuar com Facebook
             </button>
           </div>
+          <p className="mt-2 text-center text-[10px] leading-5 text-[#b39463]">
+            Login social indisponível nesta demonstração.
+          </p>
         </div>
-        <p className="mt-10 text-center text-xs text-[#cfb28c] md:mt-6">
+        <p className="mt-9 text-center text-xs text-[#cfb28c] md:mt-6">
           {isRegister ? 'Já tem uma conta?' : 'Novo na Kurio?'}{' '}
           <Link to={isRegister ? '/login' : '/register'} search={authSearch} className="font-semibold text-[#e89b55] underline-offset-4 hover:underline">
             {isRegister ? 'Entre' : 'Crie uma conta'}
