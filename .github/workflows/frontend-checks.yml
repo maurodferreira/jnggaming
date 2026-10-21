@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main, feat/figma-kurio-ui]
   push:
-    branches: [feat/figma-kurio-ui, feat/nft-mobile-figma-refinement, feat/auth-mobile-figma-polish]
+    branches: [feat/figma-kurio-ui, feat/nft-mobile-figma-refinement, feat/auth-mobile-figma-polish, feat/checkout-mobile-figma-polish]
 
 concurrency:
   # Push and PR checks for the same head branch share one runner slot.
