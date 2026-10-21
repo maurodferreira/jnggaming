@@ -1,5 +1,5 @@
 /* Checkout mobile refinement — presentation only. Desktop layout and order flow are unchanged. */
-@media (max-width: 1023px) {
+@media (max-width: 639px) {
   .kurio-checkout {
     padding-top: 1.5rem;
     padding-bottom: 8rem;
@@ -111,5 +111,63 @@
   .kurio-checkout *, .kurio-checkout *::before, .kurio-checkout *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Reserve space for both the bottom navigation and the checkout action tray. */
+@media (max-width: 639px) {
+  .kurio-checkout {
+    padding-bottom: calc(205px + env(safe-area-inset-bottom));
+  }
+
+  .kurio-checkout-order-items {
+    border: 1px solid rgb(139 94 64 / 35%);
+    border-radius: 1.25rem;
+    padding: 1rem;
+    background: linear-gradient(150deg, #281912, #1c120e);
+  }
+
+  .kurio-checkout-action {
+    position: fixed;
+    z-index: 40; /* Below the site's z-50 mobile navigation. */
+    right: 0;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 0.75rem max(1.25rem, env(safe-area-inset-left)) 0.875rem max(1.25rem, env(safe-area-inset-right));
+    border-top: 1px solid rgb(139 94 64 / 55%);
+    background: rgb(26 16 12 / 96%);
+    box-shadow: 0 -14px 32px rgb(0 0 0 / 25%);
+    backdrop-filter: blur(14px);
+  }
+
+  .kurio-checkout-action-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    color: #cfb28c;
+  }
+
+  .kurio-checkout-action-total strong {
+    color: #e89b55;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .kurio-checkout .kurio-checkout-order-items article,
+  .kurio-checkout .kurio-checkout-action {
+    min-width: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .kurio-checkout .kurio-checkout-order-items {
+      animation: kurio-checkout-reveal 340ms both ease-out;
+      animation-delay: 70ms;
+    }
   }
 }
