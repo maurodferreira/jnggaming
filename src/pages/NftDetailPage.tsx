@@ -67,10 +67,20 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
     selectedQuantity
   )
 
+  // Both desktop and mobile controls use one selection and one mutation.
+  // The mobile purchase tray is visual only; cart behavior remains unchanged.
+  function addSelectedToCart() {
+    addToCart.mutate({
+      nftId: nft.id,
+      editionId: selectedEdition.id,
+      quantity: selectedQuantity,
+    })
+  }
+
   return (
-    <div className="space-y-3 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Escolha da edição */}
-      <fieldset className="space-y-1 sm:space-y-3">
+      <fieldset className="space-y-2 sm:space-y-3">
         <legend className="font-medium">
           <span className="sm:hidden">Edição:</span>
           <span className="hidden sm:inline">Escolha uma edição</span>
@@ -80,10 +90,10 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
           {nft.editions.map((edition) => (
             <label
               key={edition.id}
-              className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-sm transition-colors focus-within:ring-2 focus-within:ring-primary sm:flex sm:items-start sm:gap-3 sm:rounded-xl sm:p-4 ${
+              className={`inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full border border-[#624230] px-3 py-2 text-xs transition-colors focus-within:ring-2 focus-within:ring-primary sm:flex sm:items-start sm:gap-3 sm:rounded-xl sm:p-4 ${
                 editionId === edition.id
-                  ? 'border-primary bg-muted/50'
-                  : 'hover:bg-muted/30'
+                  ? 'border-primary bg-[#39251b] text-primary'
+                  : 'bg-transparent text-[#cfb28c] hover:border-primary/70 hover:bg-muted/30'
               }`}
             >
               <input
@@ -120,7 +130,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
       </fieldset>
 
       {/* Controle de quantidade */}
-      <div className="space-y-2 sm:space-y-3">
+      <div className="hidden space-y-2 sm:block sm:space-y-3">
         <p className="font-medium">Quantidade</p>
 
         <div className="flex items-center gap-3 sm:gap-4">
@@ -199,7 +209,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
       </div>
 
       {/* Adicionar ao carrinho */}
-      <div className="space-y-3">
+      <div className="hidden space-y-3 sm:block">
         <Button
           type="button"
           className="w-full"
@@ -207,13 +217,7 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
             selectedQuantity === 0 ||
             addToCart.isPending
           }
-          onClick={() => {
-            addToCart.mutate({
-              nftId: nft.id,
-              editionId: selectedEdition.id,
-              quantity: selectedQuantity,
-            })
-          }}
+          onClick={addSelectedToCart}
         >
           {addToCart.isPending
             ? 'Adicionando...'
@@ -249,6 +253,71 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
           </div>
         )}
       </div>
+
+      {/* The Figma NFT view has a dedicated purchase area.
+          On phones it sits above the existing app navigation rather than
+          obscuring it; desktop keeps its original purchase controls. */}
+      <section
+        aria-label="Compra demonstrativa do NFT"
+        className="fixed inset-x-0 bottom-[calc(78px+env(safe-area-inset-bottom))] z-40 rounded-t-[26px] border-t border-[#624230] bg-[#241612]/95 px-5 pb-3 pt-3 shadow-[0_-16px_36px_rgba(0,0,0,0.44)] backdrop-blur-md sm:hidden"
+      >
+        <div className="mx-auto max-w-[540px]">
+          <div className="flex min-h-11 items-center justify-between gap-3">
+            <div role="group" aria-label="Quantidade de NFTs" className="flex items-center gap-2">
+              <span className="mr-1 text-xs font-semibold text-[#cfb28c]">Qtd.</span>
+              <button
+                type="button"
+                aria-label="Diminuir quantidade"
+                disabled={selectedQuantity <= 1}
+                onClick={() => setQuantity(current => Math.max(1, current - 1))}
+                className="grid size-11 place-items-center rounded-full border border-[#624230] bg-[#39251b] text-lg text-primary transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                −
+              </button>
+              <output aria-live="polite" className="min-w-5 text-center text-sm font-bold">
+                {selectedQuantity}
+              </output>
+              <button
+                type="button"
+                aria-label="Aumentar quantidade"
+                disabled={selectedQuantity >= available}
+                onClick={() => setQuantity(current => Math.min(available, current + 1))}
+                className="grid size-11 place-items-center rounded-full border border-[#624230] bg-[#39251b] text-lg text-primary transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                +
+              </button>
+            </div>
+            <p aria-label={`Subtotal: ${total} ETH`} className="min-w-0 text-right">
+              <span className="block text-[10px] text-[#cfb28c]">Subtotal</span>
+              <strong className="whitespace-nowrap text-lg font-bold tracking-tight text-[#e89b55]">{total} ETH</strong>
+            </p>
+          </div>
+          <Button
+            type="button"
+            className="mt-2 h-12 w-full rounded-full text-sm font-bold shadow-[0_6px_20px_rgba(210,138,76,0.15)]"
+            disabled={selectedQuantity === 0 || addToCart.isPending}
+            onClick={addSelectedToCart}
+          >
+            {addToCart.isPending ? 'Adicionando...' : 'Adicionar ao carrinho'}
+          </Button>
+          <p className="mt-1.5 text-center text-[10px] leading-4 text-[#cfb28c]">
+            Compra simulada · taxas e descontos no checkout
+          </p>
+          {addToCart.isError && (
+            <p role="alert" className="mt-2 text-center text-xs text-destructive">
+              {getCartErrorMessage(addToCart.error)}
+            </p>
+          )}
+          {addToCart.isSuccess && (
+            <p role="status" className="mt-2 text-center text-xs text-foreground">
+              NFT adicionado ao carrinho!{' '}
+              <Link to="/cart" className="font-bold text-primary underline underline-offset-4">
+                Ver meu carrinho →
+              </Link>
+            </p>
+          )}
+        </div>
+      </section>
     </div>
   )
 }
@@ -356,7 +425,7 @@ export function NftDetailPage() {
 
   return (
     <FavoritesControlsProvider>
-    <main className="mx-auto max-w-[1248px] space-y-5 px-5 pb-24 pt-5 sm:space-y-8 sm:py-8 md:px-6 md:pb-0">
+    <main className="mx-auto max-w-[1248px] space-y-5 px-5 pb-[300px] pt-5 sm:space-y-8 sm:py-8 md:px-6 md:pb-0">
       <Link
         to="/"
         search={catalogSearch}
@@ -374,7 +443,7 @@ export function NftDetailPage() {
         </div>
 
         {/* Informações */}
-        <div className="relative -mx-5 -mt-6 space-y-3 rounded-t-[28px] bg-[#241612] px-5 pb-5 pt-4 shadow-[0_-12px_32px_rgba(0,0,0,0.22)] sm:mx-0 sm:mt-0 sm:space-y-4 sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
+        <div className="relative -mx-5 -mt-6 space-y-4 rounded-t-[28px] bg-[#241612] px-6 pb-6 pt-5 shadow-[0_-12px_32px_rgba(0,0,0,0.22)] sm:mx-0 sm:mt-0 sm:space-y-4 sm:rounded-none sm:bg-transparent sm:p-0 sm:shadow-none">
           <div>
             <p className="hidden text-muted-foreground sm:block">
               {nft.collection}
@@ -407,8 +476,8 @@ export function NftDetailPage() {
             </p>
           </div>
 
-          <NftMetadata nft={nft} className="sm:hidden" />
           <EditionSelector key={nft.id} nft={nft} />
+          <NftMetadata nft={nft} className="sm:hidden" />
           <NftMetadata nft={nft} className="hidden sm:block" />
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span>Compartilhar este NFT:</span>
