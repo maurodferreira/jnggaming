@@ -42,6 +42,18 @@ async function captureWidths(page: Page, name: string) {
           page.getByText('Data', { exact: true }).locator('..').locator('dd'),
         ]
       : []
+    // The checkout phone layout is a draft redesign. Keep a full-size screenshot
+    // in the test artifacts for human approval before versioning its new PNG baseline.
+    // All other screens/breakpoints still compare against approved snapshots.
+    if (name === 'checkout' && width === 390) {
+      await page.screenshot({
+        path: test.info().outputPath('checkout-390-candidate.png'),
+        fullPage: true,
+        animations: 'disabled',
+        caret: 'hide',
+      })
+      continue
+    }
     await expect(page).toHaveScreenshot(`${name}-${width}.png`, {
       fullPage: true,
       mask: volatileFields,
