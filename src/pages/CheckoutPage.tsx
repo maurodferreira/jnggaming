@@ -159,7 +159,7 @@ export function CheckoutPage() {
           </div>
         </div>
 
-        <form onSubmit={confirm} className="flex min-w-0 flex-col gap-6 lg:sticky lg:top-5 lg:self-start">
+        <form onSubmit={confirm} className="kurio-checkout-form flex min-w-0 flex-col gap-6 lg:sticky lg:top-5 lg:self-start">
           <section className="hidden space-y-4 lg:order-1 lg:block">
             <h2 className="border-b border-[#624230] pb-3 text-sm font-bold">Seus NFTs</h2>
             {cart.isPending ? <Skeleton className="h-40 w-full"/> : (
@@ -178,7 +178,31 @@ export function CheckoutPage() {
               </div>
             )}
           </section>
-          <section className="order-2 space-y-3" aria-label="Cupom e resumo">
+          <section className="kurio-checkout-order-items order-2 space-y-3 lg:hidden" aria-label="NFTs do pedido">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-sm font-bold">Seu pedido</h2>
+              <span className="text-xs text-[#cfb28c]">{cart.data?.totalQuantity ?? 0} {cart.data?.totalQuantity === 1 ? 'item' : 'itens'}</span>
+            </div>
+            {cart.isPending ? <Skeleton className="h-[94px] w-full"/> : cart.isError ? (
+              <p role="alert" className="text-xs text-destructive">Não foi possível carregar os itens. Volte ao carrinho e tente novamente.</p>
+            ) : (
+              <div className="space-y-2">
+                {cart.data?.items.map(item => (
+                  <article key={item.id} className="flex min-w-0 items-center gap-3 rounded-xl border border-[#624230]/40 bg-[#1b120e] p-3">
+                    <img src={getNftArtwork(item.nftId)} alt="" width={64} height={64}
+                      className="size-16 shrink-0 rounded-lg object-cover"/>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold" title={item.name}>{item.name}</p>
+                      <p className="mt-1 text-[11px] leading-5 text-[#cfb28c]">Edição: {item.editionName} × {item.quantity}</p>
+                      <p className="text-xs font-semibold text-primary">{item.unitPriceEth} ETH / un.</p>
+                    </div>
+                  </article>
+                ))}
+                {!cart.data?.items.length && <p className="text-xs text-[#cfb28c]">Seu carrinho está vazio.</p>}
+              </div>
+            )}
+          </section>
+          <section className="order-3 space-y-3 lg:order-2" aria-label="Cupom e resumo">
             <label htmlFor="promo-code" className="block text-xs font-medium text-[#cfb28c]">Código promocional</label>
             <div className="flex gap-2">
               <input id="promo-code" value={couponInput} onChange={e => setCouponInput(e.target.value)}
@@ -220,9 +244,15 @@ export function CheckoutPage() {
               <button type="button" onClick={() => void quote.refetch()} className="text-primary underline">Atualizar cotação</button>
             </div>
           )}
-          <button type="submit" disabled={disabled} className="order-4 mt-2 h-[54px] w-full rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#e89b55] focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50 lg:static">
-            {submitOrder.isPending ? 'Enviando pedido...' : 'Confirmar compra simulada'}
-          </button>
+          <div className="kurio-checkout-action order-4 mt-2">
+            <div className="kurio-checkout-action-total lg:hidden" aria-label="Total estimado do pedido">
+              <span>Total estimado</span>
+              <strong aria-live="polite">{quote.isFetching ? 'Recalculando...' : quote.data ? `${quote.data.totalEth} ETH` : '—'}</strong>
+            </div>
+            <button type="submit" disabled={disabled} className="h-[54px] w-full rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#e89b55] focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50">
+              {submitOrder.isPending ? 'Enviando pedido...' : 'Confirmar compra simulada'}
+            </button>
+          </div>
         </form>
       </div>
     </main>
