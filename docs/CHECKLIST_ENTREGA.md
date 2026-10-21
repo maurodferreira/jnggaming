@@ -1,6 +1,6 @@
 # KURIO — checklist de entrega e revisão final
 
-**Revisão:** 20/10/2026 · **Branch:** `feat/figma-kurio-ui` · **PR:** [#1](https://github.com/maurodferreira/jnggaming/pull/1)
+**Revisão:** 21/10/2026 · **Entrega acumulada:** [PR #5](https://github.com/maurodferreira/jnggaming/pull/5) para a branch `main`.
 
 Este é um roteiro curto para reproduzir o desafio, inspecionar o código e concluir a publicação. Os resultados abaixo são de uma **demonstração frontend**, sem dinheiro, blockchain, carteiras ou NFT reais.
 
@@ -8,8 +8,8 @@ Este é um roteiro curto para reproduzir o desafio, inspecionar o código e conc
 
 | Verificação | Resultado comprovado | Evidência |
 | --- | --- | --- |
-| Instalação, TypeScript, ESLint e builds | Aprovados, incluindo fallback Windows | [CI 39483364599](https://github.com/maurodferreira/jnggaming/actions/runs/39483364599) |
-| Playwright desktop/mobile | **117 passed, 9 skipped intencionalmente, 0 failed** | [Mesmo CI](https://github.com/maurodferreira/jnggaming/actions/runs/39483364599) |
+| Instalação, TypeScript, ESLint e builds | Aprovados, incluindo fallback Windows | [CI 39606190433](https://github.com/maurodferreira/jnggaming/actions/runs/39606190433) |
+| Playwright desktop/mobile | **150 passed, 12 skipped intencionalmente, 0 failed** | [Mesmo CI](https://github.com/maurodferreira/jnggaming/actions/runs/39606190433) |
 | Lighthouse Home mobile | **100/100/100/100** (Perf/A11y/BP/SEO) | [Relatório 39483283845](https://github.com/maurodferreira/jnggaming/actions/runs/39483283845) |
 | Lighthouse NFT mobile | **90/100/100/100** | [Mesmo relatório](https://github.com/maurodferreira/jnggaming/actions/runs/39483283845) |
 | Lighthouse Home desktop | **98/100/100/100** | [Mesmo relatório](https://github.com/maurodferreira/jnggaming/actions/runs/39483283845) |
@@ -18,7 +18,7 @@ Este é um roteiro curto para reproduzir o desafio, inspecionar o código e conc
 | Regressão visual | **27 snapshots versionadas**, 9 páginas × 390/768/1440 px | [Baselines Playwright](https://github.com/maurodferreira/jnggaming/tree/feat/figma-kurio-ui/tests/e2e/visual-baselines.spec.ts-snapshots) |
 | Domínio público | Smoke de Home, MSW, API, assets, deep links e refresh **aprovado anteriormente** | [Smoke 39428035215](https://github.com/maurodferreira/jnggaming/actions/runs/39428035215) |
 
-As notas Lighthouse são **medianas de três execuções por página e dispositivo**, feitas sobre o build local de produção. O relatório de qualidade foi feito no commit `7ea96bf1`; a mudança posterior `114fa5d4` acrescentou **somente um teste**, sem alterar o código que roda no navegador. A nota real pode variar conforme o dispositivo. Esses resultados não são a pontuação oficial da Jungle Gaming.
+As notas Lighthouse são **medianas de três execuções por página e dispositivo**, feitas sobre o build local de produção. O relatório de qualidade foi feito no commit `7ea96bf1`, **anterior** aos refinamentos mobile posteriores. Essas notas são históricas e não equivalem a uma nova auditoria do commit entregue. A nota real pode variar conforme o dispositivo. Esses resultados não são a pontuação oficial da Jungle Gaming.
 
 ## 2. Reproduzir em uma máquina nova
 
@@ -27,7 +27,7 @@ Use **Node.js 22.12+**, npm e um navegador Chromium atualizado.
 ```bash
 git clone https://github.com/maurodferreira/jnggaming.git
 cd jnggaming
-git switch feat/figma-kurio-ui
+git switch main
 npm ci
 npx playwright install chromium
 npm run typecheck
@@ -75,18 +75,13 @@ O Figma original possui **15 frames explícitos** (9 desktop, 6 mobile). As tela
 
 Ler também [ARCHITECTURE.md](../ARCHITECTURE.md) e [regras e liberdades](REGRAS_E_LIBERDADES_DO_DESAFIO.md).
 
-## 5. Publicação e aceite pendentes
+## 5. Estado da publicação e aceite
 
-> **Revisão visual e roteiro de Vercel:** veja [Revisão final — Figma e publicação](REVISAO_FINAL_FIGMA_E_PUBLICACAO.md), com a comparação dos 15 frames, as adaptações conscientes, os links de CI e os passos de **Create Deployment → Promote to Production** no painel correto. O preview antigo não deve ser promovido sem conferir o SHA.
+- [x] Nove telas navegáveis, API simulada, testes E2E e documentação.
+- [x] CI final da branch de entrega: **150 passed, 12 skipped, 0 failed** no commit `fd3d9601`.
+- [x] Deploy público da aplicação: [kurio-jungle-challenge.vercel.app](https://kurio-jungle-challenge.vercel.app/), **READY** na Vercel no commit `0dae1479` da branch `feat/checkout-mobile-figma-polish`. O commit posterior `fd3d9601` alterou somente um teste e não o código da aplicação.
+- [ ] Conferir manualmente o visual nos principais frames do Figma no dispositivo de avaliação; snapshots não substituem aceite pixel a pixel.
+- [ ] Reexecutar o smoke da produção no Chromium após a consolidação na `main`: `KURIO_DEPLOY_URL=https://kurio-jungle-challenge.vercel.app node scripts/quality/deployment-smoke.mjs`.
+- [ ] Confirmar na Vercel o commit e a integridade do domínio **após** o merge do [PR #5](https://github.com/maurodferreira/jnggaming/pull/5). Não confundir links de Preview com produção.
 
-
-
-- [x] Nove telas navegáveis com demonstração funcional, testes e documentação.
-- [x] Medianas Lighthouse dentro das metas **na rodada registrada** e CI verde.
-- [x] Regressão visual automatizada com 27 screenshots.
-- [ ] **Confirmar manualmente a fidelidade final aos 15 frames do Figma** e aprovar eventuais divergências documentadas.
-- [ ] **Publicar/promover exatamente a revisão aceita** em um domínio acessível ao avaliador. Na inspeção de 20/10/2026, `kurio-jungle-challenge.vercel.app` ainda apontava para o commit `9a2289a9` (antigo); o último preview identificado era do `7ea96bf1`, anterior ao commit que apenas acrescentou o teste final.
-- [ ] **Reexecutar o smoke no domínio definitivo** e registrar o commit publicado, incluindo deep links e refresh: `KURIO_DEPLOY_URL=https://SEU-DOMINIO node scripts/quality/deployment-smoke.mjs`.
-- [ ] Revisar o [PR #1](https://github.com/maurodferreira/jnggaming/pull/1), seu diff e os links de evidência; só alterar o estado Draft ou fazer merge após aprovação explícita.
-
-**Importante:** não confundir uma URL de preview da Vercel que exige autenticação com o domínio público. Não promover automaticamente a build, nem modificar a `main`, enquanto faltar o aceite da entrega.
+O site é uma demonstração com MSW: não há pagamento real, blockchain ou transferência de ativos. A documentação registra o comportamento e os limites deliberados.
