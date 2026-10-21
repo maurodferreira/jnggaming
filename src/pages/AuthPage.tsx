@@ -145,7 +145,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
           {isRegister && (
             <Field label="Nome de usuário" id="auth-name" name="name" value={name} onChange={setName} autoComplete="name" placeholder="Nome de usuário"/>
           )}
-          <Field label="E-mail" id="auth-email" name="email" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder={isRegister ? 'Digite seu e-mail' : 'contato@email.com'}/>
+          <Field label="E-mail" id="auth-email" name="email" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="contato@email.com"/>
           <Field label="Senha" id="auth-password" name="password" type="password" value={password} onChange={setPassword} autoComplete={isRegister ? 'new-password' : 'current-password'}/>
           {isRegister && (
             <Field label="Confirmar senha" id="auth-confirm-password" name="confirmPassword" type="password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password"/>
@@ -157,7 +157,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
           <button
             type="submit"
             disabled={mutation.isPending || Boolean(session.data)}
-            className="mt-7 flex h-[58px] w-full items-center justify-center rounded-[10px] bg-primary text-base font-bold text-primary-foreground shadow-[0_7px_22px_rgba(210,138,76,0.13)] transition-[background-color,box-shadow,transform] duration-200 hover:bg-[#e89b55] hover:shadow-[0_10px_25px_rgba(210,138,76,0.22)] motion-safe:active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e89b55] disabled:opacity-60 disabled:shadow-none md:mt-4 md:h-10 md:rounded-lg md:text-sm"
+            className="mt-7 flex h-[58px] w-full items-center justify-center rounded-[10px] bg-primary text-base font-bold text-primary-foreground shadow-[0_7px_22px_rgba(210,138,76,0.13)] transition-[background-color,box-shadow,transform] duration-200 hover:bg-[#e89b55] hover:shadow-[0_10px_25px_rgba(210,138,76,0.22)] motion-safe:active:translate-y-px md:shadow-none md:hover:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e89b55] disabled:opacity-60 disabled:shadow-none md:mt-4 md:h-10 md:rounded-lg md:text-sm"
           >
             {mutation.isPending ? 'Aguarde...' : isRegister ? 'Criar perfil' : 'Entrar'}
           </button>
@@ -171,15 +171,17 @@ export function AuthPage({ mode }: { mode: Mode }) {
           </div>
           <div className="mt-4 space-y-3 md:mt-3">
             <button type="button" disabled aria-label="Continuar com Google (indisponível na demonstração)" className="flex min-h-12 w-full cursor-not-allowed items-center justify-center gap-3 rounded-[9px] border border-[#624230]/85 bg-[#140d0a]/30 text-xs text-[#cfb28c] opacity-75 md:min-h-10 md:rounded-md md:bg-transparent md:text-sm md:opacity-60">
-              <span aria-hidden="true" className="bg-[conic-gradient(#4285f4_0_25%,#34a853_25%_50%,#fbbc05_50%_75%,#ea4335_75%_100%)] bg-clip-text text-lg font-bold text-transparent">G</span>
-              Continuar com Google
+              <span aria-hidden="true" className="bg-[conic-gradient(#4285f4_0_25%,#34a853_25%_50%,#fbbc05_50%_75%,#ea4335_75%_100%)] bg-clip-text text-lg font-bold text-transparent md:bg-none md:text-primary">G</span>
+              <span className="md:hidden">Continuar com Google</span>
+              <span className="hidden md:inline">Continuar com Google (indisponível)</span>
             </button>
             <button type="button" disabled aria-label="Continuar com Facebook (indisponível na demonstração)" className="flex min-h-12 w-full cursor-not-allowed items-center justify-center gap-3 rounded-[9px] border border-[#624230]/85 bg-[#140d0a]/30 text-xs text-[#cfb28c] opacity-75 md:min-h-10 md:rounded-md md:bg-transparent md:text-sm md:opacity-60">
-              <span aria-hidden="true" className="text-lg font-bold text-[#5f88db]">f</span>
-              Continuar com Facebook
+              <span aria-hidden="true" className="text-lg font-bold text-[#5f88db] md:text-primary">f</span>
+              <span className="md:hidden">Continuar com Facebook</span>
+              <span className="hidden md:inline">Continuar com Facebook (indisponível)</span>
             </button>
           </div>
-          <p className="mt-2 text-center text-[10px] leading-5 text-[#b39463]">
+          <p className="mt-2 text-center text-[10px] leading-5 text-[#b39463] md:hidden">
             Login social indisponível nesta demonstração.
           </p>
         </div>
