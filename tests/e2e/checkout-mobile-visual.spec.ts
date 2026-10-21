@@ -106,9 +106,14 @@ test('checkout: switching simulated provider, applying coupon, and confirming st
 
   const summaryTotal = page.getByRole('region', { name: 'Cupom e resumo' })
     .locator('dl > div').last().locator('dd')
-  await expect(summaryTotal).toContainText('ETH')
-  await expect(page.locator('.kurio-checkout-action-total strong'))
-    .toHaveText((await summaryTotal.textContent())?.trim() ?? '')
+  await expect(page.getByRole('button', { name: 'Confirmar compra simulada' })).toBeEnabled()
+  await expect.poll(async () => {
+    const [summaryValue, buttonValue] = await Promise.all([
+      summaryTotal.textContent(),
+      page.locator('.kurio-checkout-action-total strong').textContent(),
+    ])
+    return summaryValue?.trim() === buttonValue?.trim() && buttonValue?.includes('ETH')
+  }, { timeout: 15_000 }).toBe(true)
 
   await page.getByRole('button', { name: 'Confirmar compra simulada' }).click()
   await expect(page).toHaveURL(/\/orders\/[^/]+$/)
