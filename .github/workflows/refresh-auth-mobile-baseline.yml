@@ -1,0 +1,45 @@
+name: Refresh reviewed auth screenshots (temporary)
+
+on:
+  push:
+    branches: [feat/auth-mobile-figma-polish]
+    paths:
+      - '.github/workflows/refresh-auth-mobile-baseline.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-auth-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/auth-mobile-figma-polish
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Re-render login and registration Figma baselines
+        run: |
+          npx playwright test tests/e2e/visual-baselines.spec.ts --project=desktop-chromium --grep 'visual baseline: login and registration' --update-snapshots
+      - name: Commit only reviewed authentication snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only
+          if git diff --name-only | grep -Ev '^tests/e2e/visual-baselines\.spec\.ts-snapshots/(login|register)-(390|768|1440)-desktop-chromium-linux\.png$'; then
+            echo 'Unexpected files changed during authentication snapshot update.' >&2
+            exit 1
+          fi
+          git add tests/e2e/visual-baselines.spec.ts-snapshots/login-*.png
+          git add tests/e2e/visual-baselines.spec.ts-snapshots/register-*.png
+          if git diff --cached --quiet; then
+            echo 'Authentication screenshot baseline already up to date.'
+            exit 0
+          fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'test(visual): update reviewed auth mobile baseline'
+          git push origin HEAD:feat/auth-mobile-figma-polish
