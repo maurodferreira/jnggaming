@@ -67,12 +67,14 @@ function EditionSelector({ nft }: { nft: NftDetail }) {
     selectedQuantity
   )
 
-  // Both desktop and mobile controls use one selection and one mutation.
-  // The mobile purchase tray is visual only; cart behavior remains unchanged.
+  // Capture the narrowed edition ID before the callback runs. This keeps
+  // desktop/mobile actions in sync and preserves TypeScript strict checking.
+  const selectedEditionId = selectedEdition.id
+
   function addSelectedToCart() {
     addToCart.mutate({
       nftId: nft.id,
-      editionId: selectedEdition.id,
+      editionId: selectedEditionId,
       quantity: selectedQuantity,
     })
   }
