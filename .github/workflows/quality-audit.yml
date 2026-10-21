@@ -3,7 +3,7 @@ name: Visual quality and Lighthouse
 on:
   workflow_dispatch:
   push:
-    branches: [feat/figma-kurio-ui, feat/nft-mobile-figma-refinement]
+    branches: [feat/figma-kurio-ui, feat/nft-mobile-figma-refinement, feat/auth-mobile-figma-polish]
     paths:
       - 'src/**'
       - 'public/**'
